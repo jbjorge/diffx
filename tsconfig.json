@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.reflect",
+      "es2015.iterable",
+      "es2015.proxy"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

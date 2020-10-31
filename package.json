@@ -1,0 +1,22 @@
+{
+  "name": "stategate",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ci-test": "nodemon --watch '**/*.ts' --watch './index.ts' --exec 'ts-node' ./index.spec.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "dependencies": {
+    "@vue/reactivity": "^3.0.2",
+    "jsondiffpatch": "^0.4.1",
+    "vue": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  }
+}
