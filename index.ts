@@ -39,16 +39,20 @@ export function createState<T extends object>(namespace: string, state: T, optio
 			if (key === '$set') {
 				return Reflect.set(target, key, newValue, receiver);
 			}
-			if (!options.setStateDirectly && !isUsingSetMethod) {
-				console.warn(
-					'State was set directly instead of via the state.$set() method.',
-					'This will make the history in the devtool less readable and disables tracing of who changed the state.',
-					'To disable this warning, you can set options.setStateDirectly = true.',
-					target, key, newValue
-				);
+			const returnValue = Reflect.set(target, key, newValue, receiver);
+			if (!isUsingSetMethod) {
+				if (!options.setStateDirectly) {
+					console.warn(
+						'State was set directly instead of via the state.$set() method.',
+						'This will make the history in the devtool less readable and disables tracing of who changed the state.',
+						'To disable this warning, you can set options.setStateDirectly = true.',
+						target, key, newValue
+					);
+				}
+				createHistoryEntry('', options.debug);
 			}
 			trigger(target, TriggerOpTypes.SET, key, newValue);
-			return Reflect.set(target, key, newValue, receiver);
+			return returnValue;
 		}
 	})
 
@@ -61,21 +65,25 @@ export function createState<T extends object>(namespace: string, state: T, optio
 				isUsingSetMethod = true;
 				valueAssignment();
 			}
-			const currentState = clone(rootState);
-			const historyEntry = {
-				reason,
-				diff: diff(previousState, currentState)
-			};
-			if (options.debug) {
-				historyEntry['stackTrace'] = new Error().stack;
-			}
-			diffs.push(historyEntry);
-			previousState = currentState;
+			createHistoryEntry(reason, options.debug);
 			isUsingSetMethod = false;
 		}
 	})
 
 	return rootState[namespace];
+}
+
+function createHistoryEntry(reason = '', debug = false) {
+	const currentState = clone(rootState);
+	const historyEntry = {
+		reason,
+		diff: diff(previousState, currentState)
+	};
+	if (debug) {
+		historyEntry['stackTrace'] = new Error().stack;
+	}
+	diffs.push(historyEntry);
+	previousState = currentState;
 }
 
 function clone<T>(a: T): T {

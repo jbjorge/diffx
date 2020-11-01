@@ -12,7 +12,7 @@ import { createState, getDiffs } from './index';
 // 	state.deep.things.push('yestest')
 // }, 2000)
 
-const state = createState('hihi', { lol: '', lal: [] });
+const state = createState('hihi', { lol: '', lal: [] }, { debug: true });
 // state.lol = 'hehe';
 state.$set('I click button', () => {
 	state.lol = 'hehe';
@@ -22,5 +22,6 @@ state.$set('I click button', () => {
 state.$set('i click button again', () => {
 	state.lal[1] = 'what';
 })
+state.lol = 'hihihihihi'
 console.log(state);
 console.log(JSON.stringify(getDiffs(), null, 2));
