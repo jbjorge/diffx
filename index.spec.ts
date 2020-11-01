@@ -1,4 +1,4 @@
-import { createState, mip } from './index';
+import { createState, getDiffs } from './index';
 
 // const state = createState('meepmoop', { hello: '', deep: { things: [] } });
 // state.hello = 'hihi';
@@ -12,9 +12,15 @@ import { createState, mip } from './index';
 // 	state.deep.things.push('yestest')
 // }, 2000)
 
-const state = mip('hihi', { lol: '' });
+const state = createState('hihi', { lol: '', lal: [] });
 // state.lol = 'hehe';
-// @ts-ignore
-// state.lol = { value: 'hehe', reason: 'BECAUSE'};
-state.$set(state.lol, 'hehe', 'Clicked button');
+state.$set('I click button', () => {
+	state.lol = 'hehe';
+	state.lal.push('hoh');
+	state.lal.push([{ mip: 'mop' }])
+});
+state.$set('i click button again', () => {
+	state.lal[1] = 'what';
+})
 console.log(state);
+console.log(JSON.stringify(getDiffs(), null, 2));
