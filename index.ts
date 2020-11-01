@@ -1,5 +1,4 @@
-import { customRef, reactive, TrackOpTypes, TriggerOpTypes, watch } from "vue";
-import { track, trigger } from '@vue/reactivity';
+import { track, trigger, TrackOpTypes, TriggerOpTypes, reactive } from '@vue/reactivity';
 import { dateReviver, diff } from 'jsondiffpatch';
 
 type Plugin = (propName, value, previousValue) => void;
@@ -43,10 +42,10 @@ export function createState<T extends object>(namespace: string, state: T, optio
 			if (!isUsingSetMethod) {
 				if (!options.setStateDirectly) {
 					console.warn(
-						'State was set directly instead of via the state.$set() method.',
-						'This will make the history in the devtool less readable and disables tracing of who changed the state.',
-						'To disable this warning, you can set options.setStateDirectly = true.',
-						target, key, newValue
+						'[stategate] State was set directly instead of via the state.$set() method.\n',
+						'This will make the history in the devtool less readable and disables tracing of who changed the state.\n',
+						'To disable this warning, you can set options.setStateDirectly = true.\n',
+						new Error().stack
 					);
 				}
 				createHistoryEntry('', options.debug);

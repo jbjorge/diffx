@@ -1,27 +1,19 @@
 import { createState, getDiffs } from './index';
+import { watch } from 'vue';
 
-// const state = createState('meepmoop', { hello: '', deep: { things: [] } });
-// state.hello = 'hihi';
-// setTimeout(() => {
-// 	// state.hello = 'moo';
-// 	state.deep.things.push({ a: 'yes' })
-// }, 1000)
-//
-// setTimeout(() => {
-// 	// state.hello = 'moo';
-// 	state.deep.things.push('yestest')
-// }, 2000)
+const state = createState('hihi', { lol: '', lal: [] }, { debug: false });
+watch(() => state, newValue => console.log(newValue), { deep: true, immediate: true, flush: 'sync' })
+console.time('a')
+for (let i = 0; i < 10; i++) {
+	state.$set('woot woot', () => {
+		state.lol = 'hehe' + i;
+	});
+}
+console.timeEnd('a');
 
-const state = createState('hihi', { lol: '', lal: [] }, { debug: true });
-// state.lol = 'hehe';
-state.$set('I click button', () => {
-	state.lol = 'hehe';
-	state.lal.push('hoh');
-	state.lal.push([{ mip: 'mop' }])
-});
-state.$set('i click button again', () => {
-	state.lal[1] = 'what';
-})
-state.lol = 'hihihihihi'
-console.log(state);
+const state2 = createState('hoho', { ey: '' });
+console.log(state2);
+state2.$set('yess', () => { state2.ey = 'hehehe' });
+console.log(state2);
+
 console.log(JSON.stringify(getDiffs(), null, 2));

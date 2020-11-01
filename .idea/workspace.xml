@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="088aa4fc-dd57-47c5-860c-379a9e813104" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -72,7 +75,7 @@
       <option name="presentableId" value="Default" />
       <updated>1604096751719</updated>
       <workItem from="1604096752801" duration="12686000" />
-      <workItem from="1604180025182" duration="11985000" />
+      <workItem from="1604180025182" duration="13303000" />
     </task>
     <servers />
   </component>
@@ -160,5 +163,9 @@
       <screen x="1920" y="0" width="1920" height="1200" />
     </state>
     <state x="2657" y="338" width="436" height="442" key="refactoring.ChangeSignatureDialog/0.0.1920.1200/1920.0.1920.1200/3840.0.1920.1200@1920.0.1920.1200" timestamp="1604184683390" />
+    <state x="2543" y="251" width="672" height="678" key="search.everywhere.popup" timestamp="1604193263446">
+      <screen x="1920" y="0" width="1920" height="1200" />
+    </state>
+    <state x="2543" y="251" width="672" height="678" key="search.everywhere.popup/0.0.1920.1200/1920.0.1920.1200/3840.0.1920.1200@1920.0.1920.1200" timestamp="1604193263446" />
   </component>
 </project>
