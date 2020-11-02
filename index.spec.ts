@@ -1,19 +1,20 @@
-import { createState, getDiffs } from './index';
-import { watch } from 'vue';
+import { createState, setState, stateOptions, watchState } from './index';
 
-const state = createState('hihi', { lol: '', lal: [] }, { debug: false });
-watch(() => state, newValue => console.log(newValue), { deep: true, immediate: true, flush: 'sync' })
-console.time('a')
+stateOptions.debug = true;
+const state = createState('hihi', { lol: '', lal: [] });
+
+
+watchState(() => state, newValue => console.log(newValue), { deep: true, immediate: true })
+
 for (let i = 0; i < 10; i++) {
-	state.$set('woot woot', () => {
+	setState('woot woot' + i, () => {
 		state.lol = 'hehe' + i;
-	});
+	})
 }
-console.timeEnd('a');
 
-const state2 = createState('hoho', { ey: '' });
-console.log(state2);
-state2.$set('yess', () => { state2.ey = 'hehehe' });
-console.log(state2);
+// const state2 = createState('hoho', { ey: '' });
+// console.log(state2);
+// setState('yess', () => state2.ey = 'hohoho')
+// console.log(state2);
 
-console.log(JSON.stringify(getDiffs(), null, 2));
+// console.log(JSON.stringify(getDiffs(), null, 2));

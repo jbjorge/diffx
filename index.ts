@@ -1,31 +1,39 @@
-import { track, trigger, TrackOpTypes, TriggerOpTypes, reactive } from '@vue/reactivity';
-import { dateReviver, diff } from 'jsondiffpatch';
+import { track, trigger, TrackOpTypes, TriggerOpTypes, reactive, effect, ReactiveEffectOptions } from '@vue/reactivity';
+import { dateReviver, diff, Delta } from 'jsondiffpatch';
+import { watch } from "./src/watsj";
+import { stateOptions as _stateOptions } from './src/state-options';
 
 type Plugin = (propName, value, previousValue) => void;
-
-const rootState = reactive({});
-const diffs = [];
-
 interface StateOptions {
 	plugins?: Plugin[];
-	debug?: boolean;
-	setStateDirectly?: boolean;
 }
 
-type ReturnType<T> = T & { readonly $set: (reason: string, valueAssignment: () => void) => void }
+interface DiffEntry {
+	timestamp: number;
+	reason: string;
+	diff: Delta;
+	stackTrace?: string;
+}
 
+interface WatchOptions {
+	immediate?: boolean;
+	deep?: boolean;
+	debounceUpdates?: boolean;
+}
+
+const rootState = reactive({});
+const diffs: DiffEntry[] = [];
 let previousState = clone(rootState);
+let isUsingSetFunction = false;
 
-export function createState<T extends object>(namespace: string, state: T, options: StateOptions = {}): ReturnType<T> {
+export const stateOptions = _stateOptions;
+
+export function createState<T extends object>(namespace: string, state: T): T {
 	if (rootState[namespace]) {
 		throw new Error(`[stategate] The namespace ${namespace} is already in use by another module.`);
 	}
-	let isUsingSetMethod = false;
 	rootState[namespace] = new Proxy(state, {
 		get(target, prop, receiver) {
-			if (prop === '$set') {
-				return Reflect.get(target, prop, receiver);
-			}
 			track(target, TrackOpTypes.GET, prop);
 			const value = Reflect.get(target, prop, receiver);
 			if (typeof value === 'object') {
@@ -35,12 +43,9 @@ export function createState<T extends object>(namespace: string, state: T, optio
 			}
 		},
 		set(target, key, newValue, receiver) {
-			if (key === '$set') {
-				return Reflect.set(target, key, newValue, receiver);
-			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);
-			if (!isUsingSetMethod) {
-				if (!options.setStateDirectly) {
+			if (!isUsingSetFunction) {
+				if (!_stateOptions.setStateDirectly) {
 					console.warn(
 						'[stategate] State was set directly instead of via the state.$set() method.\n',
 						'This will make the history in the devtool less readable and disables tracing of who changed the state.\n',
@@ -48,47 +53,52 @@ export function createState<T extends object>(namespace: string, state: T, optio
 						new Error().stack
 					);
 				}
-				createHistoryEntry('', options.debug);
+				createHistoryEntry('');
 			}
 			trigger(target, TriggerOpTypes.SET, key, newValue);
 			return returnValue;
 		}
 	})
 
-	let previousState = clone(rootState);
-	Object.defineProperty(rootState[namespace], '$set', {
-		enumerable: false,
-		writable: false,
-		value: (reason, valueAssignment) => {
-			if (typeof valueAssignment === 'function') {
-				isUsingSetMethod = true;
-				valueAssignment();
-			}
-			createHistoryEntry(reason, options.debug);
-			isUsingSetMethod = false;
-		}
-	})
-
 	return rootState[namespace];
 }
 
-function createHistoryEntry(reason = '', debug = false) {
+export function setState(reason: string, valueAssignment: () => void) {
+	isUsingSetFunction = true;
+	valueAssignment();
+	createHistoryEntry(reason);
+	isUsingSetFunction = false;
+}
+
+export function watchState<T>(state: () => T, cb: (newValue: T) => void, options: WatchOptions) {
+	return watch(state, cb, {
+		immediate: options.immediate,
+		deep: options.deep,
+		flush: options.debounceUpdates ? 'pre' : 'sync'
+	});
+}
+
+function createHistoryEntry(reason = '') {
+	if (!_stateOptions.debug) {
+		return;
+	}
 	const currentState = clone(rootState);
-	const historyEntry = {
+	const historyEntry: DiffEntry = {
+		timestamp: Date.now(),
 		reason,
 		diff: diff(previousState, currentState)
 	};
-	if (debug) {
-		historyEntry['stackTrace'] = new Error().stack;
+	if (_stateOptions.stackTrace) {
+		historyEntry.stackTrace = new Error().stack;
 	}
 	diffs.push(historyEntry);
 	previousState = currentState;
 }
 
-function clone<T>(a: T): T {
-	return JSON.parse(JSON.stringify(a, dateReviver));
-}
-
 export function getDiffs() {
 	return diffs;
+}
+
+function clone<T>(obj: T): T {
+	return JSON.parse(JSON.stringify(obj, dateReviver));
 }

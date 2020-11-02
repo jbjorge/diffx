@@ -2,15 +2,16 @@
   "name": "stategate",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "ci-test": "nodemon --watch '**/*.ts' --watch './index.ts' --exec 'ts-node' ./index.spec.ts",
+    "ci-test": "nodemon --watch '**/*.ts' --watch './index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
     "@vue/reactivity": "^3.0.2",
+    "@vue/shared": "^3.0.2",
     "jsondiffpatch": "^0.4.1",
     "vue": "^3.0.2"
   },

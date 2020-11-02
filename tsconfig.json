@@ -1,19 +1,23 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
+    "target": "esnext",
     "sourceMap": true,
     "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*"]
+    },
+    "rootDir": ".",
     "lib": [
       "dom",
-      "es5",
-      "scripthost",
-      "es2015.reflect",
-      "es2015.iterable",
-      "es2015.proxy"
+      "esnext",
+      "scripthost"
     ]
   },
   "exclude": [
     "node_modules"
+  ],
+  "include": [
+    "types/globals.d.ts"
   ]
 }

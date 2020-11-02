@@ -3,11 +3,31 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="088aa4fc-dd57-47c5-860c-379a9e813104" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.spec.ts" beforeDir="false" afterPath="$PROJECT_DIR$/index.spec.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,8 +37,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="tsconfig.json" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -51,14 +71,15 @@
     <property name="node.js.selected.package.standard" value="" />
     <property name="nodejs_interpreter_path" value="$USER_HOME$/.nvm/versions/node/v14.7.0/bin/node" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.general" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Spy-js" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/types" />
       <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunManager">
@@ -75,12 +96,25 @@
       <option name="presentableId" value="Default" />
       <updated>1604096751719</updated>
       <workItem from="1604096752801" duration="12686000" />
-      <workItem from="1604180025182" duration="13303000" />
+      <workItem from="1604180025182" duration="14060000" />
+      <workItem from="1604308242119" duration="5311000" />
+      <workItem from="1604339129967" duration="7103000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="WindowStateProjectService">
     <state x="2334" y="204" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604107164777">
@@ -155,14 +189,19 @@
       <screen x="1920" y="0" width="1920" height="1200" />
     </state>
     <state width="1876" height="369" key="GridCell.Tab.3.right/0.0.1920.1200/1920.0.1920.1200/3840.0.1920.1200@1920.0.1920.1200" timestamp="1604180006526" />
-    <state x="2408" y="259" key="SettingsEditor" timestamp="1604180000860">
-      <screen x="1920" y="0" width="1920" height="1200" />
+    <state x="486" y="245" key="SettingsEditor" timestamp="1604341350806">
+      <screen x="0" y="0" width="1920" height="1200" />
     </state>
     <state x="2408" y="259" key="SettingsEditor/0.0.1920.1200/1920.0.1920.1200/3840.0.1920.1200@1920.0.1920.1200" timestamp="1604180000860" />
+    <state x="486" y="245" key="SettingsEditor/0.0.1920.1200@0.0.1920.1200" timestamp="1604341350806" />
     <state x="2657" y="338" width="436" height="442" key="refactoring.ChangeSignatureDialog" timestamp="1604184683390">
       <screen x="1920" y="0" width="1920" height="1200" />
     </state>
     <state x="2657" y="338" width="436" height="442" key="refactoring.ChangeSignatureDialog/0.0.1920.1200/1920.0.1920.1200/3840.0.1920.1200@1920.0.1920.1200" timestamp="1604184683390" />
+    <state x="622" y="277" key="run.anything.popup" timestamp="1604340967433">
+      <screen x="0" y="0" width="1920" height="1200" />
+    </state>
+    <state x="622" y="277" key="run.anything.popup/0.0.1920.1200@0.0.1920.1200" timestamp="1604340967433" />
     <state x="2543" y="251" width="672" height="678" key="search.everywhere.popup" timestamp="1604193263446">
       <screen x="1920" y="0" width="1920" height="1200" />
     </state>
