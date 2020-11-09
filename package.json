@@ -2,9 +2,11 @@
   "name": "stategate",
   "version": "0.0.1",
   "description": "",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "scripts": {
-    "ci-test": "nodemon --watch '**/*.ts' --watch './index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
+    "build": "tsc src/index.ts",
+    "ci-test": "nodemon --watch '**/*.ts' --watch 'src/index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
@@ -13,11 +15,16 @@
     "@vue/reactivity": "^3.0.2",
     "@vue/shared": "^3.0.2",
     "jsondiffpatch": "^0.4.1",
-    "vue": "^3.0.2"
+    "uuid": "^8.3.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-typescript": "^6.1.0",
     "nodemon": "^2.0.6",
+    "rollup": "^2.33.1",
     "ts-node": "^9.0.0",
+    "tslib": "^2.0.3",
     "typescript": "^4.0.5"
   }
 }

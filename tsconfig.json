@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+
+    "target": "es6",
     "sourceMap": true,
     "downlevelIteration": true,
+    "moduleResolution": "node",
     "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "dist/",
     "paths": {
       "*": ["*"]
     },
@@ -18,6 +22,7 @@
     "node_modules"
   ],
   "include": [
-    "types/globals.d.ts"
+    "types/globals.d.ts",
+    "src/*"
   ]
 }
