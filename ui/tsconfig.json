@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+
+    "target": "es5",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "lib": [
+      "dom",
+      "esnext",
+      "scripthost"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src/*",
+    "node_modules/stategate/dist/*"
+  ]
+}
