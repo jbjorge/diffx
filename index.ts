@@ -21,7 +21,11 @@ interface WatchOptions<T> {
 	hasChangedComparer?: ((newValue: T, oldValue: T) => boolean);
 }
 
+type DiffListenerCallback = (diff: DiffEntry) => void;
+type DiffListeners = { [listenerId: string]: DiffListenerCallback }
+
 const diffs: DiffEntry[] = [];
+const diffListeners: DiffListeners = {};
 const rootState = reactive({});
 let previousState = clone(rootState);
 let isUsingSetFunction = false;
@@ -106,6 +110,19 @@ export function watchState<T>(stateGetter: () => T, onChangeCallback: (newValue:
 			oldValue = clone(newValue);
 		}
 	});
+}
+
+export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
+	const listenerId = uuid();
+	diffListeners[listenerId] = cb;
+	if (!lazy) {
+		diffs.forEach(cb);
+	}
+	return () => removeDiffListener(listenerId);
+}
+
+function removeDiffListener(listenerId: string) {
+	delete diffListeners[listenerId];
 }
 
 export function getDiffs() {
