@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "build": "tsc src/index.ts",
-    "ci-test": "nodemon --watch '**/*.ts' --watch 'src/index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
+    "build": "tsc index.ts",
+    "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",

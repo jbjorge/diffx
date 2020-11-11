@@ -5,7 +5,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 
 /** @type {RollupOptions} */
 export default {
-	input: 'src/index.ts',
+	input: 'index.ts',
 	output: [
 		// {
 		// 	dir: 'dist',
@@ -21,10 +21,10 @@ export default {
 		}
 	],
 	plugins: [
-		rollupTypescript(),
-		commonjs(),
 		nodeResolve({
 			browser: true
-		})
+		}),
+		rollupTypescript(),
+		commonjs()
 	]
 };

@@ -23,6 +23,6 @@
   ],
   "include": [
     "types/globals.d.ts",
-    "src/*"
+    "index.ts"
   ]
 }

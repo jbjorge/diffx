@@ -9,7 +9,7 @@ interface StateOptions {
 	plugins?: Plugin[];
 }
 
-interface DiffEntry {
+export interface DiffEntry {
 	timestamp: number;
 	reason: string;
 	diff: Delta;
@@ -21,10 +21,10 @@ interface WatchOptions<T> {
 	hasChangedComparer?: ((newValue: T, oldValue: T) => boolean);
 }
 
-type DiffListenerCallback = (diff: DiffEntry) => void;
+type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
 type DiffListeners = { [listenerId: string]: DiffListenerCallback }
 
-const diffs: DiffEntry[] = [];
+let diffs: DiffEntry[] = [];
 const diffListeners: DiffListeners = {};
 const rootState = reactive({});
 let previousState = clone(rootState);
@@ -58,7 +58,7 @@ export function createState<T extends object>(namespace: string, state: T): T {
 	if (rootState[namespace]) {
 		throw new Error(`[stategate] The namespace ${namespace} is already in use by another module.`);
 	}
-	setState(`${namespace} init`, () => {
+	setState(`${namespace} initialized`, () => {
 		rootState[namespace] = reactive(state);
 	});
 	return rootState[namespace];
@@ -116,13 +116,29 @@ export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
 	const listenerId = uuid();
 	diffListeners[listenerId] = cb;
 	if (!lazy) {
-		diffs.forEach(cb);
+		diffs.forEach(diff => cb(diff));
 	}
 	return () => removeDiffListener(listenerId);
 }
 
 function removeDiffListener(listenerId: string) {
 	delete diffListeners[listenerId];
+}
+
+export function commit() {
+	const diffEntry: DiffEntry = {
+		timestamp: Date.now(),
+		reason: 'Commit',
+		diff: diff({}, clone(rootState))
+	};
+	diffs = [diffEntry];
+	for (let cbId in diffListeners) {
+		diffListeners[cbId](diffEntry, true);
+	}
+}
+
+export function getStateSnapshot() {
+	return clone(rootState);
 }
 
 export function getDiffs() {
@@ -140,9 +156,12 @@ function createHistoryEntry(reason = '') {
 		diff: diff(previousState, currentState)
 	};
 	if (stateOptions.stackTrace) {
-		historyEntry.stackTrace = new Error().stack;
+		historyEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
 	}
 	diffs.push(historyEntry);
+	for (let cbId in diffListeners) {
+		diffListeners[cbId](historyEntry);
+	}
 	previousState = currentState;
 }
 
