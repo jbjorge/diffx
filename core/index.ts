@@ -1,7 +1,6 @@
-import { effect, isRef, reactive, toRaw } from '@vue/reactivity';
+import { effect, isRef, reactive, track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
 import { dateReviver, Delta, diff } from 'jsondiffpatch';
 import { isArray, isMap, isObject, isSet } from "@vue/shared";
-import { v4 as uuid } from 'uuid';
 
 type Plugin = (propName, value, previousValue) => void;
 
@@ -29,61 +28,64 @@ const diffListeners: DiffListeners = {};
 const rootState = reactive({});
 let previousState = clone(rootState);
 let isUsingSetFunction = false;
-
-watchState(
-	() => rootState,
-	() => {
-		if (!isUsingSetFunction) {
-			if (!stateOptions.setStateDirectly) {
-				console.warn(
-					'[stategate] State was set directly instead of via the setState function.\n',
-					'This will make the history in the devtool less readable and disables tracing of who changed the state.\n',
-					'To disable this warning, you can set options.setStateDirectly = true.\n',
-					new Error().stack
-				);
-			}
-			createHistoryEntry('');
-		}
-	}
-)
+let statePaused = false;
 
 export const stateOptions = {
 	debug: false,
 	stackTrace: false,
 	devtools: false,
-	setStateDirectly: false
+	allowAnonymousStateChange: false
 }
 
 export function createState<T extends object>(namespace: string, state: T): T {
 	if (rootState[namespace]) {
 		throw new Error(`[stategate] The namespace ${namespace} is already in use by another module.`);
 	}
-	setState(`${namespace} initialized`, () => {
-		rootState[namespace] = reactive(state);
+	rootState[namespace] = new Proxy(state, {
+		get(target, prop, receiver) {
+			track(target, TrackOpTypes.GET, prop);
+			const value = Reflect.get(target, prop, receiver);
+			if (typeof value === 'object') {
+				return reactive(value);
+			} else {
+				return value;
+			}
+		},
+		set(target, key, newValue, receiver) {
+			if (statePaused) {
+				return true;
+			}
+			const returnValue = Reflect.set(target, key, newValue, receiver);
+			if (!isUsingSetFunction) {
+				if (!stateOptions.allowAnonymousStateChange) {
+					console.warn(
+						'[stategate] State was set directly instead of via the setState() function.\n',
+						'This will make the history in the devtool less readable since it does not display why the state was changed.\n',
+						'To disable this warning, set stateOptions.allowAnonymousStateChange = true.\n',
+						new Error().stack
+					);
+				}
+				createHistoryEntry('');
+			}
+			trigger(target, TriggerOpTypes.SET, key, newValue);
+			return returnValue;
+		}
 	});
+
 	return rootState[namespace];
 }
 
-export function destroyState(namespace: string) {
-	delete rootState[namespace];
-}
-
-let changeCallbacks: { [callbackId: string]: (() => void) } = {};
 export function setState(reason: string, valueAssignment: () => void) {
+	if (statePaused) {
+		return;
+	}
 	isUsingSetFunction = true;
 	valueAssignment();
 	createHistoryEntry(reason);
-	if (Object.keys(changeCallbacks)) {
-		for (let cbId in changeCallbacks) {
-			changeCallbacks[cbId]();
-		}
-	}
-	changeCallbacks = {};
 	isUsingSetFunction = false;
 }
 
 export function watchState<T>(stateGetter: () => T, onChangeCallback: (newValue: T) => void, options?: WatchOptions<T>) {
-	const watchId: string = uuid();
 	let oldValue;
 	const getter = stateGetter;
 	stateGetter = () => traverse(getter());
@@ -95,25 +97,29 @@ export function watchState<T>(stateGetter: () => T, onChangeCallback: (newValue:
 		lazy: false,
 		onTrigger: (event) => {
 			const newValue = getter();
-			if (JSON.stringify(newValue) === JSON.stringify(oldValue)) {
+			const newValueString = JSON.stringify(newValue);
+			const newValueClone = JSON.parse(newValueString);
+			if (newValueString === JSON.stringify(oldValue)) {
 				return;
 			}
-			if (options?.hasChangedComparer && !options.hasChangedComparer(newValue, oldValue)) {
+			if (options?.hasChangedComparer && !options.hasChangedComparer(newValueClone, oldValue)) {
 				oldValue = clone(newValue);
 				return;
 			}
-			if (isUsingSetFunction) {
-				changeCallbacks[watchId] = () => onChangeCallback(newValue);
-			} else {
-				onChangeCallback(newValue);
-			}
+			onChangeCallback(newValue);
 			oldValue = clone(newValue);
 		}
 	});
 }
 
+export function destroyState(namespace: string) {
+	delete rootState[namespace];
+}
+
+// DEVTOOLS
+let diffListenerId = 0;
 export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
-	const listenerId = uuid();
+	const listenerId = diffListenerId++;
 	diffListeners[listenerId] = cb;
 	if (!lazy) {
 		diffs.forEach(diff => cb(diff));
@@ -121,7 +127,7 @@ export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
 	return () => removeDiffListener(listenerId);
 }
 
-function removeDiffListener(listenerId: string) {
+function removeDiffListener(listenerId: number) {
 	delete diffListeners[listenerId];
 }
 
@@ -135,6 +141,18 @@ export function commit() {
 	for (let cbId in diffListeners) {
 		diffListeners[cbId](diffEntry, true);
 	}
+}
+
+export function replaceState(): void {
+	// not implemented
+}
+
+export function pauseState(): void {
+	statePaused = true;
+}
+
+export function unPauseState(): void {
+	statePaused = false;
 }
 
 export function getStateSnapshot() {
@@ -165,6 +183,7 @@ function createHistoryEntry(reason = '') {
 	previousState = currentState;
 }
 
+// UTILS
 function traverse(value: unknown, seen: Set<unknown> = new Set()) {
 	if (!isObject(value) || seen.has(value)) {
 		return value
