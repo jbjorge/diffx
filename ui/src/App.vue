@@ -52,10 +52,9 @@ export default {
 			}, 1000/3)
 
 			setInterval(() => {
-				state2.nameish.push(Math.random().toString());
-				// setState('More seldom some long ass string shiiiim' + Date.now(), () => {
-				//
-				// })
+				setState('More seldom some long ass string shiiiim' + Date.now(), () => {
+					state2.nameish.push(Math.random().toString());			
+				})
 			}, 1000)
 		})
 
