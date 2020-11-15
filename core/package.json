@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "build": "tsc index.ts",
+    "build": "rollup -c rollup.config.js",
     "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
