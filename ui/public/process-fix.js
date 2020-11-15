@@ -1,0 +1,1 @@
+window.process = window.process || {}
