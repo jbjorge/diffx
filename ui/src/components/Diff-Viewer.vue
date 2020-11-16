@@ -73,6 +73,12 @@ export default defineComponent({
 					Diff
 				</div>
 				<div
+					:class="{'diff-tab-selected': selectedTab === 'state'}"
+					@click="selectedTab = 'state'"
+				>
+					State
+				</div>
+				<div
 					v-if="diffToDisplay.stackTrace"
 					:class="{'diff-tab-selected': selectedTab === 'stackTrace'}"
 					@click="selectedTab = 'stackTrace'"
@@ -82,8 +88,9 @@ export default defineComponent({
 			</div>
 			<div class="diff-body">
 				<div
-					v-if="selectedTab === 'diff'"
+					v-if="selectedTab === 'diff' || selectedTab === 'state'"
 					v-html="formattedOutput"
+					:class="{'diff-view': selectedTab === 'diff'}"
 				></div>
 				<div
 					v-if="selectedTab === 'stackTrace'"
@@ -117,6 +124,10 @@ export default defineComponent({
 	background-color: #1c2634;
 	display: block;
 	color: whitesmoke;
+}
+
+.diff-view .jsondiffpatch-unchanged {
+	display: none;
 }
 
 .diff-timestamp {
