@@ -2,17 +2,10 @@ import { effect, isRef, track, TrackOpTypes, trigger, TriggerOpTypes } from '@vu
 import { dateReviver, Delta, diff } from 'jsondiffpatch';
 import { isArray, isMap, isObject, isSet } from "@vue/shared";
 
-interface DiffEntry {
-	timestamp: number;
-	reason: string;
-	diff: Delta;
-	stackTrace?: string;
-}
-
-type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
+type DiffListenerCallback = (diff: diffxInternals.DiffEntry, commit?: boolean) => void;
 type DiffListeners = { [listenerId: string]: DiffListenerCallback }
 
-let diffs: DiffEntry[] = [];
+let diffs: diffxInternals.DiffEntry[] = [];
 const diffListeners: DiffListeners = {};
 let isUsingSetFunction = false;
 let stateModificationsPaused = false;
@@ -103,6 +96,13 @@ export function destroyState(namespace: string) {
 }
 
 export module diffxInternals {
+	export interface DiffEntry {
+		timestamp: number;
+		reason: string;
+		diff: Delta;
+		stackTrace?: string;
+	}
+
 	let diffListenerId = 0;
 
 	/**
@@ -277,7 +277,7 @@ function createHistoryEntry(reason = '') {
 		return;
 	}
 	const currentState = clone(rootState);
-	const historyEntry: DiffEntry = {
+	const historyEntry: diffxInternals.DiffEntry = {
 		timestamp: Date.now(),
 		reason,
 		diff: diff(previousState, currentState)
@@ -319,5 +319,5 @@ function clone<T>(obj: T): T {
 	if (obj === undefined) {
 		return;
 	}
-	return JSON.parse(JSON.stringify(obj, dateReviver));
+	return JSON.parse(JSON.stringify(obj), dateReviver);
 }
