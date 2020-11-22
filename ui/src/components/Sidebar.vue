@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import { DiffEntry, commit } from 'stategate';
+import { diffxInternals } from 'diffx';
+import DiffEntry = diffxInternals.DiffEntry;
 
 export default defineComponent({
 	props: {
@@ -47,7 +48,7 @@ export default defineComponent({
 			@click="onClickedDiff(index)"
 		>
 			<div class="diff-list-timestamp">{{ formatDate(diff.timestamp) }}</div>
-			<div>{{ diff.reason || 'State mutated directly' }}</div>
+			<div>{{ diff.reason || 'No reason for change provided' }}</div>
 		</div>
 	</div>
 </template>
@@ -56,7 +57,7 @@ export default defineComponent({
 .diff-list {
 	height: 100%;
 	overflow-y: scroll;
-	min-width: 300px;
+	width: 100%;
 }
 
 .diff-entry {

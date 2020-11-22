@@ -6,8 +6,8 @@
     "build": "vite build"
   },
   "dependencies": {
+    "diffx": "file:../core",
     "jsondiffpatch": "^0.4.1",
-    "stategate": "file:../stategate",
     "vue": "^3.0.2"
   },
   "devDependencies": {

@@ -1,8 +1,10 @@
 <script lang="ts">
 import { computed, ComputedRef, defineComponent, PropType, ref } from 'vue';
-import { DiffEntry, getStateSnapshot } from "stategate";
+import { diffxInternals } from "diffx";
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
+import DiffEntry = diffxInternals.DiffEntry;
+import getStateSnapshot = diffxInternals.getStateSnapshot;
 import jsonClone from "../utils/jsonClone";
 
 export default defineComponent({
@@ -42,7 +44,6 @@ export default defineComponent({
 				});
 				return stateSnapshot;
 			}
-			console.log('forward')
 			const patched = {};
 			diffsToReplay.forEach((diff) => jsondiffpatch.patch(patched, diff));
 			return patched;
