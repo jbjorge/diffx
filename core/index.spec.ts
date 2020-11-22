@@ -1,36 +1,63 @@
-import { createState, getDiffs, pauseState, setState, stateOptions, unPauseState, watchState } from './index';
+import {
+	createState, diffxInternals, setDiffxOptions, setState, watchState
 
-stateOptions.debug = true;
-const state = createState('hihi', { lol: '', lal: [] });
-const state2 = createState('MIMIMIMIMI', { lol: '', lal: [] });
+} from './index';
 
-watchState(() => state, (newValue) => {
+setDiffxOptions({debug: {devtools: true}});
+const state = createState('hihi', { lol: { meh: 0}, lal: [] });
+const s2 = createState('hoho', {miip: 'moop', maap: ['hehehe']})
+// const state2 = createState('asdf', { lol: '', lal: [] });
+
+console.log(global["__DIFFX__"]);
+
+watchState(() => [state, s2], (newValue) => {
 	console.log('state1', newValue);
 }, { immediate: true });
 
-watchState(() => state2.lal, (newValue) => {
-	console.log('state2', newValue);
-}, { immediate: true });
+// watchState(() => state2.lal, (newValue) => {
+// 	console.log('state2', newValue);
+// }, { immediate: true });
 
 
 for (let i = 0; i < 3; i++) {
 	setState('woot woot' + i, () => {
-		state.lol = 'hehe' + i;
+		state.lol.meh = i + 7;
 		state.lal.push(i * 7);
-		state2.lal.push(i);
+		// state2.lal.push(i);
 	})
 }
 
-pauseState();
+// setState('becus', () => {
+// 	state.lol = 'meep'
+// });
+// console.log('before');
+diffxInternals.replaceState({
+	'hihi': { lol: { meh: 1 }, lal: []},
+	'hoho': { miip: 'mep' }
+})
+diffxInternals.lockState();
 
-setState('wiih', () => {
-	state.lol = 'momomomomomomooooo'
-});
+for (let i = 0; i < 3; i++) {
+	setState('woot woot' + i, () => {
+		state.lol.meh = i + 7;
+		state.lal.push(i * 7);
+		// state2.lal.push(i);
+	})
+}
+console.log('snaps1', diffxInternals.getStateSnapshot())
+// replaceState({'hihi': { lol: { meh: 1 }, lal: [728345]}})
+// console.log('after');
 
-unPauseState();
-
-setState('wiih', () => {
-	state.lol = 'unpaised'
-});
+// pauseState();
+//
+// setState('wiih', () => {
+// 	state.lol = 'momomomomomomooooo'
+// });
+//
+// unPauseState();
+//
+// setState('wiih', () => {
+// 	state.lol = 'unpaised'
+// });
 
 // console.log(JSON.stringify(getDiffs(), null, 2));
