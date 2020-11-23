@@ -32,6 +32,10 @@ let diffxOptions: DiffxOptions = {
 	allowAnonymousStateChange: false
 }
 
+/**
+ * Set options for diffx
+ * @param options
+ */
 export function setDiffxOptions(options: DiffxOptions) {
 	diffxOptions = options;
 	if (options?.debug?.devtools) {
@@ -40,16 +44,28 @@ export function setDiffxOptions(options: DiffxOptions) {
 	}
 }
 
-export function createState<T extends object>(namespace: string, state: T): T {
+/**
+ * Declare state in diffx.
+ * @param namespace A string that identifies this state. Must be unique.
+ * @param initialState
+ */
+export function createState<T extends object>(namespace: string, initialState: T): T {
 	if (rootState[namespace]) {
-		throw new Error(`[diffx] The namespace ${namespace} is already in use by another module.`);
+		// todo Change this back to a throwing func
+		console.warn(`[diffx] The namespace ${namespace} is already in use by another module. Using that module's state instead.`);
+		return rootState[namespace];
 	}
 	isCreatingState = true;
-	rootState[namespace] = state;
+	rootState[namespace] = initialState;
 	isCreatingState = false;
 	return rootState[namespace];
 }
 
+/**
+ * Set state in diffx.
+ * @param reason A text that specifies the reason for the change in state.
+ * @param valueAssignment A callback in which all the changes to the state happens.
+ */
 export function setState(reason: string, valueAssignment: () => void) {
 	if (stateModificationsPaused) {
 		return;
@@ -61,9 +77,22 @@ export function setState(reason: string, valueAssignment: () => void) {
 }
 
 interface WatchOptions<T> {
+	/** Whether to call the onChangeCallback immediately with the current value of the watched item(s). */
 	immediate?: boolean;
+	/**
+	 * Optional function that enables a custom function to decide if the state has changed.
+	 * Receives newValue and oldValue as arguments and should return true for changed
+	 * and false for no change.
+	 */
 	hasChangedComparer?: ((newValue: T, oldValue: T) => boolean);
 }
+
+/**
+ * Watch state for changes
+ * @param stateGetter A callback which should return the state to watch or an array of states to watch.
+ * @param onChangeCallback Will be called on every change to what stateGetter returned.
+ * @param options
+ */
 export function watchState<T>(stateGetter: () => T, onChangeCallback: (newValue: T) => void, options?: WatchOptions<T>) {
 	let oldValue;
 	const getter = stateGetter;
@@ -91,6 +120,12 @@ export function watchState<T>(stateGetter: () => T, onChangeCallback: (newValue:
 	});
 }
 
+/**
+ * Removes state from diffx.
+ *
+ * Watchers for the state that is removed will _not_ automatically unsubscribe.
+ * @param namespace
+ */
 export function destroyState(namespace: string) {
 	delete rootState[namespace];
 }
