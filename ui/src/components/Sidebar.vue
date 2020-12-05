@@ -1,9 +1,11 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import { diffxInternals } from 'diffx';
+import SidebarEntry from './Sidebar-Entry.vue';
 import DiffEntry = diffxInternals.DiffEntry;
 
 export default defineComponent({
+	components: { SidebarEntry },
 	props: {
 		diffList: {
 			type: Array as PropType<DiffEntry[]>,
@@ -15,11 +17,6 @@ export default defineComponent({
 		}
 	},
 	setup(props, { emit }) {
-		function formatDate(timestamp: number) {
-			const d = new Date(timestamp);
-			return d.toLocaleTimeString();
-		}
-
 		function onClickedDiff(index: number) {
 			emit("selectDiff", index);
 		}
@@ -34,26 +31,29 @@ export default defineComponent({
 			return false;
 		}
 
-		return { formatDate, onClickedDiff, isSelected };
+		return { onClickedDiff, isSelected };
 	}
 });
 </script>
 
 <template>
 	<div class="diff-list">
-		<div
+		<SidebarEntry
 			v-for="(diff, index) in diffList"
+			:class="{'selected': isSelected(index)}"
 			class="diff-entry"
-			:class="{'diff-entry-selected': isSelected(index)}"
+			:diffEntry="diff"
 			@click="onClickedDiff(index)"
-		>
-			<div class="diff-list-timestamp">{{ formatDate(diff.timestamp) }}</div>
-			<div>{{ diff.reason || 'No reason for change provided' }}</div>
-		</div>
+		/>
 	</div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+.apply-button {
+	background-color: #2d3d53;
+	color: whitesmoke;
+}
+
 .diff-list {
 	height: 100%;
 	overflow-y: scroll;
@@ -65,22 +65,17 @@ export default defineComponent({
 	background-color: #1c2634;
 	color: whitesmoke;
 	cursor: pointer;
-}
 
-.diff-entry:hover {
-	background-color: #2d3d53;
-}
+	&:not(:last-child) {
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
 
-.diff-entry-selected {
-	background-color: #494d5c;
-}
+	&:hover {
+		background-color: #2d3d53;
+	}
 
-.diff-entry:not(:last-child) {
-	border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.diff-list-timestamp {
-	font-size: 0.8rem;
-	padding: 2px 0;
+	&.selected {
+		background-color: #494d5c;
+	}
 }
 </style>

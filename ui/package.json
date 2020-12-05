@@ -8,6 +8,7 @@
   "dependencies": {
     "diffx": "file:../core",
     "jsondiffpatch": "^0.4.1",
+    "randomcolor": "^0.6.2",
     "vue": "^3.0.2"
   },
   "devDependencies": {
