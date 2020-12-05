@@ -64,19 +64,27 @@ export default {
 						}
 						setState(json[i].title, () => {
 							state3.posts.push(json[i]);
+							if (i%2) {
+								state2.nameish.push(json[i].title);
+							}
+							if (i%3) {
+								state.counter++;
+							}
 						})
 						i++;
-					}, 1);
+					}, 1000);
 				})
 		})
 
 		onUnmounted(() => clearInterval(interval));
 
 		function onDiffSelected(index: number) {
-			if (selectedDiffIndex.value === index) {
+			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = null;
+				diffxInternals.unlockState();
 			} else {
 				selectedDiffIndex.value = index;
+				diffxInternals.lockState();
 			}
 		}
 
@@ -153,6 +161,10 @@ export default {
 	</div>
 </template>
 
+<style lang="scss">
+@import './styles/flexbox.scss';
+</style>
+
 <style lang="scss" scoped>
 .layout {
 	display: flex;
@@ -172,7 +184,7 @@ export default {
 .resize-bar {
 	width: 8px;
 	height: 100vh;
-	background-color: #2d3d53;
+	background-color: #1c2634;
 	display: flex;
 	justify-content: center;
 	align-items: center;

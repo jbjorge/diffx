@@ -3,9 +3,9 @@ import { computed, ComputedRef, defineComponent, PropType, ref } from 'vue';
 import { diffxInternals } from "diffx";
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
+import jsonClone from "../utils/jsonClone";
 import DiffEntry = diffxInternals.DiffEntry;
 import getStateSnapshot = diffxInternals.getStateSnapshot;
-import jsonClone from "../utils/jsonClone";
 
 export default defineComponent({
 	props: {
@@ -90,8 +90,9 @@ export default defineComponent({
 			<div class="diff-body">
 				<div
 					v-if="selectedTab === 'diff' || selectedTab === 'state'"
-					v-html="formattedOutput"
 					:class="{'diff-view': selectedTab === 'diff'}"
+					v-html="formattedOutput"
+					class="diff-viewer"
 				></div>
 				<div
 					v-if="selectedTab === 'stackTrace'"
@@ -119,6 +120,29 @@ export default defineComponent({
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
+	background-color: #29374a;
+
+	& .jsondiffpatch-delta {
+		color: white;
+
+		& .jsondiffpatch-added .jsondiffpatch-property-name,
+		& .jsondiffpatch-added .jsondiffpatch-value pre,
+		& .jsondiffpatch-modified .jsondiffpatch-right-value pre,
+		& .jsondiffpatch-textdiff-added {
+			background-color: #347534;
+		}
+
+		& .jsondiffpatch-deleted .jsondiffpatch-property-name,
+		& .jsondiffpatch-deleted pre,
+		& .jsondiffpatch-modified .jsondiffpatch-left-value pre,
+		& .jsondiffpatch-textdiff-deleted {
+			background-color: #ec2d2d;
+		}
+	}
+
+	& .jsondiffpatch-unchanged {
+		color: white;
+	}
 }
 
 .diff-header {
@@ -171,6 +195,8 @@ export default defineComponent({
 .diff-body {
 	padding: 20px;
 	flex-grow: 1;
+	overflow-y: auto;
+	color: white;
 }
 
 .no-diff-selected {
