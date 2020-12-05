@@ -8,11 +8,12 @@ type DiffListeners = { [listenerId: string]: DiffListenerCallback }
 let diffs: diffxInternals.DiffEntry[] = [];
 const diffListeners: DiffListeners = {};
 let isUsingSetFunction = false;
-let stateModificationsPaused = false;
+let stateModificationsLocked = false;
 let isReplacingState = false;
 let stateReplacementKey = null as number;
+let stateModificationsPaused = false;
 let isCreatingState = false;
-let reactionsBuffer = [] as (() => void)[];
+let stateAccessBuffer = [] as (() => void)[];
 let rootState = createReactiveObject();
 let previousState = clone(rootState);
 
@@ -67,7 +68,7 @@ export function createState<T extends object>(namespace: string, initialState: T
  * @param valueAssignment A callback in which all the changes to the state happens.
  */
 export function setState(reason: string, valueAssignment: () => void) {
-	if (stateModificationsPaused) {
+	if (stateModificationsLocked) {
 		return;
 	}
 	isUsingSetFunction = true;
@@ -208,22 +209,38 @@ export module diffxInternals {
 		}
 		isReplacingState = false;
 		stateReplacementKey = null;
-		reactionsBuffer.forEach(reaction => reaction());
-		reactionsBuffer = [];
+		stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
+		stateAccessBuffer = [];
 	}
 
 	/**
 	 * Disables changes to the state
 	 */
 	export function lockState() {
-		stateModificationsPaused = true;
+		stateModificationsLocked = true;
 	}
 
 	/**
 	 * Enables changes to the state
 	 */
 	export function unlockState() {
+		stateModificationsLocked = false;
+	}
+
+	/**
+	 * Pauses changes to the state and buffers the changes
+	 */
+	export function pauseState() {
+		stateModificationsPaused = true;
+	}
+
+	/**
+	 * Unpauses changes to the state and applies all the changes
+	 */
+	export function unpauseState() {
 		stateModificationsPaused = false;
+		stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
+		stateAccessBuffer = [];
 	}
 
 	/**
@@ -250,8 +267,8 @@ function createReactiveObject<T extends object>(rootObj:T  = {} as T) {
 		get(target, prop, receiver) {
 			// If the state is being replaced, buffer the tracking of object access
 			// so it can be run after the state is done being replaced
-			if (isReplacingState) {
-				reactionsBuffer.push(() => track(target, TrackOpTypes.GET, prop));
+			if (isReplacingState || stateModificationsPaused) {
+				stateAccessBuffer.push(() => track(target, TrackOpTypes.GET, prop));
 			} else {
 				track(target, TrackOpTypes.GET, prop);
 			}
@@ -265,7 +282,7 @@ function createReactiveObject<T extends object>(rootObj:T  = {} as T) {
 		set(target, key, newValue, receiver) {
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
-			if (stateModificationsPaused) {
+			if (stateModificationsLocked) {
 				return true;
 			}
 			// If the state is being replaced, drop all changes
@@ -292,8 +309,8 @@ function createReactiveObject<T extends object>(rootObj:T  = {} as T) {
 			}
 			// If the state is being replaced, buffer the triggering of object setting
 			// so it can be run after the state is done being replaced
-			if (isReplacingState) {
-				reactionsBuffer.push(() => trigger(target, TriggerOpTypes.SET, key, newValue));
+			if (isReplacingState || stateModificationsPaused) {
+				stateAccessBuffer.push(() => trigger(target, TriggerOpTypes.SET, key, newValue));
 			} else {
 				trigger(target, TriggerOpTypes.SET, key, newValue);
 			}

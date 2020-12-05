@@ -2,7 +2,7 @@
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
-import { createState, diffxInternals, setDiffxOptions, setState } from "diffx";
+import { createState, diffxInternals, setDiffxOptions, setState, watchState } from "diffx";
 import { create } from "jsondiffpatch";
 
 setDiffxOptions({
@@ -74,17 +74,23 @@ export default {
 						i++;
 					}, 1000);
 				})
+			watchState(() => state.counter, (newValue) => {
+				console.log(newValue);
+			})
 		})
 
 		onUnmounted(() => clearInterval(interval));
 
+		let currentStateSnapshot = null;
+
 		function onDiffSelected(index: number) {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = null;
-				diffxInternals.unlockState();
+				diffxInternals.unpauseState();
 			} else {
+				currentStateSnapshot = diffxInternals.getStateSnapshot();
 				selectedDiffIndex.value = index;
-				diffxInternals.lockState();
+				diffxInternals.pauseState();
 			}
 		}
 
