@@ -12,7 +12,7 @@ export default defineComponent({
 	},
 	setup(props) {
 		const formattedDate = computed(() => (new Date(props.diffEntry.timestamp).toLocaleTimeString()));
-		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry).diff));
+		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry)?.diff || {}));
 		const stateNameEntries = computed(() => {
 			return changedStateNames.value.map(stateName => ({
 				stateName,

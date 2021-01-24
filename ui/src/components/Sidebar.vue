@@ -31,7 +31,11 @@ export default defineComponent({
 			return false;
 		}
 
-		return { onClickedDiff, isSelected };
+		function isInactive(index: number) {
+			return props.selectedDiffIndex != null && (index > props.selectedDiffIndex);
+		}
+
+		return { onClickedDiff, isSelected, isInactive };
 	}
 });
 </script>
@@ -40,7 +44,7 @@ export default defineComponent({
 	<div class="diff-list">
 		<SidebarEntry
 			v-for="(diff, index) in diffList"
-			:class="{'selected': isSelected(index)}"
+			:class="{'selected': isSelected(index), 'inactive': isInactive(index)}"
 			class="diff-entry"
 			:diffEntry="diff"
 			@click="onClickedDiff(index)"
@@ -49,11 +53,6 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
-.apply-button {
-	background-color: #2d3d53;
-	color: whitesmoke;
-}
-
 .diff-list {
 	height: 100%;
 	overflow-y: scroll;
@@ -76,6 +75,12 @@ export default defineComponent({
 
 	&.selected {
 		background-color: #494d5c;
+		box-shadow: inset 0px 0px 1px 1px white;
+	}
+
+	&.inactive {
+		background-color: #4f5465;
+		color: #888888;
 	}
 }
 </style>

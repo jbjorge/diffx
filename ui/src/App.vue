@@ -3,7 +3,9 @@ import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
 import { createState, diffxInternals, setDiffxOptions, setState, watchState } from "diffx";
-import { create } from "jsondiffpatch";
+import { create, unpatch, patch } from "jsondiffpatch";
+import Fuse, { default as FuzzySearch } from 'fuse.js';
+import IFuseOptions = Fuse.IFuseOptions;
 
 setDiffxOptions({
 	debug: {
@@ -19,6 +21,7 @@ export default {
 		const diffListRef = ref();
 		const diffs: Ref<diffxInternals.DiffEntry[]> = ref([]);
 		const selectedDiffIndex: Ref<number> = ref();
+		const stateLocked = ref(false);
 
 		diffxInternals.addDiffListener((diff, commit) => {
 			const diffListElement = diffListRef.value?.$el;
@@ -35,6 +38,21 @@ export default {
 			}
 		});
 
+		const filterText = ref('');
+		const filteredDiffs = computed(() => {
+			if (!filterText?.value?.trim()) { return diffs.value; }
+
+			const options: IFuseOptions<any> = {
+				findAllMatches: true,
+				keys: ['reason'],
+				shouldSort: true,
+				threshold: 0.3
+			};
+			return new FuzzySearch(diffs.value, options)
+				.search(filterText.value)
+				.map(item => item.item);
+		})
+
 		const state = createState('myState', {
 			counter: 0,
 			name: ''
@@ -48,35 +66,12 @@ export default {
 
 		let interval = 0 as any;
 		onMounted(() => {
-			for (let i = 0; i < 50; i++) {
-				setState('becuse resons' + i, () => {
+			let intervalCounter = 0;
+			interval = setInterval(() => {
+				setState(`State change #${++intervalCounter}`, () => {
 					state.counter++;
 				})
-			}
-			fetch('https://jsonplaceholder.typicode.com/todos')
-				.then(response => response.json())
-				.then(json => {
-					let i = 0;
-					interval = setInterval(() => {
-						if (i > 199) {
-							clearInterval(interval);
-							return;
-						}
-						setState(json[i].title, () => {
-							state3.posts.push(json[i]);
-							if (i%2) {
-								state2.nameish.push(json[i].title);
-							}
-							if (i%3) {
-								state.counter++;
-							}
-						})
-						i++;
-					}, 1000);
-				})
-			watchState(() => state.counter, (newValue) => {
-				console.log(newValue);
-			})
+			}, 1000);
 		})
 
 		onUnmounted(() => clearInterval(interval));
@@ -86,12 +81,43 @@ export default {
 		function onDiffSelected(index: number) {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = null;
-				diffxInternals.unpauseState();
+				if (currentStateSnapshot) {
+					diffxInternals.replaceState(currentStateSnapshot);
+				}
+				unpauseState();
 			} else {
-				currentStateSnapshot = diffxInternals.getStateSnapshot();
 				selectedDiffIndex.value = index;
-				diffxInternals.pauseState();
+				pauseState();
+				currentStateSnapshot = diffxInternals.getStateSnapshot();
+				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
+				diffxInternals.replaceState(stateAtIndex);
 			}
+		}
+
+		watchState(() => state.counter, (newValue) => console.log(newValue));
+
+		function getStateAtIndex(currentState, index: number) {
+			const operation = index <= (diffs.value.length / 2) ? 'patch' : 'unpatch';
+			if (operation === 'patch') {
+				const startValue = {};
+				diffs.value.slice(0, index + 1).forEach(diffEntry => patch(startValue, diffEntry.diff));
+				return startValue;
+			}
+			const startValue = currentState;
+			const diffList = diffs.value.slice(index + 1).reverse();
+			diffList.forEach(diffEntry => unpatch(startValue, diffEntry.diff));
+			return startValue;
+		}
+
+		function pauseState() {
+			diffxInternals.lockState();
+			stateLocked.value = true;
+		}
+
+		function unpauseState() {
+			diffxInternals.unlockState();
+			stateLocked.value = false;
+			selectedDiffIndex.value = null;
 		}
 
 		function onCommit() {
@@ -129,11 +155,16 @@ export default {
 		return {
 			diffListRef,
 			diffs,
+			stateLocked,
 			onDiffSelected,
+			filteredDiffs,
 			selectedDiffIndex,
 			onCommit,
 			sidebarWidth,
-			resizeBarElement
+			resizeBarElement,
+			filterText,
+			pauseState,
+			unpauseState
 		}
 	}
 }
@@ -142,15 +173,38 @@ export default {
 <template>
 	<div class="layout">
 		<div class="sidebar-wrapper">
-			<button
-				class="commit-button"
-				@click="onCommit"
-			>
-				<span>Commit</span>
-			</button>
+			<div>
+				<div class="flex row">
+					<button
+						v-if="stateLocked"
+						class="action-button paused"
+						@click="unpauseState"
+					>
+						<span>Resume</span>
+					</button>
+					<button
+						v-else
+						class="action-button"
+						@click="pauseState"
+					>
+						<span>Pause</span>
+					</button>
+					<button
+						class="action-button"
+						@click="onCommit"
+					>
+						<span>Commit</span>
+					</button>
+				</div>
+				<input
+					type="text"
+					class="filter-input"
+					placeholder="Filter..."
+					v-model="filterText"
+				></div>
 			<Sidebar
 				ref="diffListRef"
-				:diffList="diffs"
+				:diffList="filteredDiffs"
 				:selected-diff-index="selectedDiffIndex"
 				class="left-sidebar"
 				@selectDiff="onDiffSelected"
@@ -172,19 +226,36 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+* {
+	box-sizing: border-box;
+}
 .layout {
 	display: flex;
 	flex-direction: row;
 }
 
 .sidebar-wrapper {
-	.commit-button {
-		width: 100%;
+	.action-button {
+		width: 50%;
 		height: 50px;
 		background-color: #2d3d53;
 		color: whitesmoke;
 		font-size: 1rem;
+
+		&.paused {
+			background-color: #4f5465;
+		}
 	}
+}
+
+.filter-input {
+	width: 100%;
+	background-color: #2d3d53;
+	font-size: 1rem;
+	color: white;
+	border: none;
+	padding: 10px;
+	height: 30px;
 }
 
 .resize-bar {
@@ -206,7 +277,7 @@ export default {
 }
 
 .left-sidebar {
-	height: calc(100vh - 50px);
+	height: calc(100vh - 80px);
 	background-color: #1c2634;
 }
 </style>
