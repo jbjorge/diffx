@@ -2,17 +2,10 @@
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
-import { createState, diffxInternals, setDiffxOptions, setState, watchState } from "diffx";
-import { create, unpatch, patch } from "jsondiffpatch";
+import * as diffxInternals from "@diffx/rxjs/utils/internals";
+import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
 import IFuseOptions = Fuse.IFuseOptions;
-
-setDiffxOptions({
-	debug: {
-		devtools: true,
-		includeStackTrace: true
-	}
-});
 
 export default {
 	name: 'App',
@@ -20,7 +13,7 @@ export default {
 	setup() {
 		const diffListRef = ref();
 		const diffs: Ref<diffxInternals.DiffEntry[]> = ref([]);
-		const selectedDiffIndex: Ref<number> = ref();
+		const selectedDiffIndex: Ref<number> = ref(-1);
 		const stateLocked = ref(false);
 
 		diffxInternals.addDiffListener((diff, commit) => {
@@ -53,34 +46,11 @@ export default {
 				.map(item => item.item);
 		})
 
-		const state = createState('myState', {
-			counter: 0,
-			name: ''
-		})
-		const state2 = createState('state2', {
-			nameish: [] as string[]
-		})
-		const state3 = createState('state3', {
-			posts: []
-		});
-
-		let interval = 0 as any;
-		onMounted(() => {
-			let intervalCounter = 0;
-			interval = setInterval(() => {
-				setState(`State change #${++intervalCounter}`, () => {
-					state.counter++;
-				})
-			}, 1000);
-		})
-
-		onUnmounted(() => clearInterval(interval));
-
-		let currentStateSnapshot = null;
+		let currentStateSnapshot: any = null;
 
 		function onDiffSelected(index: number) {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
-				selectedDiffIndex.value = null;
+				selectedDiffIndex.value = -1;
 				if (currentStateSnapshot) {
 					diffxInternals.replaceState(currentStateSnapshot);
 				}
@@ -94,9 +64,7 @@ export default {
 			}
 		}
 
-		watchState(() => state.counter, (newValue) => console.log(newValue));
-
-		function getStateAtIndex(currentState, index: number) {
+		function getStateAtIndex(currentState: any, index: number) {
 			const operation = index <= (diffs.value.length / 2) ? 'patch' : 'unpatch';
 			if (operation === 'patch') {
 				const startValue = {};
@@ -117,7 +85,7 @@ export default {
 		function unpauseState() {
 			diffxInternals.unlockState();
 			stateLocked.value = false;
-			selectedDiffIndex.value = null;
+			selectedDiffIndex.value = -1;
 		}
 
 		function onCommit() {

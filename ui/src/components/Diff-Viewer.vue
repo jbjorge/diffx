@@ -1,11 +1,9 @@
 <script lang="ts">
 import { computed, ComputedRef, defineComponent, PropType, ref } from 'vue';
-import { diffxInternals } from "diffx";
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
-import DiffEntry = diffxInternals.DiffEntry;
-import getStateSnapshot = diffxInternals.getStateSnapshot;
+import { getStateSnapshot, DiffEntry } from '@diffx/rxjs/utils/internals';
 
 export default defineComponent({
 	props: {

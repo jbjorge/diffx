@@ -5,7 +5,7 @@ import internalState from './internal-state';
  * Creates a reactive object.
  * @param rootObj
  */
-export function createReactiveObject<T extends object>(rootObj: T = {} as T) {
+export function createReactiveObject<T extends object>(rootObj: T = {} as T): T {
 	return new Proxy(rootObj, {
 		get(target, prop, receiver) {
 			// If the state is being replaced, buffer the tracking of object access

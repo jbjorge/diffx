@@ -1,8 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, reactive } from 'vue';
-import { diffxInternals } from 'diffx';
+import { DiffEntry } from '@diffx/rxjs/utils/internals';
 import randomColor from 'randomcolor';
-import DiffEntry = diffxInternals.DiffEntry;
 
 export default defineComponent({
 	props: {
@@ -11,7 +10,7 @@ export default defineComponent({
 		}
 	},
 	setup(props) {
-		const formattedDate = computed(() => (new Date(props.diffEntry.timestamp).toLocaleTimeString()));
+		const formattedDate = computed(() => (new Date(props?.diffEntry?.timestamp || 0).toLocaleTimeString()));
 		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry)?.diff || {}));
 		const stateNameEntries = computed(() => {
 			return changedStateNames.value.map(stateName => ({
@@ -52,7 +51,7 @@ export default defineComponent({
 				</div>
 			</div>
 		</div>
-		<div>{{ diffEntry.reason || 'No reason for change provided' }}</div>
+		<div>{{ diffEntry?.reason || 'No reason for change provided' }}</div>
 	</div>
 </template>
 

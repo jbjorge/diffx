@@ -1,12 +1,12 @@
 import { effect } from '@vue/reactivity';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import initializeValue from './utils/initializeValue';
 import { createHistoryEntry } from './utils/createHistoryEntry';
 import internalState, { DiffxOptions } from './utils/internal-state';
 import { WatchOptions } from './utils/watch-options';
 import clone from './utils/clone';
 import rootState from './utils/root-state';
-import { diffxInternals } from './utils/internals';
+import * as diffxInternals from './utils/internals';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -61,10 +61,9 @@ export function setState(reason: string, valueAssignment: () => void) {
 /**
  * Watch state for changes
  * @param stateGetter A callback which should return the state to watch or an array of states to watch.
- * @param onChangeCallback Will be called on every change to what stateGetter returned.
- * @param options
+ * @param options Options for how to watch the state
  */
-export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>) {
+export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>): Observable<T> {
 	const watchId = uuid();
 	let oldValue;
 	const getter = stateGetter;

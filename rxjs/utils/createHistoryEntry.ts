@@ -1,7 +1,7 @@
 import { diff } from "jsondiffpatch";
 import clone from "./clone";
 import internalState from "./internal-state";
-import { diffxInternals } from "./internals";
+import { DiffEntry } from "./internals";
 import rootState from "./root-state";
 
 let previousState = clone(rootState);
@@ -16,7 +16,7 @@ export function createHistoryEntry(reason = '') {
 		return;
 	}
 	const currentState = clone(rootState);
-	const historyEntry: diffxInternals.DiffEntry = {
+	const historyEntry: DiffEntry = {
 		timestamp: Date.now(),
 		reason,
 		diff: diff(previousState, currentState)

@@ -1,7 +1,7 @@
 import { createReactiveObject } from './createReactiveObject';
-import { diffxInternals } from './internals';
+import { DiffEntry } from './internals';
 
-export type DiffListenerCallback = (diff: diffxInternals.DiffEntry, commit?: boolean) => void;
+export type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
 export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
 
 /**
@@ -23,8 +23,8 @@ export default {
 	isUsingSetFunction: false,
 	isCreatingState: false,
 	stateReplacementKey: 0,
-	stateAccessBuffer: [],
+	stateAccessBuffer: [] as (() => void)[],
 	instanceOptions: {} as DiffxOptions,
-	diffs: [] as diffxInternals.DiffEntry[],
+	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners
 };
