@@ -19,10 +19,11 @@
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ],
   "include": [
-    "types/globals.d.ts",
+    "utils/*",
     "index.ts"
   ]
 }
