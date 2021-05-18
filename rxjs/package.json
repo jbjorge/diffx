@@ -1,9 +1,7 @@
 {
   "name": "@diffx/rxjs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "browser": "./dist/index.js",
   "scripts": {
     "build": "rollup -c rollup.config.js",
