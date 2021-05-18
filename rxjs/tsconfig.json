@@ -7,7 +7,7 @@
     "moduleResolution": "node",
     "module": "ESNext",
     "declaration": true,
-    "outDir": "dist/",
+    "declarationDir": "dist/types",
     "rootDir": "src",
     "lib": [
       "dom",
