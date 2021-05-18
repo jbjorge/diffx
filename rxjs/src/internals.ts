@@ -33,7 +33,7 @@ export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
  * Removes diff listener
  * @param listenerId
  */
-function removeDiffListener(listenerId: number) {
+export function removeDiffListener(listenerId: number) {
 	delete internalState.diffListeners[listenerId];
 }
 
