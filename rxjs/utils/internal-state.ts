@@ -11,9 +11,9 @@ export interface DiffxOptions {
 	debug?: {
 		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
 		devtools?: boolean;
-		/** Beware, creating stack traces for each state change is slow. Not recommended for use in a production environment. */
+		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
 		includeStackTrace?: boolean;
-	}
+	};
 }
 
 export default {
