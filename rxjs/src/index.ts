@@ -1,12 +1,12 @@
 import { effect } from '@vue/reactivity';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import initializeValue from './utils/initializeValue';
-import { createHistoryEntry } from './utils/createHistoryEntry';
-import internalState, { DiffxOptions } from './utils/internal-state';
-import { WatchOptions } from './utils/watch-options';
-import clone from './utils/clone';
-import rootState from './utils/root-state';
-import * as internals from './utils/internals';
+import initializeValue from './initializeValue';
+import { createHistoryEntry } from './createHistoryEntry';
+import internalState, { DiffxOptions } from './internal-state';
+import { WatchOptions } from './watch-options';
+import clone from './clone';
+import rootState from './root-state';
+import * as internals from './internals';
 import { v4 as uuid } from 'uuid';
 
 export const diffxInternals = internals;

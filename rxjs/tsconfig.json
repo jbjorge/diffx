@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
 
-    "target": "es6",
+    "target": "ESNext",
     "sourceMap": true,
     "downlevelIteration": true,
     "moduleResolution": "node",
-    "baseUrl": ".",
+    "module": "ESNext",
     "declaration": true,
-    "declarationDir": "dist/",
     "outDir": "dist/",
-    "paths": {
-      "*": ["*"]
-    },
-    "rootDir": ".",
+    "rootDir": "src",
     "lib": [
       "dom",
       "esnext",
@@ -24,7 +20,6 @@
     "dist"
   ],
   "include": [
-    "utils/*",
-    "index.ts"
+    "src/**/*"
   ]
 }
