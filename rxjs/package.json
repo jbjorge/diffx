@@ -12,12 +12,13 @@
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "jsondiffpatch": "^0.4.1",
     "@vue/reactivity": "^3.0.2",
-    "@vue/shared": "^3.0.2"
+    "@vue/shared": "^3.0.2",
+    "jsondiffpatch": "^0.4.1",
+    "uuid": "^8.3.2"
   },
   "peerDependencies": {
-    "rxjs": ">=7.0.0"
+    "rxjs": ">=5.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^16.0.0",

@@ -6,7 +6,8 @@ import internalState, { DiffxOptions } from './utils/internal-state';
 import { WatchOptions } from './utils/watch-options';
 import clone from './utils/clone';
 import rootState from './utils/root-state';
-import { diffxInternals } from 'utils/internals';
+import { diffxInternals } from './utils/internals';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Set options for diffx
@@ -27,8 +28,9 @@ export function setDiffxOptions(options: DiffxOptions) {
  */
 export function createState<T extends object>(namespace: string, initialState: T): T {
 	if (rootState[namespace]) {
+		console.warn(`[diffx] The namespace ${namespace} is already in use. Returning its current state.`);
 		if (internalState?.instanceOptions?.debug?.devtools) {
-			console.warn(`[diffx] The namespace ${namespace} is already in use by another module. THIS WILL THROW AN ERROR IN PRODUCTION ENVIRONMENTS.`);
+			console.warn(`[diffx] The namespace ${namespace} is already in use by another module.\nThis could be due to hot-module-replacement reloading the page during development.\nThis will throw an error in production environments.`);
 		} else {
 			throw new Error(`[diffx] The namespace ${namespace} is already in use. Namespaces must be unique.`);
 		}
@@ -63,6 +65,7 @@ export function setState(reason: string, valueAssignment: () => void) {
  * @param options
  */
 export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>) {
+	const watchId = uuid();
 	let oldValue;
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());
@@ -84,7 +87,7 @@ export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>) {
 			if (options?.emitIntermediateChanges) {
 				eventStream.next(newValue);
 			} else {
-				delayedEmitter = () => eventStream.next(newValue);
+				delayedEmitter[watchId] = () => eventStream.next(newValue);
 			}
 			oldValue = clone(newValue);
 		}
@@ -111,9 +114,11 @@ export function destroyState(namespace: string) {
  * of emitting intermittent state changes during
  * `.setState()`.
  */
-let delayedEmitter = () => {};
+type DelayedEmitterMap = { [id: string]: () => void };
+let delayedEmitter: DelayedEmitterMap = {};
 function runDelayedEmitter() {
-	delayedEmitter();
-	delayedEmitter = () => {
-	};
+	for (const emitFunc in delayedEmitter) {
+		delayedEmitter[emitFunc]();
+	}
+	delayedEmitter = {};
 }
