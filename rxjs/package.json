@@ -1,6 +1,6 @@
 {
   "name": "@diffx/rxjs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "browser": "./dist/index.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
+    "@types/uuid": "^8.3.0",
     "nodemon": "^2.0.7",
     "rollup": "^2.48.0",
     "rxjs": "^7.0.1",

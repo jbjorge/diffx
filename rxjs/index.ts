@@ -6,8 +6,10 @@ import internalState, { DiffxOptions } from './utils/internal-state';
 import { WatchOptions } from './utils/watch-options';
 import clone from './utils/clone';
 import rootState from './utils/root-state';
-import * as diffxInternals from './utils/internals';
+import * as internals from './utils/internals';
 import { v4 as uuid } from 'uuid';
+
+export const diffxInternals = internals;
 
 /**
  * Set options for diffx
@@ -17,7 +19,7 @@ export function setDiffxOptions(options: DiffxOptions) {
 	internalState.instanceOptions = options;
 	if (options?.debug?.devtools) {
 		const glob = (typeof process !== 'undefined' && process?.versions?.node) ? global : window;
-		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...diffxInternals };
+		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...internals };
 	}
 }
 
