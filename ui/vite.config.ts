@@ -12,9 +12,9 @@ export default defineConfig({
 	// 		external: "@diffx/rxjs/dist/utils/internals"
 	// 	}
 	// }
-	resolve: {
-		alias: {
-			'@diffx/rxjs/utils': 'node_modules/@diffx/rxjs/dist/utils'
-		}
-	}
+	// resolve: {
+	// 	alias: {
+	// 		'@diffx/rxjs/utils': 'node_modules/@diffx/rxjs/dist/utils'
+	// 	}
+	// }
 })

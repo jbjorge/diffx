@@ -2,21 +2,28 @@
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
-import * as diffxInternals from "@diffx/rxjs/utils/internals";
 import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
 import IFuseOptions = Fuse.IFuseOptions;
+import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { diffxInternals } from '@diffx/rxjs';
+const {addDiffListener,
+	commit,
+	getStateSnapshot,
+	lockState,
+	replaceState,
+	unlockState } = diffxInternals;
 
 export default {
 	name: 'App',
 	components: { Sidebar, DiffViewer },
 	setup() {
 		const diffListRef = ref();
-		const diffs: Ref<diffxInternals.DiffEntry[]> = ref([]);
+		const diffs: Ref<DiffEntry[]> = ref([]);
 		const selectedDiffIndex: Ref<number> = ref(-1);
 		const stateLocked = ref(false);
 
-		diffxInternals.addDiffListener((diff, commit) => {
+		addDiffListener((diff, commit) => {
 			const diffListElement = diffListRef.value?.$el;
 			const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
 			if (commit) {
@@ -52,15 +59,15 @@ export default {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = -1;
 				if (currentStateSnapshot) {
-					diffxInternals.replaceState(currentStateSnapshot);
+					replaceState(currentStateSnapshot);
 				}
 				unpauseState();
 			} else {
 				selectedDiffIndex.value = index;
 				pauseState();
-				currentStateSnapshot = diffxInternals.getStateSnapshot();
+				currentStateSnapshot = getStateSnapshot();
 				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
-				diffxInternals.replaceState(stateAtIndex);
+				replaceState(stateAtIndex);
 			}
 		}
 
@@ -78,18 +85,18 @@ export default {
 		}
 
 		function pauseState() {
-			diffxInternals.lockState();
+			lockState();
 			stateLocked.value = true;
 		}
 
 		function unpauseState() {
-			diffxInternals.unlockState();
+			unlockState();
 			stateLocked.value = false;
 			selectedDiffIndex.value = -1;
 		}
 
 		function onCommit() {
-			diffxInternals.commit();
+			commit();
 		}
 
 		const resizeBarElement = ref();
