@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+
+    "target": "es6",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "dist/",
+    "paths": {
+      "*": ["*"]
+    },
+    "rootDir": ".",
+    "lib": [
+      "dom",
+      "esnext",
+      "scripthost"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "types/globals.d.ts",
+    "index.ts"
+  ]
+}

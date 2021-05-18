@@ -1,0 +1,33 @@
+{
+  "name": "diffx",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "dependencies": {
+    "jsondiffpatch": "^0.4.1",
+    "@vue/reactivity": "^3.0.2",
+    "@vue/shared": "^3.0.2"
+  },
+  "peerDependencies": {
+    "rxjs": ">=7.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-typescript": "^6.1.0",
+    "nodemon": "^2.0.7",
+    "rollup": "^2.48.0",
+    "rxjs": "^7.0.1",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}
