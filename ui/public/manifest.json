@@ -4,9 +4,27 @@
   "description": "Extends devtools with a panel to view and interact with diffx state",
   "version": "1.0",
   "devtools_page": "devtools.html",
+  "background": {
+    "scripts": [
+      "devtools-background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "file:///*"
+      ],
+      "js": [
+        "devtools-content-script.js"
+      ]
+    }
+  ],
   "permissions": [
     "tabs",
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "file:///*"
   ]
 }
