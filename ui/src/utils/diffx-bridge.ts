@@ -63,7 +63,7 @@ function emitEvent(funcName: string, msgId?: any, payload?: any) {
 	window.postMessage({
 		id: msgId,
 		func: funcName,
-		payload,
+		payload: JSON.parse(JSON.stringify(payload || '')),
 	}, window.location.origin);
 }
 

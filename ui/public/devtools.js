@@ -48,10 +48,14 @@ function onPanelCreated(extensionPanel) {
 
 		_window.addEventListener('message', evt => {
 			if (evt.data.func) {
+				let evalString = '';
+				if (evt.data.payload) {
+					evalString = `(window.__DIFFX__["${evt.data.func}"](${JSON.stringify(evt.data.payload)}))`;
+				} else {
+					evalString = `(window.__DIFFX__["${evt.data.func}"]())`;
+				}
 				chrome.devtools.inspectedWindow.eval(
-					`
-						(window.__DIFFX__["${evt.data.func}"](${evt.data.payload}))
-					`,
+					evalString,
 					function(result) {
 						if (evt.data.id) {
 							_window.postMessage({
