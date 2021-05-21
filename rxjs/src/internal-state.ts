@@ -3,6 +3,12 @@ import { DiffEntry } from './internals';
 
 export type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
 export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
+/**
+ * Used for emitting the final state instead
+ * of emitting intermittent state changes during
+ * `.setState()`.
+ */
+type DelayedEmitterMap = { [id: string]: () => void };
 
 /**
  * Set options for the diffx runtime
@@ -26,5 +32,6 @@ export default {
 	stateAccessBuffer: [] as (() => void)[],
 	instanceOptions: {} as DiffxOptions,
 	diffs: [] as DiffEntry[],
-	diffListeners: {} as DiffListeners
+	diffListeners: {} as DiffListeners,
+	delayedEmitters: {} as DelayedEmitterMap
 };

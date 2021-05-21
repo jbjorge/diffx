@@ -2,6 +2,7 @@ import { Delta, diff } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
+import runDelayedEmitters from './runDelayedEmitters';
 
 
 export interface DiffEntry {
@@ -88,6 +89,7 @@ export function replaceState(state: any): void {
 	// @ts-ignore
 	internalState.stateReplacementKey = null;
 	internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
+	runDelayedEmitters();
 	internalState.stateAccessBuffer = [];
 }
 

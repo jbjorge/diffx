@@ -8,6 +8,7 @@ import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
 import { v4 as uuid } from 'uuid';
+import runDelayedEmitters from './runDelayedEmitters';
 
 export const diffxInternals = internals;
 
@@ -56,7 +57,7 @@ export function setState(reason: string, valueAssignment: () => void) {
 	internalState.isUsingSetFunction = true;
 	valueAssignment();
 	createHistoryEntry(reason);
-	runDelayedEmitter();
+	runDelayedEmitters();
 	internalState.isUsingSetFunction = false;
 }
 
@@ -88,7 +89,7 @@ export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>): 
 			if (options?.emitIntermediateChanges) {
 				eventStream.next(newValue);
 			} else {
-				delayedEmitter[watchId] = () => eventStream.next(newValue);
+				internalState.delayedEmitters[watchId] = () => eventStream.next(newValue);
 			}
 			oldValue = clone(newValue);
 		}
@@ -108,18 +109,4 @@ export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>): 
  */
 export function destroyState(namespace: string) {
 	delete rootState[namespace];
-}
-
-/**
- * Used for emitting the final state instead
- * of emitting intermittent state changes during
- * `.setState()`.
- */
-type DelayedEmitterMap = { [id: string]: () => void };
-let delayedEmitter: DelayedEmitterMap = {};
-function runDelayedEmitter() {
-	for (const emitFunc in delayedEmitter) {
-		delayedEmitter[emitFunc]();
-	}
-	delayedEmitter = {};
 }
