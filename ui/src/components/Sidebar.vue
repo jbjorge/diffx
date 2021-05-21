@@ -31,7 +31,7 @@ export default defineComponent({
 		}
 
 		function isInactive(index: number) {
-			return props.selectedDiffIndex != null && (index > props.selectedDiffIndex);
+			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (index > props.selectedDiffIndex);
 		}
 
 		return { onClickedDiff, isSelected, isInactive };

@@ -1,28 +1,23 @@
+let msgBuffer = [];
 let toWebsite;
 let toExtension;
 
-console.log(chrome);
-
-// messages from devtools to website
 chrome.runtime.onConnect.addListener(function (port) {
-	console.log('extensionport', arguments);
 	if (port.name === 'diffx_extension_out') {
-		port.onMessage.addListener((message) => {
-			console.log('background:', message);
-		})
 		toExtension = chrome.extension.connect({ name: 'diffx_extension_in' });
-		toExtension.postMessage('background_up');
+		msgBuffer.forEach(msg => toExtension.postMessage(msg));
+		msgBuffer = [];
 	}
-	if (port.name === 'diffx_website_out') {
+
+	if (port.name === 'diffx_from_website') {
 		port.onMessage.addListener((message) => {
-			console.log('background:', message);
-		})
-		chrome.tabs.query({ active: true }, tabs => {
-			if (tabs.length > 0) {
-				chrome.tabs.sendMessage(tabs[0].id, 'background_up', response => {
-					console.log('response', response);
-				});
+			if (!toExtension) {
+				console.log('to buffer', message);
+				msgBuffer.push(message);
+			} else {
+				console.log('to extension', message);
+				toExtension.postMessage(message);
 			}
-		})
+		});
 	}
 })

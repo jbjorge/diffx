@@ -37,16 +37,41 @@ function onPanelCreated(extensionPanel) {
 	extensionPanel.onShown.addListener(function tmp(panelWindow) {
 		const _window = panelWindow;
 		extensionPanel.onShown.removeListener(tmp); // Run once only
-		var outgoingPort = chrome.runtime.connect({ name: 'diffx_extension_out' });
 
-		chrome.extension.onConnect.addListener(function (incomingPort) {
-			if (incomingPort.name === 'diffx_extension_in') {
-				incomingPort.onMessage.addListener(function (msg, { name }) {
-					chrome.devtools.inspectedWindow.eval(`console.log("devtools:", "${msg}")`);
-				})
+		chrome.devtools.inspectedWindow.eval(
+			`
+			window.__DIFFX__.addDiffListener((diff, commit) => {
+				window.postMessage({type: 'diffx_diff', diff, commit}, window.location.origin);
+			});
+			`
+		)
+
+		_window.addEventListener('message', evt => {
+			if (evt.data.func) {
+				chrome.devtools.inspectedWindow.eval(
+					`
+						(window.__DIFFX__["${evt.data.func}"](${evt.data.payload}))
+					`,
+					function(result) {
+						if (evt.data.id) {
+							_window.postMessage({
+								id: evt.data.id,
+								payload: result
+							});
+						}
+					}
+				)
 			}
 		})
 
-		outgoingPort.postMessage(JSON.stringify('devtools_up'));
+		var outgoingPort = chrome.runtime.connect({ name: 'diffx_extension_out' });
+		chrome.runtime.onConnect.addListener(function (incomingPort) {
+			if (incomingPort.name === 'diffx_extension_in') {
+				incomingPort.onMessage.addListener(function (msg, { name }) {
+					console.log(msg);
+					_window.postMessage(msg, _window.location.origin);
+				})
+			}
+		});
 	});
 }

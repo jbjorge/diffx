@@ -4,15 +4,18 @@ import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
 import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
-import IFuseOptions = Fuse.IFuseOptions;
 import { DiffEntry } from '@diffx/rxjs/dist/internals';
-import { diffxInternals } from '@diffx/rxjs';
-const {addDiffListener,
+import IFuseOptions = Fuse.IFuseOptions;
+import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
+
+const {
+	addDiffListener,
 	commit,
 	getStateSnapshot,
 	lockState,
 	replaceState,
-	unlockState } = diffxInternals;
+	unlockState
+} = diffxBridge;
 
 export default {
 	name: 'App',
@@ -23,24 +26,11 @@ export default {
 		const selectedDiffIndex: Ref<number> = ref(-1);
 		const stateLocked = ref(false);
 
-		addDiffListener((diff, commit) => {
-			const diffListElement = diffListRef.value?.$el;
-			const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
-			if (commit) {
-				diffs.value = [diff];
-			} else {
-				diffs.value.push(diff);
-			}
-			if (isScrolledToBottom) {
-				nextTick(() => {
-					diffListElement.scrollTo({ top: diffListElement.scrollHeight, behavior: 'smooth' });
-				});
-			}
-		});
-
 		const filterText = ref('');
 		const filteredDiffs = computed(() => {
-			if (!filterText?.value?.trim()) { return diffs.value; }
+			if (!filterText?.value?.trim()) {
+				return diffs.value;
+			}
 
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
@@ -55,7 +45,7 @@ export default {
 
 		let currentStateSnapshot: any = null;
 
-		function onDiffSelected(index: number) {
+		async function onDiffSelected(index: number) {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = -1;
 				if (currentStateSnapshot) {
@@ -65,7 +55,7 @@ export default {
 			} else {
 				selectedDiffIndex.value = index;
 				pauseState();
-				currentStateSnapshot = getStateSnapshot();
+				currentStateSnapshot = await getStateSnapshot();
 				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
 				replaceState(stateAtIndex);
 			}
@@ -99,6 +89,25 @@ export default {
 			commit();
 		}
 
+		function onNewDiff({ data }: { data: any }) {
+			if (!data || data.type !== 'diffx_diff') {
+				return;
+			}
+			const { diff, commit } = data;
+			const diffListElement = diffListRef.value?.$el;
+			const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
+			if (commit) {
+				diffs.value = [diff];
+			} else {
+				diffs.value.push(diff);
+			}
+			if (isScrolledToBottom) {
+				nextTick(() => {
+					diffListElement.scrollTo({ top: diffListElement.scrollHeight, behavior: 'smooth' });
+				});
+			}
+		}
+
 		const resizeBarElement = ref();
 		const sidebarWidth = ref(400);
 		const resizeMouseDown = ref(false);
@@ -106,23 +115,29 @@ export default {
 			document.addEventListener('mousedown', onResizeMouseDown);
 			document.addEventListener('mousemove', onResizeMouseMove);
 			document.addEventListener('mouseup', onResizeMouseUp);
+			window.addEventListener('message', onNewDiff);
 		})
 
 		onUnmounted(() => {
 			document.removeEventListener('mousedown', onResizeMouseDown);
 			document.removeEventListener('mousemove', onResizeMouseMove);
 			document.removeEventListener('mouseup', onResizeMouseUp);
+
+			window.removeEventListener('message', onNewDiff);
 		})
+
 		function onResizeMouseDown(evt: MouseEvent) {
 			if (evt.target === resizeBarElement.value) {
 				resizeMouseDown.value = true;
 			}
 		}
+
 		function onResizeMouseMove(evt: MouseEvent) {
 			if (resizeMouseDown.value) {
 				sidebarWidth.value = evt.clientX;
 			}
 		}
+
 		function onResizeMouseUp(evt: MouseEvent) {
 			resizeMouseDown.value = false;
 		}
@@ -204,6 +219,7 @@ export default {
 * {
 	box-sizing: border-box;
 }
+
 .layout {
 	display: flex;
 	flex-direction: row;
