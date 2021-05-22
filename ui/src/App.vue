@@ -7,6 +7,7 @@ import Fuse, { default as FuzzySearch } from 'fuse.js';
 import { DiffEntry } from '@diffx/rxjs/dist/internals';
 import IFuseOptions = Fuse.IFuseOptions;
 import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
+import jsonClone from './utils/jsonClone';
 
 const {
 	addDiffListener,
@@ -43,19 +44,22 @@ export default {
 				.map(item => item.item);
 		})
 
-		let currentStateSnapshot: any = null;
-
+		let latestStateSnapshot: any = null;
 		async function onDiffSelected(index: number) {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = -1;
-				if (currentStateSnapshot) {
-					replaceState(currentStateSnapshot);
+				if (latestStateSnapshot) {
+					replaceState(latestStateSnapshot);
+					latestStateSnapshot = null;
 				}
 				unpauseState();
 			} else {
 				selectedDiffIndex.value = index;
 				pauseState();
-				currentStateSnapshot = await getStateSnapshot();
+				const currentStateSnapshot = await getStateSnapshot();
+				if (!latestStateSnapshot) {
+					latestStateSnapshot = jsonClone(currentStateSnapshot);
+				}
 				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
 				replaceState(stateAtIndex);
 			}
