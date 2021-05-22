@@ -36,7 +36,9 @@
       "dom"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "node",
+      "chrome"
     ],
 //    "paths": {
 //      "@diffx/rxjs/utils/*": ["@diffx/rxjs/dist/utils/*"]
@@ -46,7 +48,8 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules"
