@@ -1,7 +1,7 @@
 import { DiffListenerCallback } from '@diffx/rxjs/dist/internal-state';
 import { DiffEntry } from '@diffx/rxjs/dist/internals';
 
-let eventId = 0;
+let eventId = 1;
 
 export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean): number {
 	const id = eventId++;
@@ -11,52 +11,62 @@ export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean): numbe
 			if (msg.id === id) {
 				cb(msg.payload);
 			}
-		} catch {}
+		} catch {
+		}
 	})
 	emitEvent('addDiffListener', id);
 	return id;
 }
 
-export function removeDiffListener(listenerId: number): void {
-	emitEvent('removeDiffListener', listenerId);
+export function removeDiffListener(listenerId: number) {
+	return runFunc('removeDiffListener', listenerId);
 }
 
-export function commit(): void {
-	emitEvent('commit');
+export function commit() {
+	return runFunc('commit');
 }
 
-export function replaceState(state: any): void {
-	emitEvent('replaceState', null, state)
+export function replaceState(state: any): Promise<any> {
+	return runFunc('replaceState');
 }
 
-export function lockState(): void {
-	emitEvent('lockState');
+export function lockState() {
+	return runFunc('lockState');
 }
 
-export function unlockState(): void {
-	emitEvent('unlockState');
+export function unlockState() {
+	return runFunc('unlockState');
 }
 
-export function pauseState(): void {
-	emitEvent('pauseState');
+export function pauseState() {
+	return runFunc('pauseState');
 }
 
-export function unpauseState(): void {
-	emitEvent('unpauseState');
+export function unpauseState() {
+	return runFunc('unpauseState');
 }
 
 export async function getStateSnapshot(): Promise<object> {
-	const id = eventId++;
-	const r = listenOnce('getStateSnapshot', id);
-	emitEvent('getStateSnapshot', id);
-	return r;
+	return runFunc('getStateSnapshot');
 }
 
 export async function getDiffs(): Promise<DiffEntry[]> {
+	return runFunc('getDiffs');
+}
+
+function runFunc(name: string, payload?: any): Promise<any> {
 	const id = eventId++;
-	const r = await listenOnce('getDiffs', id);
-	emitEvent('getDiffs', id);
-	return r;
+	const response = new Promise(resolve => {
+		window.addEventListener('message', function tmp(evt) {
+			const msg = evt.data;
+			if (msg.id === eventId && !msg.isFromDiffxBridge) {
+				window.removeEventListener('message', tmp);
+				resolve(msg.payload);
+			}
+		})
+	});
+	emitEvent(name, id, payload);
+	return response;
 }
 
 function emitEvent(funcName: string, msgId?: any, payload?: any) {
@@ -64,21 +74,8 @@ function emitEvent(funcName: string, msgId?: any, payload?: any) {
 		id: msgId,
 		func: funcName,
 		payload: JSON.parse(JSON.stringify(payload || '')),
+		isFromDiffxBridge: true
 	}, window.location.origin);
-}
-
-function listenOnce(eventName: string, eventId: number): Promise<any> {
-	return new Promise((resolve) => {
-		window.addEventListener('message', function tmp(evt) {
-			try {
-				const msg = evt.data;
-				if (msg.id === eventId) {
-					window.removeEventListener('message', tmp);
-					resolve(msg.payload);
-				}
-			} catch {}
-		})
-	})
 }
 
 export default {
