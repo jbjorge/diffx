@@ -37,7 +37,6 @@ function createPanelIfHasDiffx() {
 			}
 			clearInterval(checkDiffxInterval)
 			created = true
-			console.log('create panel');
 			chrome.devtools.panels.create(
 				"diffx",
 				"apple-touch-icon.png",
@@ -55,7 +54,7 @@ function onPanelCreated(extensionPanel) {
 	});
 }
 
-function onPanelShown(panelWindow, wasReloaded) {
+function onPanelShown(panelWindow, inspectedWindowReloaded) {
 	_panelWindow = panelWindow;
 
 	chrome.devtools.inspectedWindow.eval(
@@ -88,7 +87,7 @@ function onPanelShown(panelWindow, wasReloaded) {
 		}
 	})
 
-	if (!wasReloaded) {
+	if (!inspectedWindowReloaded) {
 		var outgoingPort = chrome.runtime.connect({ name: 'diffx_extension_out' });
 		chrome.runtime.onConnect.addListener(function (incomingPort) {
 			if (incomingPort.name === 'diffx_extension_in') {

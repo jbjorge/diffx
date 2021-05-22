@@ -1,11 +1,10 @@
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, PropType, ref } from 'vue';
+import { computed, ComputedRef, defineComponent, PropType, ref, watchEffect } from 'vue';
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
 import { DiffEntry } from '@diffx/rxjs/dist/internals';
-import { diffxInternals } from '@diffx/rxjs';
-const getStateSnapshot = diffxInternals.getStateSnapshot;
+import { getStateSnapshot } from '../utils/diffx-bridge';
 
 export default defineComponent({
 	props: {
@@ -30,7 +29,8 @@ export default defineComponent({
 
 		const diffs: ComputedRef<Delta[]> = computed(() => props.diffList.map(diffEntry => diffEntry.diff));
 
-		const previousObjectState = computed(() => {
+		const previousObjectState = ref({});
+		watchEffect(async () => {
 			const diffIndex = props.selectedDiffIndex ?? diffs.value.length - 1;
 			const reverseDiff = (diffIndex) > (diffs.value.length / 2);
 			const diffsClone = jsonClone(diffs.value);
@@ -38,15 +38,16 @@ export default defineComponent({
 				? diffsClone.slice(diffIndex).reverse()
 				: diffsClone.slice(0, diffIndex);
 			if (reverseDiff) {
-				const stateSnapshot = getStateSnapshot();
+				const stateSnapshot = await getStateSnapshot();
 				diffsToReplay.forEach((diff) => {
 					jsondiffpatch.unpatch(stateSnapshot, diff)
 				});
-				return stateSnapshot;
+				previousObjectState.value = stateSnapshot;
+			} else {
+				const patched = {};
+				diffsToReplay.forEach((diff) => jsondiffpatch.patch(patched, diff));
+				previousObjectState.value = patched;
 			}
-			const patched = {};
-			diffsToReplay.forEach((diff) => jsondiffpatch.patch(patched, diff));
-			return patched;
 		});
 
 		const formattedOutput = computed(() => {

@@ -27,7 +27,7 @@ export function commit() {
 }
 
 export function replaceState(state: any): Promise<any> {
-	return runFunc('replaceState');
+	return runFunc('replaceState', state);
 }
 
 export function lockState() {
@@ -59,7 +59,7 @@ function runFunc(name: string, payload?: any): Promise<any> {
 	const response = new Promise(resolve => {
 		window.addEventListener('message', function tmp(evt) {
 			const msg = evt.data;
-			if (msg.id === eventId && !msg.isFromDiffxBridge) {
+			if (msg.id === id && !msg.isFromDiffxBridge) {
 				window.removeEventListener('message', tmp);
 				resolve(msg.payload);
 			}

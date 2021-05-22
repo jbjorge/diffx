@@ -49,19 +49,19 @@ export default {
 			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
 				selectedDiffIndex.value = -1;
 				if (latestStateSnapshot) {
-					replaceState(latestStateSnapshot);
+					await replaceState(latestStateSnapshot);
 					latestStateSnapshot = null;
 				}
-				unpauseState();
+				await unpauseState();
 			} else {
 				selectedDiffIndex.value = index;
-				pauseState();
+				await pauseState();
 				const currentStateSnapshot = await getStateSnapshot();
 				if (!latestStateSnapshot) {
 					latestStateSnapshot = jsonClone(currentStateSnapshot);
 				}
 				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
-				replaceState(stateAtIndex);
+				await replaceState(stateAtIndex);
 			}
 		}
 
@@ -72,25 +72,25 @@ export default {
 				diffs.value.slice(0, index + 1).forEach(diffEntry => patch(startValue, diffEntry.diff));
 				return startValue;
 			}
-			const startValue = currentState;
+			const startValue = jsonClone(currentState);
 			const diffList = diffs.value.slice(index + 1).reverse();
 			diffList.forEach(diffEntry => unpatch(startValue, diffEntry.diff));
 			return startValue;
 		}
 
-		function pauseState() {
-			lockState();
+		async function pauseState() {
+			await lockState();
 			stateLocked.value = true;
 		}
 
-		function unpauseState() {
-			unlockState();
+		async function unpauseState() {
+			await unlockState();
 			stateLocked.value = false;
 			selectedDiffIndex.value = -1;
 		}
 
-		function onCommit() {
-			commit();
+		async function onCommit() {
+			await commit();
 		}
 
 		function onNewDiff({ data }: { data: any }) {
