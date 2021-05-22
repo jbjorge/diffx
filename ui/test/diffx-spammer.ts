@@ -26,8 +26,10 @@ window.addEventListener('message', evt => {
 });
 
 // spam
-const state = createState('test', { time: 0 });
-const state2 = createState('test2', {
+const s1 = createState('s1', { time: 0 });
+
+const state = createState('Test', { time: 0 });
+const state2 = createState('TestX2', {
 	isTrue: true
 });
 setInterval(() => {
@@ -37,6 +39,7 @@ setInterval(() => {
 	if (Math.floor((state.time / 1000)) % 3 === 0) {
 		setState('Update other state', () => {
 			state2.isTrue = !state2.isTrue;
+			s1.time++;
 		})
 	}
 }, 1000);

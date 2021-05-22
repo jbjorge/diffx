@@ -16,8 +16,8 @@ export default defineComponent({
 		}
 	},
 	setup(props, { emit }) {
-		function onClickedDiff(index: number) {
-			emit("selectDiff", index);
+		function onClickedDiff(diff: DiffEntry, index: number) {
+			emit("selectDiff", (diff as any).realIndex || index);
 		}
 
 		function isSelected(index: number) {
@@ -46,7 +46,7 @@ export default defineComponent({
 			:class="{'selected': isSelected(index), 'inactive': isInactive(index)}"
 			class="diff-entry"
 			:diffEntry="diff"
-			@click="onClickedDiff(diff.realIndex ?? index)"
+			@click="onClickedDiff(diff, index)"
 		/>
 	</div>
 </template>
