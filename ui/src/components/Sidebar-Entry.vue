@@ -46,6 +46,7 @@ export default defineComponent({
 					:style="{backgroundColor: entry.color}"
 					class="state-name-circle"
 					@mouseover="onColorHover"
+					@click.stop="$emit('stateNameClicked', entry.stateName)"
 				>
 					<div :style="hoverPosition">{{ entry.stateName }}</div>
 				</div>

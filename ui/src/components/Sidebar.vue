@@ -20,6 +20,10 @@ export default defineComponent({
 			emit("selectDiff", (diff as any).realIndex || index);
 		}
 
+		function onClickedStateName(stateName: string) {
+			emit('filterByState', stateName);
+		}
+
 		function isSelected(index: number) {
 			if (index === props.selectedDiffIndex) {
 				return true;
@@ -34,7 +38,7 @@ export default defineComponent({
 			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (index > props.selectedDiffIndex);
 		}
 
-		return { onClickedDiff, isSelected, isInactive };
+		return { onClickedDiff, onClickedStateName, isSelected, isInactive };
 	}
 });
 </script>
@@ -47,6 +51,7 @@ export default defineComponent({
 			class="diff-entry"
 			:diffEntry="diff"
 			@click="onClickedDiff(diff, index)"
+			@stateNameClicked="onClickedStateName"
 		/>
 	</div>
 </template>

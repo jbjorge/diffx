@@ -203,6 +203,7 @@ export default {
 				:selected-diff-index="selectedDiffIndex"
 				class="left-sidebar"
 				@selectDiff="onDiffSelected"
+				@filterByState="filterText = $event"
 				:style="{ width: sidebarWidth + 'px' }"
 			/>
 		</div>
