@@ -1,2 +1,1 @@
-export { DiffxPipe } from './DiffxPipe';
-export { UseWatchers } from './UseWatchers'
+export { UseWatchers } from './UseWatchers';

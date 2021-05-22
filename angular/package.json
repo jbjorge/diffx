@@ -1,8 +1,7 @@
 {
   "name": "@diffx/angular",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
-  "main": "./dist/index.js",
   "scripts": {
     "build": "rm -rf ./dist && rollup -c rollup.config.js",
     "prepublishOnly": "npm run build"
@@ -10,20 +9,18 @@
   "files": [
     "dist/**/*"
   ],
+  "main": "dist/index.js",
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
-  "dependencies": {
-    "@vue/reactivity": "^3.0.2",
-    "@vue/shared": "^3.0.2",
-    "jsondiffpatch": "^0.4.1",
-    "uuid": "^8.3.2"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "rxjs": ">=5.0.0",
     "@angular/core": ">=9.0.0"
   },
   "devDependencies": {
-    "@angular/core": "^9.1.13",
+    "@angular/compiler": "^12.0.1",
+    "@angular/compiler-cli": "^12.0.1",
+    "@angular/core": "^11.0.9",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",

@@ -24,7 +24,7 @@ function runInZone<T>(zone: NgZone): OperatorFunction<T, T> {
 	};
 }
 
-Pipe({ name: 'diffx', pure: false })
+@Pipe({ name: 'diffx', pure: false })
 export class DiffxPipe implements OnDestroy, PipeTransform {
 	private latestValue: any = null;
 	private subscription: Unsubscribable | null = null;
