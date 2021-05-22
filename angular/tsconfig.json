@@ -9,6 +9,7 @@
     "declaration": true,
     "declarationDir": "dist",
     "rootDir": "src",
+    "experimentalDecorators": true,
     "lib": [
       "dom",
       "esnext",

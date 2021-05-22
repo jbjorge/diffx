@@ -1,12 +1,11 @@
 {
   "name": "@diffx/angular",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
     "build": "rm -rf ./dist && rollup -c rollup.config.js",
-    "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist/**/*"
