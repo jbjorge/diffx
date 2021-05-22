@@ -46,7 +46,7 @@ export default defineComponent({
 			:class="{'selected': isSelected(index), 'inactive': isInactive(index)}"
 			class="diff-entry"
 			:diffEntry="diff"
-			@click="onClickedDiff(index)"
+			@click="onClickedDiff(diff.realIndex ?? index)"
 		/>
 	</div>
 </template>

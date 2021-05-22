@@ -33,13 +33,14 @@ export default {
 				return diffs.value;
 			}
 
+			const decoratedDiffs = diffs.value.map((diff, i) => ({ ...diff, diffKeys: Object.keys(diff.diff), realIndex: i }));
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
-				keys: ['reason'],
+				keys: ['reason', 'diffKeys'],
 				shouldSort: true,
 				threshold: 0.3
 			};
-			return new FuzzySearch(diffs.value, options)
+			return new FuzzySearch(decoratedDiffs, options)
 				.search(filterText.value)
 				.map(item => item.item);
 		})
