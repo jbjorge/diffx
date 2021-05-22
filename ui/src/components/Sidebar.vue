@@ -24,18 +24,20 @@ export default defineComponent({
 			emit('filterByState', stateName);
 		}
 
-		function isSelected(index: number) {
-			if (index === props.selectedDiffIndex) {
+		function isSelected(diff: DiffEntry, index: number) {
+			const i = (diff as any).realIndex || index;
+			if (i === props.selectedDiffIndex) {
 				return true;
 			}
-			if (!props.selectedDiffIndex && index === props.diffList.length - 1) {
+			if (!props.selectedDiffIndex && i === props.diffList.length - 1) {
 				return true;
 			}
 			return false;
 		}
 
-		function isInactive(index: number) {
-			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (index > props.selectedDiffIndex);
+		function isInactive(diff: DiffEntry, index: number) {
+			const i = (diff as any).realIndex || index;
+			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (i > props.selectedDiffIndex);
 		}
 
 		return { onClickedDiff, onClickedStateName, isSelected, isInactive };
@@ -47,7 +49,7 @@ export default defineComponent({
 	<div class="diff-list">
 		<SidebarEntry
 			v-for="(diff, index) in diffList"
-			:class="{'selected': isSelected(index), 'inactive': isInactive(index)}"
+			:class="{'selected': isSelected(diff, index), 'inactive': isInactive(diff, index)}"
 			class="diff-entry"
 			:diffEntry="diff"
 			@click="onClickedDiff(diff, index)"
