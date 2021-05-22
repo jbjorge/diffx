@@ -41,6 +41,7 @@ export function createState<T extends object>(namespace: string, initialState: T
 	internalState.isCreatingState = true;
 	rootState[namespace] = initialState;
 	internalState.isCreatingState = false;
+	createHistoryEntry(`@init ${namespace}`);
 	return rootState[namespace];
 }
 
