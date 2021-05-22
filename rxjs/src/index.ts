@@ -52,7 +52,7 @@ export function createState<T extends object>(namespace: string, initialState: T
  */
 export function setState(reason: string, valueAssignment: () => void) {
 	if (internalState.stateModificationsLocked) {
-		console.log(`State is paused, skipped processing of "${reason}".`);
+		console.log(`[diffx] State is paused, skipped processing of "${reason}".`);
 		return;
 	}
 	internalState.isUsingSetFunction = true;
