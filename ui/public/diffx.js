@@ -39,7 +39,7 @@ function createPanelIfHasDiffx() {
 			created = true
 			chrome.devtools.panels.create(
 				"diffx",
-				"apple-touch-icon.png",
+				"icon.png",
 				"index.html",
 				onPanelCreated
 			)

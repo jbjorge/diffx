@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "rm -rf ./dist && vue-tsc --noEmit && vite build && zip -r dist.zip ./dist",
     "serve": "vite preview"
   },
   "dependencies": {
