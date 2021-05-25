@@ -17,7 +17,9 @@ export default defineComponent({
 	},
 	setup(props, { emit }) {
 		function onClickedDiff(diff: DiffEntry, index: number) {
-			emit("selectDiff", (diff as any).realIndex || index);
+			if (!diff.isInitialState) {
+				emit("selectDiff", (diff as any).realIndex || index);
+			}
 		}
 
 		function onClickedStateName(stateName: string) {
@@ -40,7 +42,11 @@ export default defineComponent({
 			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (i > props.selectedDiffIndex);
 		}
 
-		return { onClickedDiff, onClickedStateName, isSelected, isInactive };
+		function isDisabled(diff: DiffEntry) {
+			return diff.isInitialState;
+		}
+
+		return { onClickedDiff, onClickedStateName, isSelected, isInactive, isDisabled };
 	}
 });
 </script>
@@ -49,7 +55,11 @@ export default defineComponent({
 	<div class="diff-list">
 		<SidebarEntry
 			v-for="(diff, index) in diffList"
-			:class="{'selected': isSelected(diff, index), 'inactive': isInactive(diff, index)}"
+			:class="{
+				'selected': isSelected(diff, index),
+				'inactive': isInactive(diff, index),
+				'disabled': isDisabled(diff)
+			}"
 			class="diff-entry"
 			:diffEntry="diff"
 			@click="onClickedDiff(diff, index)"
@@ -87,6 +97,11 @@ export default defineComponent({
 	&.inactive {
 		background-color: #4f5465;
 		color: #888888;
+	}
+
+	&.disabled {
+		opacity: 0.5;
+		pointer-events: none;
 	}
 }
 </style>

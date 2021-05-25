@@ -7,7 +7,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@diffx/rxjs": "0.0.8",
+    "@diffx/rxjs": "^0.1.0",
     "fuse.js": "^6.4.6",
     "jsondiffpatch": "^0.4.1",
     "randomcolor": "^0.6.2",
