@@ -1,0 +1,35 @@
+{
+  "name": "@diffx/angular",
+  "version": "0.1.1",
+  "description": "",
+  "scripts": {
+    "build": "rm -rf ./dist && rollup -c rollup.config.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "main": "dist/index.js",
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "dependencies": {},
+  "peerDependencies": {
+    "rxjs": ">=5.0.0",
+    "@angular/core": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^12.0.1",
+    "@angular/compiler-cli": "^12.0.1",
+    "@angular/core": "^11.0.9",
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-typescript": "^6.1.0",
+    "@types/uuid": "^8.3.0",
+    "nodemon": "^2.0.7",
+    "rollup": "^2.48.0",
+    "rxjs": "^7.0.1",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}

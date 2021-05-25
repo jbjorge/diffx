@@ -1,8 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, reactive } from 'vue';
-import { diffxInternals } from 'diffx';
 import randomColor from 'randomcolor';
-import DiffEntry = diffxInternals.DiffEntry;
+import { DiffEntry } from '@diffx/rxjs/dist/internals';
 
 export default defineComponent({
 	props: {
@@ -11,15 +10,15 @@ export default defineComponent({
 		}
 	},
 	setup(props) {
-		const formattedDate = computed(() => (new Date(props.diffEntry.timestamp).toLocaleTimeString()));
-		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry).diff));
+		const formattedDate = computed(() => (new Date(props?.diffEntry?.timestamp || 0).toLocaleTimeString()));
+		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry)?.diff || {}));
 		const stateNameEntries = computed(() => {
 			return changedStateNames.value.map(stateName => ({
 				stateName,
 				color: randomColor({
 					seed: stateName,
 					luminosity: 'light',
-					alpha: 0.6,
+					alpha: 0.7,
 					format: 'rgba'
 				}) as string
 			}));
@@ -41,18 +40,19 @@ export default defineComponent({
 	<div>
 		<div class="flex row c-justify-space-between i-align-center wrap">
 			<div class="diff-list-timestamp">{{ formattedDate }}</div>
-			<div class="flex row i-align-center">
+			<div class="flex row i-align-center wrap">
 				<div
 					v-for="entry in stateNameEntries"
 					:style="{backgroundColor: entry.color}"
 					class="state-name-circle"
 					@mouseover="onColorHover"
+					@click.stop="$emit('stateNameClicked', entry.stateName)"
 				>
 					<div :style="hoverPosition">{{ entry.stateName }}</div>
 				</div>
 			</div>
 		</div>
-		<div>{{ diffEntry.reason || 'No reason for change provided' }}</div>
+		<div>{{ diffEntry?.reason || 'No reason for change provided' }}</div>
 	</div>
 </template>
 

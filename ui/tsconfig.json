@@ -1,21 +1,57 @@
+//{
+//  "compilerOptions": {
+//
+//    "target": "es5",
+//    "sourceMap": true,
+//    "downlevelIteration": true,
+//    "moduleResolution": "node",
+//    "lib": [
+//      "dom",
+//      "esnext",
+//      "scripthost"
+//    ]
+//  },
+//  "exclude": [
+//    "node_modules"
+//  ],
+//  "include": [
+//    "src/*",
+//    "node_modules/stategate/dist/*"
+//  ]
+//}
+
 {
   "compilerOptions": {
-
-    "target": "es5",
-    "sourceMap": true,
-    "downlevelIteration": true,
+    "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
     "lib": [
-      "dom",
       "esnext",
-      "scripthost"
-    ]
+      "dom"
+    ],
+    "types": [
+      "vite/client",
+      "node",
+      "chrome"
+    ],
+//    "paths": {
+//      "@diffx/rxjs/utils/*": ["@diffx/rxjs/dist/utils/*"]
+//    }
   },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "test/**/*"
+  ],
   "exclude": [
     "node_modules"
-  ],
-  "include": [
-    "src/*",
-    "node_modules/stategate/dist/*"
   ]
 }

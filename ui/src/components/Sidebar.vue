@@ -1,8 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import { diffxInternals } from 'diffx';
 import SidebarEntry from './Sidebar-Entry.vue';
-import DiffEntry = diffxInternals.DiffEntry;
+import { DiffEntry } from '@diffx/rxjs/dist/internals';
 
 export default defineComponent({
 	components: { SidebarEntry },
@@ -17,21 +16,37 @@ export default defineComponent({
 		}
 	},
 	setup(props, { emit }) {
-		function onClickedDiff(index: number) {
-			emit("selectDiff", index);
+		function onClickedDiff(diff: DiffEntry, index: number) {
+			if (!diff.isInitialState) {
+				emit("selectDiff", (diff as any).realIndex || index);
+			}
 		}
 
-		function isSelected(index: number) {
-			if (index === props.selectedDiffIndex) {
+		function onClickedStateName(stateName: string) {
+			emit('filterByState', stateName);
+		}
+
+		function isSelected(diff: DiffEntry, index: number) {
+			const i = (diff as any).realIndex || index;
+			if (i === props.selectedDiffIndex) {
 				return true;
 			}
-			if (!props.selectedDiffIndex && index === props.diffList.length - 1) {
+			if (!props.selectedDiffIndex && i === props.diffList.length - 1) {
 				return true;
 			}
 			return false;
 		}
 
-		return { onClickedDiff, isSelected };
+		function isInactive(diff: DiffEntry, index: number) {
+			const i = (diff as any).realIndex || index;
+			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (i > props.selectedDiffIndex);
+		}
+
+		function isDisabled(diff: DiffEntry) {
+			return diff.isInitialState;
+		}
+
+		return { onClickedDiff, onClickedStateName, isSelected, isInactive, isDisabled };
 	}
 });
 </script>
@@ -40,20 +55,20 @@ export default defineComponent({
 	<div class="diff-list">
 		<SidebarEntry
 			v-for="(diff, index) in diffList"
-			:class="{'selected': isSelected(index)}"
+			:class="{
+				'selected': isSelected(diff, index),
+				'inactive': isInactive(diff, index),
+				'disabled': isDisabled(diff)
+			}"
 			class="diff-entry"
 			:diffEntry="diff"
-			@click="onClickedDiff(index)"
+			@click="onClickedDiff(diff, index)"
+			@stateNameClicked="onClickedStateName"
 		/>
 	</div>
 </template>
 
 <style lang="scss" scoped>
-.apply-button {
-	background-color: #2d3d53;
-	color: whitesmoke;
-}
-
 .diff-list {
 	height: 100%;
 	overflow-y: scroll;
@@ -76,6 +91,17 @@ export default defineComponent({
 
 	&.selected {
 		background-color: #494d5c;
+		box-shadow: inset 0px 0px 1px 1px white;
+	}
+
+	&.inactive {
+		background-color: #4f5465;
+		color: #888888;
+	}
+
+	&.disabled {
+		opacity: 0.5;
+		pointer-events: none;
 	}
 }
 </style>

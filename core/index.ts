@@ -69,6 +69,7 @@ export function createState<T extends object>(namespace: string, initialState: T
  */
 export function setState(reason: string, valueAssignment: () => void) {
 	if (stateModificationsLocked) {
+		console.log(`State is paused, "${reason}" was not applied.`);
 		return;
 	}
 	isUsingSetFunction = true;
@@ -280,11 +281,6 @@ function createReactiveObject<T extends object>(rootObj:T  = {} as T) {
 			}
 		},
 		set(target, key, newValue, receiver) {
-			// Changes to the state can be paused.
-			// This drops all attempts at changing it.
-			if (stateModificationsLocked) {
-				return true;
-			}
 			// If the state is being replaced, drop all changes
 			// to the state not done by the replacement process itself.
 			// This protects from potential watchers reacting to the state change
@@ -295,6 +291,8 @@ function createReactiveObject<T extends object>(rootObj:T  = {} as T) {
 				}
 				newValue = newValue.__diffx_stateReplacementValue;
 			}
+			// Changes to the state can be paused.
+			// This drops all attempts at changing it.
 			const returnValue = Reflect.set(target, key, newValue, receiver);
 			if (!isUsingSetFunction && !isCreatingState && !isReplacingState) {
 				if (!diffxOptions.allowAnonymousStateChange) {
