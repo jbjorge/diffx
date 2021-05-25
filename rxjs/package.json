@@ -15,7 +15,6 @@
   "license": "MIT",
   "dependencies": {
     "@vue/reactivity": "^3.0.2",
-    "@vue/shared": "^3.0.2",
     "jsondiffpatch": "^0.4.1",
     "uuid": "^8.3.2"
   },

@@ -1,14 +1,19 @@
 import { isRef } from "@vue/reactivity"
-import { isArray, isMap, isObject, isSet } from "@vue/shared"
 
-export default function initializeValue(value: unknown, seen: Set<unknown> = new Set()) {
+const objectToString = Object.prototype.toString;
+const toTypeString = (value) => objectToString.call(value);
+const isMap = (val) => toTypeString(val) === '[object Map]';
+const isSet = (val) => toTypeString(val) === '[object Set]';
+const isObject = (val) => val !== null && typeof val === 'object';
+
+export default function initializeValue(value: any, seen: Set<any> = new Set()) {
 	if (!isObject(value) || seen.has(value)) {
 		return value
 	}
 	seen.add(value)
 	if (isRef(value)) {
 		initializeValue(value.value, seen)
-	} else if (isArray(value)) {
+	} else if (Array.isArray(value)) {
 		for (let i = 0; i < value.length; i++) {
 			initializeValue(value[i], seen)
 		}
