@@ -4,7 +4,8 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "rm -rf ./dist && rollup -c rollup.config.js",
+    "prepublishOnly": "npm run build",
     "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
