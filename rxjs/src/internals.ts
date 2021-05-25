@@ -10,6 +10,7 @@ export interface DiffEntry {
 	reason: string;
 	diff: Delta;
 	stackTrace?: string;
+	isInitialState?: boolean;
 }
 
 let diffListenerId = 0;

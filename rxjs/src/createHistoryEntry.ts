@@ -10,8 +10,9 @@ let previousState = clone(rootState);
  * Creates a diff of the previous and current state and stores it in the
  * diff entries.
  * @param reason The reason for the change
+ * @param isInitialState Should be true when the entry is the first one for the state
  */
-export function createHistoryEntry(reason = '') {
+export function createHistoryEntry(reason = '', isInitialState?: boolean) {
 	if (!internalState.instanceOptions.debug) {
 		return;
 	}
@@ -21,6 +22,9 @@ export function createHistoryEntry(reason = '') {
 		reason,
 		diff: diff(previousState, currentState)
 	};
+	if (isInitialState) {
+		historyEntry.isInitialState = true;
+	}
 	if (internalState.instanceOptions?.debug?.includeStackTrace) {
 		historyEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
 	}
