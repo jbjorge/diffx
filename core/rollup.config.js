@@ -5,14 +5,14 @@ const commonjs = require('@rollup/plugin-commonjs');
 
 /** @type {RollupOptions} */
 export default {
-	input: 'index.ts',
+	input: 'src/index.ts',
 	output: [
 		// {
 		// 	dir: 'dist',
 		// 	format: 'cjs',
 		// 	exports: 'named',
 		// 	sourcemap: true
-		// }, {
+		// }
 		{
 			dir: 'dist',
 			format: 'es',
