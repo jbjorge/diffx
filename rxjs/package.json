@@ -4,7 +4,7 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf ./dist && rollup -c rollup.config.js",
+    "build": "rm -rf ./dist/* && rollup -c rollup.config.js",
     "prepublishOnly": "npm run build",
     "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,7 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "@vue/reactivity": "^3.0.2",
-    "jsondiffpatch": "^0.4.1",
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
@@ -27,6 +26,7 @@
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
     "@types/uuid": "^8.3.0",
+    "jsondiffpatch": "^0.4.1",
     "nodemon": "^2.0.7",
     "rollup": "^2.48.0",
     "rxjs": "^7.0.1",
