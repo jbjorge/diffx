@@ -6,12 +6,13 @@ export interface WatchOptions<T> {
 	 */
 	lazy?: boolean;
 	/**
-	 * Whether to emit each change to the state during `.setState` or
-	 * to only emit the final state after the `.setState` function has finished running.
-	 *
-	 * Default: `false`
+	 * Callback called with the final state after the `.setState` function has finished running.
 	 */
-	emitIntermediateChanges?: boolean;
+	onChanged?: (newValue: T) => void;
+	/**
+	 * Callback for each change to the state during `.setState`.
+	 */
+	onEachChange?: (newValue: T) => void;
 	/**
 	 * Custom comparer function to decide if the state has changed.
 	 * Receives newValue and oldValue as arguments and should return `true` for changed

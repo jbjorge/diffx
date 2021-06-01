@@ -4,9 +4,9 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf ./dist && rollup -c rollup.config.js",
+    "build": "rm -rf ./dist/* && rollup -c rollup.config.js",
     "prepublishOnly": "npm run build",
-    "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
+    "ci-test": "nodemon --watch 'src/**/*.ts' --watch './tsconfig.json' --exec 'ts-node --project ./test.tsconfig.json' ./src/index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
@@ -15,9 +15,11 @@
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "@vue/reactivity": "^3.0.2",
     "jsondiffpatch": "^0.4.1",
     "uuid": "^8.3.2"
+  },
+  "peerDependencies": {
+    "@vue/reactivity": ">=3.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^16.0.0",

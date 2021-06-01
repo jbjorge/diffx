@@ -1,5 +1,5 @@
+import { track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
 import internalState from './internal-state';
-const { track, TrackOpTypes, trigger, TriggerOpTypes } = internalState.vueReactive;
 
 /**
  * Creates a reactive object.

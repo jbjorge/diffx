@@ -22,15 +22,6 @@ export interface DiffxOptions {
 	};
 }
 
-export interface VueReactive {
-	track: any;
-	TrackOpTypes: any;
-	trigger: any;
-	TriggerOpTypes: any;
-	isRef: any;
-	effect: any;
-}
-
 export default {
 	isReplacingState: false,
 	stateModificationsPaused: false,
@@ -42,6 +33,5 @@ export default {
 	instanceOptions: {} as DiffxOptions,
 	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners,
-	delayedEmitters: {} as DelayedEmitterMap,
-	vueReactive: {} as VueReactive
+	delayedEmitters: {} as DelayedEmitterMap
 };

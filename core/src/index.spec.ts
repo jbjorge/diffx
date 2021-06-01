@@ -1,12 +1,13 @@
-import { map } from 'rxjs/operators';
 import { createState, setDiffxOptions, setState, watchState } from './index';
 
 setDiffxOptions({ debug: { devtools: true } });
 const state = createState('hihi', { lol: { meh: 0 }, lal: [] as string[] });
 const s2 = createState('hoho', { miip: 'moop', maap: ['hehehe'] })
 
-watchState(() => [state.lal])
-	.subscribe((f) => console.log(f));
+watchState(() => state.lal, {
+	onChanged: (value) => console.log('On changed', value),
+	onEachChange: value => console.log('On each change', value)
+});
 
 setState('bcos', () => {
 	state.lal.push('hihihi')
