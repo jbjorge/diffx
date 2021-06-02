@@ -1,6 +1,6 @@
 {
   "name": "@diffx/rxjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -15,8 +15,8 @@
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "@vue/reactivity": "^3.0.2",
-    "uuid": "^8.3.2"
+    "@diffx/core": "0.0.3",
+    "@vue/reactivity": "^3.0.2"
   },
   "peerDependencies": {
     "rxjs": ">=5.0.0"
