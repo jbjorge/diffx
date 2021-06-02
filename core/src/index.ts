@@ -5,7 +5,6 @@ import { WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
-import { v4 as uuid } from 'uuid';
 import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
 import { getStateSnapshot, replaceState } from './internals';
@@ -79,7 +78,7 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 	if (!options.onChanged && !options.onEachChange) {
 		throw new Error('[diffx] No callback specified for watchState(_, Options). Options.onChanged and/or Options.onEachChange needs to be assigned a callback function.')
 	}
-	const watchId = uuid();
+	const watchId = ++internalState.delayedEmittersId;
 	let oldValue;
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());

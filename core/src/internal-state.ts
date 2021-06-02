@@ -33,5 +33,6 @@ export default {
 	instanceOptions: {} as DiffxOptions,
 	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners,
-	delayedEmitters: {} as DelayedEmitterMap
+	delayedEmitters: {} as DelayedEmitterMap,
+	delayedEmittersId: 1
 };
