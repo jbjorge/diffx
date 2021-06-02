@@ -8,6 +8,7 @@ import * as internals from './internals';
 import { v4 as uuid } from 'uuid';
 import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
+import { getStateSnapshot, replaceState } from './internals';
 
 /**
  * Set options for diffx
@@ -28,12 +29,21 @@ export function setDiffxOptions(options: DiffxOptions) {
  */
 export function createState<T extends object>(namespace: string, initialState: T): T {
 	if (rootState[namespace]) {
-		console.warn(`[diffx] The namespace ${namespace} is already in use. Returning its current state.`);
-		if (internalState?.instanceOptions?.debug?.devtools) {
-			console.warn(`[diffx] The namespace ${namespace} is already in use by another module.\nThis could be due to hot-module-replacement reloading the page during development.\nThis will throw an error in production environments.`);
-		} else {
-			throw new Error(`[diffx] The namespace ${namespace} is already in use. Namespaces must be unique.`);
+		if (!internalState.instanceOptions?.debug) {
+			throw new Error(
+				`[diffx] The state "${namespace}" already exists.` +
+				"\ncreateState() should only be called once per namespace." +
+				"\nIf you meant to replace the state, use replaceState() instead." +
+				"\nIf you are running in a development environment, use setDiffxOptions({ debug: { devtools: true } })."
+			)
 		}
+		console.warn(`[diffx] Replacing the state for "${namespace}".`);
+		const currentState = getStateSnapshot();
+		currentState[namespace] = initialState;
+
+		replaceState(currentState);
+		createHistoryEntry(`@replace ${namespace}`, true);
+		return rootState[namespace];
 	}
 	internalState.isCreatingState = true;
 	rootState[namespace] = initialState;
