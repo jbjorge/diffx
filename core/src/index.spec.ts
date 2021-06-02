@@ -1,7 +1,7 @@
 import { createState, setDiffxOptions, setState, watchState } from './index';
 
 setDiffxOptions({ debug: { devtools: true } });
-const state = createState('hihi', { lol: { meh: 0 }, lal: [] as string[] });
+const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] });
 const s2 = createState('hoho', { miip: 'moop', maap: ['hehehe'] })
 
 watchState(() => state.lal, {

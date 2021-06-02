@@ -83,6 +83,14 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());
 	oldValue = clone(getter());
+	if (!options.lazy) {
+		if (options.onEachChange) {
+			options.onEachChange(oldValue);
+		}
+		if (options.onChanged) {
+			options.onChanged(oldValue);
+		}
+	}
 	return effect<T>(stateGetter, {
 		lazy: false,
 		onTrigger: (event) => {
