@@ -2,7 +2,7 @@
 
 ## Notice <!-- removeSection -->
 
-### `useDiffx` <!-- prepend:Usage -->
+### `useDiffx` <!-- append:`createState` -->
 
 `useDiffx(getterFunc)` is a React hook that enables reading the state in Diffx.
 

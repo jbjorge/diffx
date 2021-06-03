@@ -5,7 +5,8 @@
   "description": "## Introduction",
   "main": "index.js",
   "scripts": {
-    "generate-readme": "ts-node --project tsconfig.json ./generate-readme.ts"
+    "generate-readme": "ts-node --project tsconfig.json ./generate-readme.ts",
+    "update-all-readme": "npm run generate-readme --prefix ./vue && npm run generate-readme --prefix ./angular && npm run generate-readme --prefix ./core && npm run generate-readme --prefix ./react && npm run generate-readme --prefix ./rxjs"
   },
   "repository": {
     "type": "git",
