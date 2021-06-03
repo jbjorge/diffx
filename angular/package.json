@@ -25,7 +25,6 @@
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
-    "nodemon": "^2.0.7",
     "rollup": "^2.48.0",
     "rxjs": "^7.0.1",
     "ts-node": "^9.1.1",

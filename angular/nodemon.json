@@ -1,6 +1,0 @@
-{
-  "watch": ["src", "./index.ts", "./index.spec.ts"],
-  "ext": "ts",
-  "ignore": [],
-  "exec": "sleep 0.3; node --inspect --require ts-node/register ./index.spec.ts"
-}
