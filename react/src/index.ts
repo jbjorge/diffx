@@ -3,15 +3,12 @@ import { setState, watchState } from '@diffx/core';
 
 export { createState, setState, destroyState, setDiffxOptions, watchState } from '@diffx/core';
 
-type StateGetter<T> = () => T;
-type StateSetter<T> = (value: T) => void;
+type StateGetter<StateType> = () => StateType;
 
 /**
  * Access diffx state using a react hook
  */
-export function useDiffx<T>(getter: StateGetter<T>): T;
-export function useDiffx<T>(getter: StateGetter<T>, setter: StateSetter<T>): [T, (reason: string, newValue: T) => void, typeof setState]
-export function useDiffx<T>(getter: StateGetter<T>, setter?: StateSetter<T>) {
+export function useDiffx<StateType>(getter: StateGetter<StateType>): StateType {
 	const [state, changeState] = useState(getter());
 
 	useEffect(() => {
@@ -23,9 +20,5 @@ export function useDiffx<T>(getter: StateGetter<T>, setter?: StateSetter<T>) {
 		return watchState(getter, { lazy: true, onChanged: updateState });
 	});
 
-	function setSelectedState(reason, newValue) {
-		setState(reason, setter.bind(null, newValue));
-	}
-
-	return setter ? [state, setSelectedState, setState] : state;
+	return state;
 }

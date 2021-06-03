@@ -4,7 +4,8 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc --build tsconfig.json",
+    "build": "rm -rf ./dist/* && tsc --build tsconfig.json && npm run generate-readme",
+    "generate-readme": "npm run generate-readme ./vue/readme-template.md --prefix ../",
     "prepublishOnly": "npm run build",
     "ci-build": "tsc --build tsconfig.json --watch"
   },

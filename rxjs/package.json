@@ -4,7 +4,8 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && rollup -c rollup.config.js",
+    "build": "rm -rf ./dist/* && rollup -c rollup.config.js && npm run generate-readme",
+    "generate-readme": "npm run generate-readme ./rxjs/readme-template.md --prefix ../",
     "prepublishOnly": "npm run build",
     "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
