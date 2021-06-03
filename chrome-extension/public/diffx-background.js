@@ -12,10 +12,8 @@ chrome.runtime.onConnect.addListener(function (port) {
 	if (port.name === 'diffx_from_website') {
 		port.onMessage.addListener((message) => {
 			if (!toExtension) {
-				console.log('to buffer', message);
 				msgBuffer.push(message);
 			} else {
-				console.log('to extension', message);
 				toExtension.postMessage(message);
 			}
 		});
