@@ -40,7 +40,7 @@ changes to.
 
 * `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
   unique_.
-* `state` - an object which contains the initial state to store
+* `state` - an object which contains the initial state
 
 ```javascript
 import { createState } from '@diffx/<react/vue/angular/rxjs>';
