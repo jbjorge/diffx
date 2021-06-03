@@ -11,8 +11,11 @@ support for:
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
 
 Debugging can be done with
-the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
-.
+the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+
+## Notice
+This is the documentation for `@diffx/core` which can be used for wrapping the library.  
+For documentation of your framework of choice, see the links in [Introduction](#introduction) section above.
 
 ## Usage
 
@@ -21,7 +24,7 @@ the [devtools extension for Google Chrome](https://chrome.google.com/webstore/de
 `setDiffxOptions(options)` is used to enable communication with the devtools extension.
 
 ```javascript
-import { setDiffxOptions } from '@diffx/<react/vue/angular/rxjs>';
+import { setDiffxOptions } from '@diffx/core';
 
 setDiffxOptions({
 	debug: false / {
@@ -29,21 +32,20 @@ setDiffxOptions({
 		devtools: true / false,
 		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
 		includeStackTrace: true / false
-	};
+	}
 })
 ```
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in diffx and returns a copy of the state which diffx will track
-changes to.
+`createState(namespace, state)` is used to create state in diffx and returns a copy of the state which diffx will watch for changes.
 
 * `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
   unique_.
 * `state` - an object which contains the initial state
 
 ```javascript
-import { createState } from '@diffx/<react/vue/angular/rxjs>';
+import { createState } from '@diffx/core';
 
 export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
 export const people = createState('people', { names: ['Ola Nordmann'] });
@@ -51,16 +53,16 @@ export const people = createState('people', { names: ['Ola Nordmann'] });
 
 ### `setState`
 
-`setState(reason, mutator)` is used to make changes to the state.
+`setState(reason, mutatorFunc)` is used to make changes to the state.
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
-* `mutator` - a function that wraps all changes to the state.
+* `mutatorFunc` - a function that wraps all changes to the state.
 
 _Any changes made to the state outside of `setState` will throw an error._
 
 ```javascript
-import { setState } from '@diffx/<react/vue/angular/rxjs>';
+import { setState } from '@diffx/core';
 import { coolnessFactor, people } from './the-above-example';
 
 setState('Adding myself to the list', () => {
@@ -77,8 +79,10 @@ setState('Adding myself to the list', () => {
 * `options` - options object which describes how to watch the state
     * An error will be thrown if both `onChanged` and `onEachChange` is not provided (one of them needs to be set).
 
+`watchState` is useful when writing "background services" that watches the state and reacts to changes.
+
 ```javascript
-import { watchState } from '@diffx/<react/vue/angular/rxjs>';
+import { watchState } from '@diffx/core';
 import { coolnessFactor, people } from './the-above-example';
 
 const unwatchFunc = watchState(() => people, {
@@ -100,27 +104,16 @@ const unwatchFunc = watchState(() => people, {
 unwatchFunc();
 ```
 
-`watchState` is useful when writing "background services" that watches the state and reacts to changes.  
-
-
-#### Usage with Angular/RxJS
-`watchState` is used to obtain observables in Angular and RxJS.
-
-#### Usage with React/Vue.js
-`watchState` will probably only be used for background services. Inside components, React has its own `useDiffx`
-hook in `@diffx/react` and Vue.js has built-in automatic change detection.
-
 ### `destroyState`
 
 `destroyState(namespace)` is used for removing state from diffx.
 
-* `namespace` - the namespace (string) to remove
+* `namespace` - the namespace (string) to destroy
 
-_Any watchers watching the destroyed state will not be automatically unsubscribed_.
+_Any watchers of the destroyed state will **not** be automatically unwatched_.
 
 ## Typescript
-I like typescript. I don't like being very explicit in my typing. This project leans on typescript's type inference.  
-Just give it a go. It shoooould work as expected.
+Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.
 
 ## Credits and thanks
 
