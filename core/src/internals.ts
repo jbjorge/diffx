@@ -1,9 +1,13 @@
-import { Delta, diff } from 'jsondiffpatch';
+import { diff } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
 import runDelayedEmitters from './runDelayedEmitters';
 
+export interface Delta {
+	[key: string]: any;
+	[key: number]: any;
+}
 
 export interface DiffEntry {
 	timestamp: number;

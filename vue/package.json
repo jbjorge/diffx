@@ -1,0 +1,27 @@
+{
+  "name": "@diffx/vue",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "rm -rf ./dist/* && tsc --build tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "ci-build": "tsc --build tsconfig.json --watch"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "dependencies": {
+    "@diffx/core": "0.0.3"
+  },
+  "peerDependencies": {
+    "@vue/reactivity": "^3.0.2"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}

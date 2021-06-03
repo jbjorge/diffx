@@ -1,29 +1,34 @@
 {
-  "name": "diffx",
-  "version": "0.0.1",
+  "name": "@diffx/core",
+  "version": "0.0.3",
   "description": "",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "build": "rollup -c rollup.config.js",
-    "ci-test": "nodemon --watch '**/*.ts' --watch 'index.ts' --watch './tsconfig.json' --exec 'ts-node' ./index.spec.ts",
+    "build": "rm -rf ./dist/* && rollup -c rollup.config.js",
+    "prepublishOnly": "npm run build",
+    "ci-test": "nodemon --watch 'src/**/*.ts' --watch './tsconfig.json' --exec 'ts-node --project ./test.tsconfig.json' ./src/index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "@vue/reactivity": "^3.0.2",
-    "@vue/shared": "^3.0.2",
     "jsondiffpatch": "^0.4.1"
+  },
+  "peerDependencies": {
+    "@vue/reactivity": ">=3.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
-    "nodemon": "^2.0.6",
-    "rollup": "^2.33.1",
-    "ts-node": "^9.0.0",
-    "tslib": "^2.0.3",
-    "typescript": "^4.0.5"
+    "@vue/reactivity": "^3.0.11",
+    "nodemon": "^2.0.7",
+    "rollup": "^2.48.0",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
   }
 }

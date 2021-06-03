@@ -1,4 +1,4 @@
-import { isRef } from "@vue/reactivity"
+import { isRef } from '@vue/reactivity';
 
 const objectToString = Object.prototype.toString;
 const toTypeString = (value) => objectToString.call(value);
