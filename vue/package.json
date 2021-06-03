@@ -1,6 +1,6 @@
 {
   "name": "@diffx/vue",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "@diffx/core": "0.0.3"
+    "@diffx/core": "0.0.4"
   },
   "peerDependencies": {
     "@vue/reactivity": "^3.0.2"

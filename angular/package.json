@@ -1,6 +1,6 @@
 {
   "name": "@diffx/angular",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "",
   "scripts": {
     "build": "rm -rf ./dist && rollup -c rollup.config.js && npm run generate-readme",
@@ -14,7 +14,7 @@
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
   "dependencies": {
-    "@diffx/rxjs": "^0.1.1"
+    "@diffx/rxjs": "^0.1.2"
   },
   "peerDependencies": {
     "rxjs": ">=5.0.0",
