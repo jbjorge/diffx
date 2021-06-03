@@ -14,20 +14,6 @@ support for:
 Debugging can be done with
 the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
 
-## Fix angular change detection and the `async` pipe <!-- prependSection:Usage -->
-
-Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
-detection.
-
-To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
-file after your import of `zone`.
-
-```typescript
-import 'zone.js/dist/zone';
-import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
-```
-
-
 ## Usage
 
 ### `setDiffxOptions`
@@ -35,7 +21,7 @@ import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 `setDiffxOptions(options)` is used to enable communication with the devtools extension.
 
 ```javascript
-import { setDiffxOptions } from '@diffx/angular';
+import { setDiffxOptions } from '@diffx/./angular';
 
 setDiffxOptions({
 	debug: false / {
@@ -56,7 +42,7 @@ setDiffxOptions({
 * `state` - an object which contains the initial state
 
 ```javascript
-import { createState } from '@diffx/angular';
+import { createState } from '@diffx/./angular';
 
 export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
 export const people = createState('people', { names: ['Ola Nordmann'] });
@@ -73,7 +59,7 @@ export const people = createState('people', { names: ['Ola Nordmann'] });
 _Any changes made to the state outside of `setState` will throw an error._
 
 ```javascript
-import { setState } from '@diffx/angular';
+import { setState } from '@diffx/./angular';
 import { coolnessFactor, people } from './the-above-example';
 
 setState('Adding myself to the list', () => {
@@ -84,7 +70,7 @@ setState('Adding myself to the list', () => {
 
 ### `watchState` <!-- replaceSection:`watchState` -->
 
-`watchState(stateGetter, options)` is used for creating an observable of the state or a projection of the state.
+`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the state.
 
 * `stateGetter` - a function which returns the state to be watched
 * `options` - options object which describes how to watch the state
@@ -133,7 +119,6 @@ observable.unsubscribe();
 * `namespace` - the namespace (string) to destroy
 
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
-
 ### `@UseWatchers` <!-- append:Usage -->
 
 `@UseWatchers(...watcher)` is used to automatically subscribe to a watcher when a component is instantiated. Accepts one
@@ -215,6 +200,20 @@ export class ExampleComponent {
 	}
 }
 ```
+
+## Fix angular change detection and the `async` pipe <!-- prependSection:Typescript -->
+
+Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
+detection.
+
+To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
+file after your import of `zone`.
+
+```typescript
+import 'zone.js/dist/zone';
+import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
+```
+
 
 ## Typescript
 Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.

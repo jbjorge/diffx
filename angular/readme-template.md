@@ -1,6 +1,6 @@
 # @diffx/angular <!-- replaceLine:Diffx -->
 
-## Fix angular change detection and the `async` pipe <!-- prependSection:Usage -->
+## Fix angular change detection and the `async` pipe <!-- prependSection:Typescript -->
 
 Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
 detection.
@@ -17,7 +17,7 @@ import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 
 ### `watchState` <!-- replaceSection:`watchState` -->
 
-`watchState(stateGetter, options)` is used for creating an observable of the state or a projection of the state.
+`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the state.
 
 * `stateGetter` - a function which returns the state to be watched
 * `options` - options object which describes how to watch the state
