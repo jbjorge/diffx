@@ -13,8 +13,16 @@
   "files": [
     "dist/**/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbjorge/diffx.git"
+  },
   "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jbjorge/diffx/issues"
+  },
+  "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
     "@diffx/core": "0.0.4",
     "@vue/reactivity": "^3.0.2"
