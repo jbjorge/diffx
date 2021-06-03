@@ -1,0 +1,25 @@
+{
+  "name": "diffx",
+  "version": "0.0.1",
+  "description": "## Introduction",
+  "main": "index.js",
+  "scripts": {
+    "generate-readme": "ts-node --project tsconfig.json ./generate-readme.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbjorge/diffx.git"
+  },
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jbjorge/diffx/issues"
+  },
+  "homepage": "https://github.com/jbjorge/diffx#readme",
+  "devDependencies": {
+    "@types/node": "^15.9.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "declaration": true,
+    "declarationDir": "dist",
+    "rootDir": "src",
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "esnext",
+      "scripthost"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "generate-readme.ts"
+  ]
+}
