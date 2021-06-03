@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Diffx is a state management library that focuses on minimal boilerplate, effortless usage with typescript as well as
+Diffx is a state management library that focuses on minimizing boilerplate, effortless usage with typescript as well as
 support for:
 
 * [React](https://reactjs.org/) --> [@diffx/react](https://www.npmjs.com/package/@diffx/react)
@@ -26,9 +26,9 @@ import { setDiffxOptions } from '@diffx/<react/vue/angular/rxjs>';
 setDiffxOptions({
 	debug: false / {
 		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
-		devtools: true / false;
+		devtools: true / false,
 		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
-		includeStackTrace: true / false;
+		includeStackTrace: true / false
 	};
 })
 ```
@@ -51,7 +51,7 @@ export const people = createState('people', { names: ['Ola Nordmann'] });
 
 ### `setState`
 
-`setState(reason, mutator)` is used to make changes in the state.
+`setState(reason, mutator)` is used to make changes to the state.
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
