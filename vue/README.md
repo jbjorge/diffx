@@ -12,7 +12,8 @@ support for:
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
 
 Debugging can be done with
-the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+.
 
 ## Usage
 
@@ -35,7 +36,8 @@ setDiffxOptions({
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in diffx and returns a copy of the state which diffx will watch for changes.
+`createState(namespace, state)` is used to create state in diffx and returns a readonly copy of the state which diffx
+will watch for changes.
 
 * `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
   unique_.
@@ -47,6 +49,8 @@ import { createState } from '@diffx/vue';
 export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
 export const people = createState('people', { names: ['Ola Nordmann'] });
 ```
+
+The return value of `createState()` can be accessed as a regular object to read its values.
 
 ### `setState`
 
@@ -66,6 +70,9 @@ setState('Adding myself to the list', () => {
 	people.names.push('Kari Nordmann');
 	coolnessFactor.numberOfCoolPeople++;
 });
+
+// this mutates the state outside of setState() and will throw an error
+people.names.push('Karl the first');
 ```
 
 ### `watchState`
@@ -74,7 +81,7 @@ setState('Adding myself to the list', () => {
 
 * `stateGetter` - a function which returns the state to be watched
 * `options` - options object which describes how to watch the state
-    * An error will be thrown if both `onChanged` and `onEachChange` is not provided (one of them needs to be set).
+    * An error will be thrown if both `onChanged` and `onEachChange` are `undefined` (one of them needs to be set).
 
 `watchState` is useful when creating "background services" that watches the state and reacts to changes.
 
@@ -83,17 +90,33 @@ import { watchState } from '@diffx/vue';
 import { coolnessFactor, people } from './the-above-example';
 
 const unwatchFunc = watchState(() => people, {
-	// [Optional] true = emit the initial value, false = emit changes from now on, default = false
+	/**
+	 * [Optional]
+	 * Whether to emit the current value of the watched item(s).
+	 *
+	 * Default: false
+	 */
 	lazy: true / false,
 
-	// called when the `mutator` in `setState` has finished its run
-	onChanged: newValue => { /* do whatever you want */ },
+	/**
+	 * Callback called with the final state after
+	 * the .setState() function has finished running.
+	 */
+	onChanged: newValue => 'do whatever you want',
 
-	// called each time the state changes (even midway through a `setState`)
-	onEachChange: newValue => { /* do whatever you want */ },
+	/**
+	 * Callback for each change to the state during .setState().
+	 */
+	onEachChange: newValue => 'do whatever you want',
 
-	// [Optional] - called each time the state changes and allows your function to
-	// decide if the state has changed or not
+	/**
+	 * [Optional]
+	 * Custom comparer function to decide if the state has changed.
+	 * Receives newValue and oldValue as arguments and should return `true` for changed
+	 * and `false` for no change.
+	 *
+	 * Default: Diffx does automatic change comparison
+	 */
 	hasChangedComparer: (newValue, oldValue) => true / false
 });
 
@@ -110,6 +133,7 @@ unwatchFunc();
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
 
 ## Typescript
+
 Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.
 
 ## Credits and thanks

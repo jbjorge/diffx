@@ -12,7 +12,8 @@ support for:
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
 
 Debugging can be done with
-the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+.
 
 ## Usage
 
@@ -21,7 +22,7 @@ the [devtools extension for Google Chrome](https://chrome.google.com/webstore/de
 `setDiffxOptions(options)` is used to enable communication with the devtools extension.
 
 ```javascript
-import { setDiffxOptions } from '@diffx/./angular';
+import { setDiffxOptions } from '@diffx/angular';
 
 setDiffxOptions({
 	debug: false / {
@@ -35,18 +36,21 @@ setDiffxOptions({
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in diffx and returns a copy of the state which diffx will watch for changes.
+`createState(namespace, state)` is used to create state in diffx and returns a readonly copy of the state which diffx
+will watch for changes.
 
 * `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
   unique_.
 * `state` - an object which contains the initial state
 
 ```javascript
-import { createState } from '@diffx/./angular';
+import { createState } from '@diffx/angular';
 
 export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
 export const people = createState('people', { names: ['Ola Nordmann'] });
 ```
+
+The return value of `createState()` can be accessed as a regular object to read its values.
 
 ### `setState`
 
@@ -59,13 +63,16 @@ export const people = createState('people', { names: ['Ola Nordmann'] });
 _Any changes made to the state outside of `setState` will throw an error._
 
 ```javascript
-import { setState } from '@diffx/./angular';
+import { setState } from '@diffx/angular';
 import { coolnessFactor, people } from './the-above-example';
 
 setState('Adding myself to the list', () => {
 	people.names.push('Kari Nordmann');
 	coolnessFactor.numberOfCoolPeople++;
 });
+
+// this mutates the state outside of setState() and will throw an error
+people.names.push('Karl the first');
 ```
 
 ### `watchState` <!-- replaceSection:`watchState` -->
@@ -216,6 +223,7 @@ import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 
 
 ## Typescript
+
 Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.
 
 ## Credits and thanks
