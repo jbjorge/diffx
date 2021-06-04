@@ -15,6 +15,7 @@ export interface DiffEntry {
 	diff: Delta;
 	stackTrace?: string;
 	isInitialState?: boolean;
+	subDiffEntries?: DiffEntry[]
 }
 
 let diffListenerId = 0;

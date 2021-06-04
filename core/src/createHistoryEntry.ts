@@ -1,7 +1,7 @@
 import { diff } from "jsondiffpatch";
 import clone from "./clone";
 import internalState from "./internal-state";
-import { DiffEntry } from "./internals";
+import { DiffEntry, getStateSnapshot } from "./internals";
 import rootState from "./root-state";
 
 let previousState = clone(rootState);
@@ -14,7 +14,7 @@ let previousState = clone(rootState);
  * @param subHistoryEntries Entries to record as sub-history of
  */
 export function createHistoryEntry(reason = '', isInitialState = false, subHistoryEntries: DiffEntry[] = []) {
-	const currentState = clone(rootState);
+	const currentState = getStateSnapshot();
 	const historyEntry = getHistoryEntry(currentState, reason);
 	if (!historyEntry) {
 		return;
@@ -22,11 +22,18 @@ export function createHistoryEntry(reason = '', isInitialState = false, subHisto
 	if (isInitialState) {
 		historyEntry.isInitialState = true;
 	}
+	if (subHistoryEntries?.length) {
+		historyEntry.subDiffEntries = subHistoryEntries;
+	}
+	saveHistoryEntry(historyEntry, currentState);
+}
+
+export function saveHistoryEntry(historyEntry: DiffEntry, currentState?: object) {
 	internalState.diffs.push(historyEntry);
 	for (let cbId in internalState.diffListeners) {
 		internalState.diffListeners[cbId](historyEntry);
 	}
-	previousState = currentState;
+	previousState = currentState ?? getStateSnapshot();
 }
 
 export function getHistoryEntry(currentState: object, reason = '') {

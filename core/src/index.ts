@@ -1,5 +1,5 @@
 import initializeValue from './initializeValue';
-import { createHistoryEntry } from './createHistoryEntry';
+import { createHistoryEntry, getHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
 import internalState, { DiffxOptions } from './internal-state';
 import { WatchOptions } from './watch-options';
 import clone from './clone';
@@ -7,7 +7,10 @@ import rootState from './root-state';
 import * as internals from './internals';
 import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
-import { getStateSnapshot, replaceState } from './internals';
+import { DiffEntry, getStateSnapshot, replaceState } from './internals';
+import { diff } from 'jsondiffpatch';
+
+export * as diffxInternals from './internals';
 
 /**
  * Set options for diffx
@@ -51,6 +54,35 @@ export function createState<T extends object>(namespace: string, initialState: T
 	return rootState[namespace];
 }
 
+// --- recursive setState helpers
+let setStateNestingLevel = -1;
+let previousLevel = 0;
+let hist: DiffEntry[] = [];
+let paren = [hist];
+let current = hist;
+let children;
+
+function addParentLevelElement(el: DiffEntry) {
+	const parentEl = paren[paren.length - 1];
+	const parentChildren = parentEl[parentEl.length - 1].subDiffEntries;
+	parentChildren.push(el);
+	current = parentChildren;
+	children = current[current.length - 1].subDiffEntries;
+}
+
+function addSameLevelElement(el: DiffEntry) {
+	current.push(el);
+	children = current[current.length - 1].subDiffEntries;
+}
+
+function addChildElement(el: DiffEntry) {
+	children.push(el);
+	current = children;
+	paren.push(children);
+	children = current[current.length - 1].subDiffEntries;
+}
+// ------------------------------
+
 /**
  * Set state in diffx.
  * @param reason A text that specifies the reason for the change in state.
@@ -62,10 +94,57 @@ export function setState(reason: string, valueAssignment: () => void) {
 		return;
 	}
 	internalState.isUsingSetFunction = true;
+
+	// ---- handle recursive setState
+
+	const currentState = getStateSnapshot();
+	const level = ++setStateNestingLevel;
+	let didMoveDown = false;
+	const diffEntry: DiffEntry = {
+		reason,
+		timestamp: Date.now(),
+		diff: {},
+		subDiffEntries: []
+	};
+	if (internalState.instanceOptions?.includeStackTrace) {
+		diffEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
+	}
+	if (level < previousLevel) {
+		// moved up a level
+		addParentLevelElement(diffEntry)
+	} else if (level === previousLevel) {
+		// back to same level
+		addSameLevelElement(diffEntry);
+	} else {
+		// moved down a level
+		addChildElement(diffEntry);
+		didMoveDown = true;
+	}
+	let thisLevelObject = current[current.length - 1];
+	previousLevel = level;
 	valueAssignment();
-	createHistoryEntry(reason);
-	runDelayedEmitters();
-	internalState.isUsingSetFunction = false;
+	const newState = getStateSnapshot();
+	thisLevelObject.diff = diff(currentState, newState);
+	setStateNestingLevel--;
+	if (didMoveDown) {
+		paren.pop();
+	}
+
+	// ------------------------------
+
+	if (level === 0) {
+		saveHistoryEntry(hist[0]);
+		runDelayedEmitters();
+		internalState.isUsingSetFunction = false;
+
+		// reset recursive counters
+		setStateNestingLevel = -1;
+		previousLevel = 0;
+		hist = [];
+		paren = [hist];
+		current = hist;
+		children = undefined;
+	}
 }
 
 /**
