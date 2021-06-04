@@ -15,7 +15,7 @@ import { getStateSnapshot, replaceState } from './internals';
  */
 export function setDiffxOptions(options: DiffxOptions) {
 	internalState.instanceOptions = options;
-	if (options?.debug?.devtools) {
+	if (options?.devtools) {
 		const glob = (typeof process !== 'undefined' && process?.versions?.node) ? global : window;
 		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...internals };
 	}
@@ -28,7 +28,7 @@ export function setDiffxOptions(options: DiffxOptions) {
  */
 export function createState<T extends object>(namespace: string, initialState: T): T {
 	if (rootState[namespace]) {
-		if (!internalState.instanceOptions?.debug) {
+		if (!internalState.instanceOptions?.devtools) {
 			throw new Error(
 				`[diffx] The state "${namespace}" already exists.` +
 				"\ncreateState() should only be called once per namespace." +
@@ -93,7 +93,7 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 	}
 	return effect<T>(stateGetter, {
 		lazy: false,
-		onTrigger: (event) => {
+		onTrigger: () => {
 			const newValue = getter();
 			const newValueString = JSON.stringify(newValue);
 			const newValueClone = newValueString === undefined ? undefined : JSON.parse(newValueString);

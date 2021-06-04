@@ -24,18 +24,36 @@ For documentation of your framework of choice, see the links in [Introduction](#
 
 ### `setDiffxOptions`
 
-`setDiffxOptions(options)` is used to enable communication with the devtools extension.
+`setDiffxOptions(options)` is used to configure which global features to enable for Diffx.
 
 ```javascript
 import { setDiffxOptions } from '@diffx/core';
 
 setDiffxOptions({
-	debug: false / {
-		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
-		devtools: true / false,
-		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
-		includeStackTrace: true / false
-	}
+  /**
+   * Whether to record all diffs of the state in-memory.
+   *
+   * Default: false
+   **/
+  createDiffs: false,
+  /**
+   * Enable viewing the state history in devtools.
+   * If set to true, `createDiffs` will also be implicitly true since it
+   * is required by devtools.
+   *
+   * Default: false
+   */
+  devtools: false,
+  /**
+   * Store a stack-trace with every diff if `createDiffs` is enabled.
+   * Will be displayed in devtools to help with tracking down
+   * which code is making state changes.
+   *
+   * NOT recommended for production environments since creating stack traces is a slow operation!
+   *
+   * Default: false
+   */
+  includeStackTrace: false;
 })
 ```
 

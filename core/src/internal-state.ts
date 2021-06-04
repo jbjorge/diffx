@@ -1,4 +1,3 @@
-import { createReactiveObject } from './createReactiveObject';
 import { DiffEntry } from './internals';
 
 export type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
@@ -14,12 +13,30 @@ type DelayedEmitterMap = { [id: string]: () => void };
  * Set options for the diffx runtime
  */
 export interface DiffxOptions {
-	debug?: {
-		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
-		devtools?: boolean;
-		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
-		includeStackTrace?: boolean;
-	};
+	/**
+	 * Whether to record all diffs of the state in-memory.
+	 *
+	 * Default: false
+	 **/
+	createDiffs?: boolean;
+	/**
+	 * Enable viewing the state history in devtools.
+	 * If set to true, `createDiffs` will also be implicitly true.
+	 * Not recommended for use in a production environment.
+	 *
+	 * Default: false
+	 */
+	devtools?: boolean;
+	/**
+	 * Store a stack-trace with every diff if `createDiffs` is enabled.
+	 * Will be displayed in devtools to help with tracking down
+	 * which code is making state changes.
+	 *
+	 * NOT recommended in production environment since creating stack traces is a slow operation!
+	 *
+	 * Default: false
+	 */
+	includeStackTrace?: boolean;
 }
 
 export default {
