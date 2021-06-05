@@ -3,7 +3,7 @@ import { computed, ComputedRef, defineComponent, PropType, ref, watchEffect } fr
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
-import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { DiffEntry } from '@diffx/core/dist/internals';
 import { getStateSnapshot } from '../utils/diffx-bridge';
 
 export default defineComponent({
@@ -40,19 +40,28 @@ export default defineComponent({
 			if (reverseDiff) {
 				const stateSnapshot = await getStateSnapshot();
 				diffsToReplay.forEach((diff) => {
-					jsondiffpatch.unpatch(stateSnapshot, diff)
+					if (diff) {
+						jsondiffpatch.unpatch(stateSnapshot, diff)
+					}
 				});
 				previousObjectState.value = stateSnapshot;
 			} else {
 				const patched = {};
-				diffsToReplay.forEach((diff) => jsondiffpatch.patch(patched, diff));
+				diffsToReplay.forEach((diff) => {
+					if (diff) {
+						jsondiffpatch.patch(patched, diff)
+					}
+				});
 				previousObjectState.value = patched;
 			}
 		});
 
 		const formattedOutput = computed(() => {
+			if (!diffToDisplay.value.diff && selectedTab.value === 'diff') {
+				return 'No change in state.'
+			}
 			const prevCopy = jsonClone(previousObjectState.value);
-			return jsondiffpatch.formatters.html.format(diffToDisplay.value.diff, prevCopy);
+			return jsondiffpatch.formatters.html.format(diffToDisplay.value.diff || {}, prevCopy);
 		});
 
 		return { diffToDisplay, formatDate, formattedOutput, selectedTab };
