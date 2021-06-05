@@ -30,18 +30,46 @@ window.addEventListener('message', evt => {
 // spam
 const s1 = createState('s1', { time: 0 });
 
-const state = createState('Test', { time: 0 });
-const state2 = createState('TestX2', {
+const Test = createState('Test', { time: 0 });
+const TestX2 = createState('TestX2', {
 	isTrue: true
 });
-setInterval(() => {
-	setState('Update time', () => {
-		state.time = Date.now();
-	})
-	if (Math.floor((state.time / 1000)) % 3 === 0) {
-		setState('Update other state', () => {
-			state2.isTrue = !state2.isTrue;
+const rState = createState('Testx3', { a: 1 });
+setState('Recursion test', () => {
+	rState.a++;
+	setState('Level 1', () => {
+		Test.time = 15;
+		setState('Level 2', () => {
 			s1.time++;
+			setState('Level 3', () => {
+				s1.time++;
+				setState('Level 4', () => {
+					s1.time++;
+				})
+			})
 		})
-	}
-}, 1000);
+	})
+	setState('Level 1 again', () => {})
+	rState.a++;
+})
+
+setState('Update time', () => {
+	Test.time = Date.now();
+})
+setState('Update time', () => {
+	Test.time = Date.now();
+})
+setState('Update time', () => {
+	Test.time = Date.now();
+})
+// setInterval(() => {
+// setState('Update time', () => {
+// 	Test.time = Date.now();
+// })
+// 	if (Math.floor((Test.time / 1000)) % 3 === 0) {
+// 		setState('Update other state', () => {
+// 			TestX2.isTrue = !TestX2.isTrue;
+// 			s1.time++;
+// 		})
+// 	}
+// }, 3000);
