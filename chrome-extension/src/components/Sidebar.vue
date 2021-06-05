@@ -55,14 +55,12 @@ export default defineComponent({
 	<div class="diff-list">
 		<SidebarEntry
 			v-for="(diff, index) in diffList"
-			:class="{
-				'selected': isSelected(diff, index),
-				'inactive': isInactive(diff, index),
-				'disabled': isDisabled(diff)
-			}"
-			class="diff-entry"
+			class="diff-entry-list-item"
+			:selected="isSelected(diff, index)"
+			:inactive="isInactive(diff, index)"
+			:disabled="isDisabled(diff)"
 			:diffEntry="diff"
-			@click="onClickedDiff(diff, index)"
+			@stateSelected="onClickedDiff($event, index)"
 			@stateNameClicked="onClickedStateName"
 		/>
 	</div>
@@ -75,33 +73,12 @@ export default defineComponent({
 	width: 100%;
 }
 
-.diff-entry {
-	padding: 10px 20px;
-	background-color: #1c2634;
-	color: whitesmoke;
-	cursor: pointer;
-
+.diff-entry-list-item {
 	&:not(:last-child) {
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	}
-
-	&:hover {
-		background-color: #2d3d53;
-	}
-
-	&.selected {
-		background-color: #494d5c;
-		box-shadow: inset 0px 0px 1px 1px white;
-	}
-
-	&.inactive {
-		background-color: #4f5465;
-		color: #888888;
-	}
-
-	&.disabled {
-		opacity: 0.5;
-		pointer-events: none;
+	&:last-child {
+		margin-bottom: 10px;
 	}
 }
 </style>
