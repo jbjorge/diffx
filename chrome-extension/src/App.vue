@@ -28,17 +28,40 @@ export default {
 		const stateLocked = ref(false);
 
 		const filterText = ref('');
+
+		function flattenDiffKeys(diff: DiffEntry): string[] {
+			const keys = Object.keys(diff.diff || {});
+			if (!diff.subDiffEntries?.length) {
+				return keys;
+			}
+			const subkeys = diff.subDiffEntries.reduce((sub, subk) => {
+				return sub.concat(flattenDiffKeys(subk))
+			}, [] as string[]);
+			return keys.concat(subkeys);
+		}
+
+		function flattenReasons(diff: DiffEntry): string[] {
+			const value = [diff.reason];
+			if (!diff.subDiffEntries?.length) {
+				return value;
+			}
+			const subReasons = diff.subDiffEntries.reduce((subR, subDiff) => {
+				return subR.concat(flattenReasons(subDiff))
+			}, [] as string[]);
+			return value.concat(subReasons);
+		}
+
 		const filteredDiffs = computed(() => {
 			if (!filterText?.value?.trim()) {
 				return diffs.value;
 			}
 
-			const decoratedDiffs = diffs.value.map((diff, i) => ({ ...diff, diffKeys: Object.keys(diff.diff), realIndex: i }));
+			const decoratedDiffs = diffs.value.map((diff, i) => ({ ...diff, diffReasons: flattenReasons(diff), diffKeys: flattenDiffKeys(diff), realIndex: i }));
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
-				keys: ['reason', 'diffKeys'],
-				shouldSort: true,
-				threshold: 0.3
+				keys: ['diffReasons', 'diffKeys'],
+				shouldSort: false,
+				threshold: 0.1
 			};
 			return new FuzzySearch(decoratedDiffs, options)
 				.search(filterText.value)
