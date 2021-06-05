@@ -37,7 +37,7 @@ export function createState<T extends object>(namespace: string, initialState: T
 				`[diffx] The state "${namespace}" already exists.` +
 				"\ncreateState() should only be called once per namespace." +
 				"\nIf you meant to replace the state, use replaceState() instead." +
-				"\nIf you are running in a development environment, use setDiffxOptions({ debug: { devtools: true } })."
+				"\nIf you are running in a development environment, use setDiffxOptions({ devtools: true })."
 			)
 		}
 		console.warn(`[diffx] Replacing the state for "${namespace}".`);
