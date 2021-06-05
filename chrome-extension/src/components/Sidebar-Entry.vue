@@ -88,7 +88,9 @@ export default defineComponent({
 								@mouseover="onColorHover"
 								@click.stop="$emit('stateNameClicked', entry.stateName)"
 							>
-								<div :style="hoverPosition">{{ entry.stateName }}</div>
+								<div :style="hoverPosition">
+									{{ entry.stateName }}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -113,7 +115,7 @@ export default defineComponent({
 .diff-entry {
 	padding: 10px 20px;
 	background-color: #1c2634;
-	color: rgba(255,255,255,0.9);
+	color: rgba(255, 255, 255, 0.9);
 	cursor: pointer;
 
 	&.nested {
@@ -125,25 +127,25 @@ export default defineComponent({
 	}
 
 	&.selected {
-		background-color: rgba(255,255,255,0.08);
+		background-color: rgba(255, 255, 255, 0.08);
 		animation: selectedGlow 5s infinite;
 	}
 
 	@keyframes selectedGlow {
 		0% {
-			box-shadow: inset 0 0 1px 1px rgba(47,222,137,0.5);
+			box-shadow: inset 0 0 1px 1px rgba(47, 222, 137, 0.5);
 		}
 		50% {
-			box-shadow: inset 0 0 1px 1px rgba(47,222,137,.3);
+			box-shadow: inset 0 0 1px 1px rgba(47, 222, 137, .3);
 		}
 		100% {
-			box-shadow: inset 0 0 1px 1px rgba(47,222,137,0.5);
+			box-shadow: inset 0 0 1px 1px rgba(47, 222, 137, 0.5);
 		}
 	}
 
 	&.inactive {
-		background-color: rgba(0,0,0,0.2);
-		color: rgba(255,255,255,0.3);
+		background-color: rgba(0, 0, 0, 0.2);
+		color: rgba(255, 255, 255, 0.3);
 	}
 
 	&.disabled {
