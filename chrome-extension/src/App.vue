@@ -8,6 +8,7 @@ import { Delta, DiffEntry } from '@diffx/core/dist/internals';
 import IFuseOptions = Fuse.IFuseOptions;
 import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
+import FilterInput from './components/Filter-Input.vue';
 
 const {
 	addDiffListener,
@@ -20,7 +21,7 @@ const {
 
 export default {
 	name: 'App',
-	components: { Sidebar, DiffViewer },
+	components: { FilterInput, Sidebar, DiffViewer },
 	setup() {
 		const diffListRef = ref();
 		const diffs: Ref<DiffEntry[]> = ref([]);
@@ -214,12 +215,8 @@ export default {
 						<span>Commit</span>
 					</button>
 				</div>
-				<input
-					type="text"
-					class="filter-input"
-					placeholder="Filter..."
-					v-model="filterText"
-				></div>
+				<FilterInput v-model="filterText"/>
+			</div>
 			<Sidebar
 				ref="diffListRef"
 				:diffList="filteredDiffs"
@@ -245,10 +242,6 @@ export default {
 </style>
 
 <style lang="scss" scoped>
-* {
-	box-sizing: border-box;
-}
-
 .layout {
 	display: flex;
 	flex-direction: row;
@@ -266,16 +259,6 @@ export default {
 			background-color: #4f5465;
 		}
 	}
-}
-
-.filter-input {
-	width: 100%;
-	background-color: #2d3d53;
-	font-size: 1rem;
-	color: white;
-	border: none;
-	padding: 10px;
-	height: 30px;
 }
 
 .resize-bar {
@@ -297,7 +280,7 @@ export default {
 }
 
 .left-sidebar {
-	height: calc(100vh - 80px);
+	height: calc(100vh - 90px);
 	background-color: #1c2634;
 }
 </style>
