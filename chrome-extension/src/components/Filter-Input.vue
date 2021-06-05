@@ -5,8 +5,12 @@ export default defineComponent({
 	props: {
 		modelValue: String
 	},
-	setup() {
+	setup(_, {emit}) {
+		function onInput(evt: any) {
+			emit('update:modelValue', evt?.target?.value)
+		}
 
+		return { onInput };
 	}
 });
 </script>
@@ -18,7 +22,7 @@ export default defineComponent({
 			class="filter-input"
 			placeholder="Filter..."
 			:value="modelValue"
-			@input="$emit('update:modelValue', $event.target.value)"
+			@input="onInput"
 		>
 		<button
 			v-show="modelValue"
