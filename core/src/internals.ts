@@ -3,6 +3,7 @@ import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
 import runDelayedEmitters from './runDelayedEmitters';
+import { createId } from './createId';
 
 export interface Delta {
 	[key: string]: any;
@@ -50,6 +51,7 @@ export function removeDiffListener(listenerId: number) {
  */
 export function commit() {
 	const diffEntry: DiffEntry = {
+		id: createId(),
 		timestamp: Date.now(),
 		reason: 'Commit',
 		diff: diff({}, clone(rootState)) || {} as Delta

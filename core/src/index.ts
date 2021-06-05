@@ -9,6 +9,7 @@ import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
 import { DiffEntry, getStateSnapshot, replaceState } from './internals';
 import { diff } from 'jsondiffpatch';
+import { createId } from './createId';
 
 export * as diffxInternals from './internals';
 
@@ -101,6 +102,7 @@ export function setState(reason: string, valueAssignment: () => void) {
 	const level = ++setStateNestingLevel;
 	let didMoveDown = false;
 	const diffEntry: DiffEntry = {
+		id: createId(),
 		reason,
 		timestamp: Date.now(),
 		diff: {},
