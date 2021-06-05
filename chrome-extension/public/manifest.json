@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Diffx devtools",
   "description": "Extends devtools with a panel to view and interact with Diffx state",
-  "version": "1.1",
+  "version": "1.2",
   "icons": {
     "16": "logo-16.png",
     "48": "logo-48.png",
