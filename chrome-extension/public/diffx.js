@@ -67,12 +67,12 @@ function makeid(length) {
 
 function onPanelShown(panelWindow, inspectedWindowReloaded) {
 	_panelWindow = panelWindow;
-	const windowId = makeid(16);
+	_panelWindow.windowId = makeid(16);
 
 	chrome.devtools.inspectedWindow.eval(
 		`
 			window.__DIFFX__.addDiffListener((diff, commit) => {
-				window.postMessage({type: 'diffx_diff', windowId: '${windowId}', diff, commit}, window.location.origin);
+				window.postMessage({type: 'diffx_diff', windowId: '${_panelWindow.windowId}', diff, commit}, window.location.origin);
 			});
 			`
 	)
@@ -104,7 +104,7 @@ function onPanelShown(panelWindow, inspectedWindowReloaded) {
 		chrome.runtime.onConnect.addListener(function (incomingPort) {
 			if (incomingPort.name === 'diffx_extension_in') {
 				incomingPort.onMessage.addListener(function (msg, { name }) {
-					if (msg?.windowId && msg?.windowId !== windowId) {
+					if (msg?.windowId && msg?.windowId !== _panelWindow.windowId) {
 						return;
 					}
 					_panelWindow.postMessage(msg, _panelWindow.location.origin);
