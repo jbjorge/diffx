@@ -10,6 +10,7 @@ export interface Delta {
 }
 
 export interface DiffEntry {
+	id: string;
 	timestamp: number;
 	reason: string;
 	diff: Delta;

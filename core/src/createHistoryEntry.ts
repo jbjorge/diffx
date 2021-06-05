@@ -3,6 +3,7 @@ import clone from "./clone";
 import internalState from "./internal-state";
 import { DiffEntry, getStateSnapshot } from "./internals";
 import rootState from "./root-state";
+import { createId } from './createId';
 
 let previousState = clone(rootState);
 
@@ -41,6 +42,7 @@ export function getHistoryEntry(currentState: object, reason = '') {
 		return;
 	}
 	const historyEntry: DiffEntry = {
+		id: createId(),
 		timestamp: Date.now(),
 		reason,
 		diff: diff(previousState, currentState)
