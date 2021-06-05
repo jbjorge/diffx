@@ -1,7 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, reactive } from 'vue';
 import randomColor from 'randomcolor';
-import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { DiffEntry } from '@diffx/core/dist/internals';
 
 export default defineComponent({
 	props: {

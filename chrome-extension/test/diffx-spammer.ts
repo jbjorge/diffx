@@ -1,7 +1,9 @@
-import {setDiffxOptions, diffxInternals, createState, setState} from '@diffx/rxjs';
+import {setDiffxOptions, diffxInternals, createState, setState} from '@diffx/core';
 
-setDiffxOptions({debug:
-		{includeStackTrace: true, devtools: true}})
+setDiffxOptions({
+	devtools: true,
+	includeStackTrace: true
+});
 
 // setup communication bridge
 diffxInternals.addDiffListener((diff, commit) => {

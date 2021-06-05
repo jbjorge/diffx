@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import SidebarEntry from './Sidebar-Entry.vue';
-import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { DiffEntry } from '@diffx/core/dist/internals';
 
 export default defineComponent({
 	components: { SidebarEntry },

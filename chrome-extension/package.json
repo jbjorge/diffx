@@ -7,11 +7,10 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@diffx/rxjs": "^0.1.0",
+    "@diffx/core": "^1.2.1",
     "fuse.js": "^6.4.6",
     "jsondiffpatch": "^0.4.1",
     "randomcolor": "^0.6.2",
-    "rxjs": "^7.0.1",
     "vue": "^3.0.5"
   },
   "devDependencies": {

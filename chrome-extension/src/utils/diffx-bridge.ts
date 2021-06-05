@@ -1,5 +1,5 @@
-import { DiffListenerCallback } from '@diffx/rxjs/dist/internal-state';
-import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { DiffListenerCallback } from '@diffx/core/dist/internal-state';
+import { DiffEntry } from '@diffx/core/dist/internals';
 
 let eventId = 1;
 

@@ -4,7 +4,7 @@ import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
 import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
-import { DiffEntry } from '@diffx/rxjs/dist/internals';
+import { Delta, DiffEntry } from '@diffx/core/dist/internals';
 import IFuseOptions = Fuse.IFuseOptions;
 import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
