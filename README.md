@@ -148,15 +148,19 @@ setState('Add guest with two kids', () => {
 
 #### Async `setState()`
 
-When working with [wrapped setState()](#wrapping-setstate-in-setstate), it is likely that the situation occurs where a function wants to do some asynchronous work before setting the state.
+When working with [wrapped setState()](#wrapping-setstate-in-setstate), it is likely that the situation occurs where a
+function wants to do some asynchronous work before setting the state.
 
 To enhance tracking of async state in Diffx devtools, it is recommended to wrap asynchronous work inside a `setState()`.
 
 This can be done via two options:
 
 `setState(reason, asyncMutatorFunc)`
-* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier debugging.
-* `asyncMutatorFunc` - an async function that returns a new function that wraps any changes to state (after anything has been awaited).
+
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
+* `asyncMutatorFunc` - an async function that returns a new function that wraps any changes to state (after anything has
+  been awaited).
 
 ```javascript
 // in some file
@@ -172,7 +176,7 @@ export const orderState = createState('upload info', {
 
 export function orderFood(servingsCount) {
     setState('Order food', async () => {
-    	// the state can be changed before `await` has been used
+        // the state can be changed before `await` has been used
         orderState.errorMessage = '';
         orderState.successfulOrders = 0;
         orderState.isOrdering = true;
@@ -200,13 +204,15 @@ The other option is through a dedicated API
 
 `setStateAsync(reason, asyncMutatorFunc, onDone, onError)`
 
-* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier debugging.
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
 
 * `asyncMutatorFunc` - a function that does async work (and returns a `Promise`).
 
 * `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
 
-* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the state.
+* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
+  state.
 
 ```javascript
 import { createState, setState } from '@diffx/core';
