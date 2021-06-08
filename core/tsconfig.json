@@ -2,7 +2,7 @@
   "compilerOptions": {
 
     "target": "ES6",
-    "sourceMap": false,
+    "sourceMap": true,
     "downlevelIteration": true,
     "moduleResolution": "node",
     "module": "ESNext",
