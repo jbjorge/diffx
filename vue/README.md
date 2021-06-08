@@ -10,14 +10,14 @@ experience at any scale.
 
 * Minimal API
 * No forced usage patterns
-    * Minimal boilerplate
+    * Minimizing boilerplate
 * Supports asynchronous and nested changes to state
 * Built with typescript
-* [Devtools extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec) for
-  Google Chrome
+* [Devtools extension](#devtools-browser-extension) for Chrome
     * Step through states
     * View diffs, current state, and a stacktrace of what initiated the change
     * View and track nested state changes
+    * View and track async state changes
 
 ## Supported frameworks
 
@@ -117,86 +117,31 @@ setState('Add guest to dinner party', () => {
 dinnerGuests.names.push('Karl the first');
 ```
 
-#### Wrapping `setState()` inside `setState()`
+#### Using `setState()` inside `setState()`
 
-Diffx has full support for nesting which enables a structured approach to setting state.
+Diffx supports nesting/wrapping which enables a structured approach to setting state.
 
 ```javascript
 import { setState } from '@diffx/vue';
 import { servings, dinnerGuests } from './the-above-example';
-
-export const addGuest = (name) => setState('Add guest', () => {
-    dinnerGuests.names.push(name);
-    servings++;
-});
-
-// in some other file
-import { addGuest } from './code-above';
 
 // The outer setState is used as a wrapper to create a context for the changes.
 setState('Add guest with two kids', () => {
     addGuest('Bob the builder');
     setState('Add serving for kids', () => servings += 2);
 })
-```
 
-#### Async `setState()`
-
-When working with [wrapped setState()](#wrapping-setstate-in-setstate), it is likely that the situation occurs where a
-function wants to do some asynchronous work before setting the state.
-
-To enhance tracking of async state in Diffx devtools, it is recommended to wrap asynchronous work inside a `setState()`.
-
-This can be done via two options:
-
-`setState(reason, asyncMutatorFunc)`
-
-* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
-  debugging.
-* `asyncMutatorFunc` - an async function that returns a new function that wraps any changes to state (after anything has
-  been awaited).
-
-```javascript
-// in some file
-import { createState, setState } from '@diffx/vue';
-import { servings } from './the-above-example';
-import { orderFoodAsync } from './some-file';
-
-export const orderState = createState('upload info', {
-    isOrdering: false,
-    successfulOrders: 0,
-    errorMessage: ''
-})
-
-export function orderFood(servingsCount) {
-    setState('Order food', async () => {
-        // the state can be changed before `await` has been used
-        orderState.errorMessage = '';
-        orderState.successfulOrders = 0;
-        orderState.isOrdering = true;
-        try {
-            const successfulOrders = await orderFoodAsync(servings.count);
-            // any changes to state after `await` needs to happen in
-            // the returned function
-            return () => {
-                orderState.isOrdering = false;
-                orderState.successfulOrders = successfulOrders;
-            };
-        } catch (error) {
-            // any changes to state after `await` needs to happen in
-            // the returned function
-            return () => {
-                orderState.isOrdering = false;
-                orderState.errorMessage = error.message;
-            }
-        }
-    })
+function addGuest(name) {
+    setState('Add guest', () => {
+        dinnerGuests.names.push(name);
+        servings++;
+    });
 }
 ```
 
-The other option is through a dedicated API
-
-`setStateAsync(reason, asyncMutatorFunc, onDone, onError)`
+### `setStateAsync`
+`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes
+to the state (and enhances tracking of async state in Diffx devtools).
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
@@ -219,7 +164,7 @@ export const orderState = createState('upload info', {
     errorMessage: ''
 })
 
-function uploadGuests() {
+export function uploadGuests() {
     setStateAsync(
         'order food',
         () => {
@@ -232,14 +177,14 @@ function uploadGuests() {
         },
         result => {
             // the async work succeeded
-            uploadState.isUploading = false;
-            uploadState.uploadedCount = result;
+            orderState.isOrdering = false;
+            orderState.successfulOrders = result;
         },
         error => {
             // the async work failed
-            uploadState.isUploading = false;
-            uploadState.uploadedCount = 0;
-            uploadState.uploadErrorMessage = error.message;
+            orderState.isOrdering = false;
+            orderState.successfulOrders = 0;
+            orderState.errorMessage = error.message;
         }
     )
 }
@@ -322,10 +267,52 @@ watchState(
 
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
 
+## Devtools browser extension
+
+[Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+
+The devtools browser extension is made to give insights into
+* Why state was changed
+* Which state was changed
+* When did it change
+* Who made the change
+
+The list of changes to the state along with their `reason` provided in `setState(reason)` will be displayed in the left pane.
+Tabs displaying `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled in [setDiffxOptions](#setdiffxoptions)) are shown in the right pane.
+
+### Diff tab 
+![Diff tab preview](../assets/devtools-1.png)
+
+### State tab
+![State tab preview](../assets/devtools-6.png)
+
+### Stacktrace tab
+![Stacktrace tab preview](../assets/devtools-5.png)
+
+### State namespace indicators
+The dots in the left tab indicate which state was changed with their color,
+can be hovered to view the namespace and clicked to filter the list by that state.
+
+![State type hints](../assets/devtools-4.png)
+
+### Nested setState/setStateAsync
+For places where `setState()` has been used inside `setState()`, the left pane
+will display a nested view with colors used for displaying nesting depth.
+
+![Nested setState preview](../assets/devtools-2.png)
+
+### Tracing setStateAsync
+For operations done with `setStateAsync()`, the left pane will display an `async` tag
+where the operation starts, and a `resolved` tag where the async operation finished.  
+These tags are highlighted with a color to make it easier to spot and are also clickable to
+filter by.
+
+![setStateAsync preview](../assets/devtools-3.png)
+
 ## Credits and thanks
 
-Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package this
-project depends on.  
-Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project uses
-for creating diffs.  
-Thanks to [Redux](https://redux.js.org/) for inspiring me to try my hand at decreasing boilerplate.
+* Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package this
+project depends on.
+* Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project uses
+for creating diffs.
+* Thanks to all developers teaming together to share their creations with others
