@@ -1,6 +1,6 @@
 {
   "name": "@diffx/vue",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
-    "@diffx/core": "0.0.4"
+    "@diffx/core": "^1.3.1"
   },
   "peerDependencies": {
     "@vue/reactivity": "^3.0.2"
