@@ -2,6 +2,57 @@
 
 ## Notice <!-- removeSection -->
 
+### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
+`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes
+to the state (and enhances tracking of async state in Diffx devtools).
+
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
+
+* `asyncMutatorFunc` - a function that does async work (and returns an `Observable`).
+
+* `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
+
+* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
+  state.
+
+```javascript
+import { createState, setState } from '@diffx/rxjs';
+import { servings } from './the-above-example';
+import { orderFoodAsync } from './some-file';
+
+export const orderState = createState('upload info', {
+    isOrdering: false,
+    successfulOrders: 0,
+    errorMessage: ''
+})
+
+export function uploadGuests() {
+    setStateAsync(
+        'order food',
+        () => {
+            // set state before the async work begins
+            orderState.errorMessage = '';
+            orderState.successfulOrders = 0;
+            orderState.isOrdering = true;
+            // return the async work
+            return orderFood(servings.count);
+        },
+        result => {
+            // the async work succeeded
+            orderState.isOrdering = false;
+            orderState.successfulOrders = result;
+        },
+        error => {
+            // the async work failed
+            orderState.isOrdering = false;
+            orderState.successfulOrders = 0;
+            orderState.errorMessage = error.message;
+        }
+    )
+}
+```
+
 ### `watchState` <!-- replaceSection:`watchState` -->
 
 `watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the state.

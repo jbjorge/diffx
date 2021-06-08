@@ -1,7 +1,7 @@
 import { map } from 'rxjs/operators';
 import { createState, setDiffxOptions, setState, watchState } from './index';
 
-setDiffxOptions({ debug: { devtools: true } });
+setDiffxOptions({ devtools: true, includeStackTrace: true });
 const state = createState('hihi', { lol: { meh: 0 }, lal: [] as string[] });
 const s2 = createState('hoho', { miip: 'moop', maap: ['hehehe'] })
 

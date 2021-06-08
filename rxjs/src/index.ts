@@ -1,10 +1,39 @@
-import { watchState as coreWatchState } from '@diffx/core';
+import { setStateAsync as coreSetStateAsync, watchState as coreWatchState } from '@diffx/core';
 import { WatchOptions as coreWatchOptions } from '@diffx/core/dist/watch-options';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import clone from './clone';
 import { WatchOptions } from './watch-options';
+import { take } from 'rxjs/operators';
 
-export { setState, createState, setDiffxOptions, destroyState } from '@diffx/core';
+export { createState, setDiffxOptions, destroyState, diffxInternals, setState } from '@diffx/core';
+
+/**
+ * Set state in diffx asynchronously.
+ * @param reason The reason why the state changed
+ * @param asyncMutatorFunc A function (that can change the state and) returns an `Observable`
+ * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
+ * @param onError A mutatorFunc for when the asyncMutatorFunc has encountered an error.
+ */
+export function setStateAsync<ResolvedType, ErrorType = unknown>(
+	reason: string,
+	asyncMutatorFunc: () => Observable<ResolvedType>,
+	onDone: (result: ResolvedType) => void,
+	onError?: (error: ErrorType) => void
+) {
+	coreSetStateAsync(
+		reason,
+		() => new Promise((resolve, reject) => {
+			asyncMutatorFunc()
+				.pipe(take(1))
+				.subscribe({
+					next: resolve,
+					error: reject
+				});
+		}),
+		onDone,
+		onError
+	);
+}
 
 /**
  * Watch state for changes
