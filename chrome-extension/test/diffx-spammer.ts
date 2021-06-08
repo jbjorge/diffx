@@ -28,103 +28,86 @@ window.addEventListener('message', evt => {
 });
 
 // spam
-const s1 = createState('s1', { time: 0 });
-const people = createState('people', { names: [] as string[] });
-const asyncStateTest = createState('asyncTest', { time: '' });
-const Test = createState('Test', { time: 0 });
-const TestX2 = createState('TestX2', {
-	isTrue: true
-});
-const rState = createState('Testx3', { a: 1 });
-// setState('Recursion test', () => {
-// 	rState.a++;
-// 	setState('Level 1', () => {
-// 		Test.time = 15;
-// 		setState('Level 2', () => {
-// 			s1.time++;
-// 			setState('Level 3', () => {
-// 				s1.time++;
-// 				setState('Level 4', () => {
-// 					s1.time++;
-// 				})
-// 			})
-// 		})
-// 	})
-// 	setState('Level 1 again', () => {})
-// 	rState.a++;
-// })
-//
-// setState('Get data async', async () => {
-// 	setState('Async start', () => {
-// 		asyncStateTest.time = 'heihei';
-// 	});
-// 	const endTime = await new Promise<string>(resolve => {
-// 		setTimeout(() => resolve(asyncStateTest.time + 1), 1000);
-// 	})
-// 	return () => {
-// 		asyncStateTest.time = endTime;
-// 	};
-// })
-//
-//
-// const addPerson = function(name: string) {
-// 	setState('add person', () => {
-// 		people.names.push(name);
-// 	});
-// }
-//
-// const addPersonAsync = function(name: string) {
-// 	setState('add person async', async () => {
-// 		await new Promise(resolve => setTimeout(resolve, 1000));
-// 		return () => {
-// 			people.names.push(name);
-// 		};
-// 	});
-// }
-//
-// setState('add people', () => {
-// 	addPerson('1');
-// 	addPersonAsync('2');
-// 	addPerson('3');
-// 	setState('add person 4', () => addPersonAsync('4'));
-// 	addPersonAsync('5');
-// 	addPerson('6');
-// })
-// // addPersonAsync('Joachim');
-//
-//
-// setState('Update time', () => {
-// 	Test.time = Date.now();
-// })
-// setState('Update time', () => {
-// 	Test.time = Date.now();
-// })
-// setState('Update time', () => {
-// 	Test.time = Date.now();
-// })
+const s1 = createState('testState', { time: 0 });
+const s2 = createState('timer', { time: 0 });
+
+function updateTime() {
+	setState('One second has passed', () => {
+		s2.time = Date.now();
+	})
+}
+
+setInterval(updateTime, 1000);
+
+setState('Wrapping test', () => {
+	s1.time++;
+	setState('Level 1', () => {
+		s1.time = 15;
+		setState('Level 2', () => {
+			s1.time++;
+			setState('Level 3', () => {
+				s1.time++;
+				setState('Level 4', () => {
+					s1.time++;
+				})
+			})
+		})
+	})
+	setState('Level 1 again', () => {
+		s1.time++;
+	})
+})
+
+const addPerson = function (name: string) {
+	setState(name, () => {
+		s1.time++;
+		;
+	});
+}
+
+const addPersonAsync = function (name: string) {
+	setState(name, async () => {
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		return () => {
+			s1.time++;
+			;
+		};
+	});
+}
+
+setState('Async test', () => {
+	setState('Level 1', () => {
+		s1.time++;
+		setState('Level 2', () => {
+			s1.time++;
+			addPersonAsync('Level 3')
+		})
+		addPersonAsync('Level 2 again');
+	})
+})
 // setInterval(() => {
 // setState('Update time', () => {
-// 	Test.time = Date.now();
+// 	s1.time = Date.now();
 // })
-// 	if (Math.floor((Test.time / 1000)) % 3 === 0) {
+// 	if (Math.floor((s1.time / 1000)) % 3 === 0) {
 // 		setState('Update other state', () => {
-// 			TestX2.isTrue = !TestX2.isTrue;
+// 			s4.isTrue = !s4.isTrue;
 // 			s1.time++;
 // 		})
 // 	}
 // }, 3000);
 
-for (let i = 0; i < 10; i++) {
-	setState('upd', () => {
-		s1.time = i;
-		setState('inner upd', () => {
-			Test.time = i;
-			setState('inner upd', () => {
-				Test.time = i;
-				setState('inner upd', () => {
-					Test.time = i;
-				})
-			})
-		})
-	})
-}
+// for (let i = 0; i < 10; i++) {
+// 	setState('upd', () => {
+// 		s1.time = i;
+// 		setState('inner upd', () => {
+// 			s1.time = i;
+// 			setState('inner upd', () => {
+// 				s1.time = i;
+// 				setState('inner upd', () => {
+// 					s1.time = i;
+// 				})
+// 			})
+// 		})
+// 	})
+// }
