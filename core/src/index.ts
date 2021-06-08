@@ -56,16 +56,16 @@ export function createState<StateType extends object>(namespace: string, initial
 }
 
 /**
- * Set state in diffx synchronously or asynchronously
+ * Set state in diffx synchronously
  * @param reason The reason why the state changed
  * @param mutatorFunc A function that changes the state
  */
-export function setState(reason: string, mutatorFunc: () => (void | Promise<() => void>)) {
+export function setState(reason: string, mutatorFunc: () => void) {
 	_setState({ reason, mutatorFunc });
 }
 
 /**
- * Set state in diffx asynchronously.
+ * Set state in diffx asynchronously
  * @param reason The reason why the state changed
  * @param asyncMutatorFunc A function (that can change the state and) returns a `Promise`
  * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
