@@ -1,2 +1,2 @@
 export { UseWatchers } from './UseWatchers';
-export { watchState, setState, destroyState, createState, setDiffxOptions } from '@diffx/rxjs';
+export { watchState, setState, destroyState, createState, setDiffxOptions, setStateAsync, diffxInternals } from '@diffx/rxjs';

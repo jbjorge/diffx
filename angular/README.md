@@ -3,51 +3,106 @@
 
 ## Introduction
 
-Diffx is a state management library that focuses on minimizing boilerplate, effortless usage with typescript as well as
-support for:
+Diffx is a state management library that focuses on being easy to learn and use, and to offer a great development
+experience at any scale.
+
+## Features
+
+* Minimal API
+* No forced usage patterns
+    * Minimizing boilerplate
+* Supports asynchronous and nested changes to state
+* Built with typescript
+* [Devtools extension](#devtools-browser-extension) for Chrome
+    * Step through states
+    * View diffs, current state, and a stacktrace of what initiated the change
+    * View and track nested state changes
+    * View and track async state changes
+
+## Supported frameworks
 
 * [React](https://reactjs.org/) --> [@diffx/react](https://www.npmjs.com/package/@diffx/react)
 * [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://www.npmjs.com/package/@diffx/vue)
 * [Angular](https://angular.io/) --> [@diffx/angular](https://www.npmjs.com/package/@diffx/angular)
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
+* No framework --> [@diffx/core](https://www.npmjs.com/package/@diffx/core)
 
-Debugging can be done with
+## Installation
+
+```shell
+npm install @diffx/angular
+```
+
+And install
 the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
-.
+for a better debugging experience.
+## Fix angular change detection and the `async` pipe <!-- prependSection:Usage -->
+
+Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
+detection.
+
+To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
+file after your import of `zone`.
+
+```typescript
+import 'zone.js/dist/zone';
+import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
+```
+
 
 ## Usage
 
 ### `setDiffxOptions`
 
-`setDiffxOptions(options)` is used to enable communication with the devtools extension.
+`setDiffxOptions(options)` is used to configure which global features to enable for Diffx.
 
 ```javascript
 import { setDiffxOptions } from '@diffx/angular';
 
 setDiffxOptions({
-	debug: false / {
-		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
-		devtools: true / false,
-		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
-		includeStackTrace: true / false
-	}
+    /**
+     * Whether to record a history of state changes in-memory.
+     * Useful if e.g. the application wants to upload the history that lead to a crash.
+     * History can be obtained through `diffxInternals.getDiffs()`.
+     *
+     * Default: false
+     **/
+    createDiffs: false,
+    /**
+     * Enable viewing the state history in devtools.
+     * If set to true, `createDiffs` will also be implicitly true since it
+     * is required by devtools.
+     *
+     * Default: false
+     */
+    devtools: false,
+    /**
+     * Store a stack-trace with every history entry if `createDiffs` is enabled.
+     * Will be displayed in devtools to help with tracking down
+     * which code is making state changes.
+     *
+     * NOT recommended for production environments since creating stack traces is a slow operation!
+     *
+     * Default: false
+     */
+    includeStackTrace: false
 })
 ```
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in diffx and returns a readonly copy of the state which diffx
+`createState(namespace, state)` is used to create state in Diffx. It returns a readonly copy of the state which Diffx
 will watch for changes.
 
-* `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
+* `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace must be
   unique_.
 * `state` - an object which contains the initial state
 
 ```javascript
 import { createState } from '@diffx/angular';
 
-export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
-export const people = createState('people', { names: ['Ola Nordmann'] });
+export const dinnerGuests = createState('dinnerGuests', { names: [] });
+export const servings = createState('servings', { count: 0 });
 ```
 
 The return value of `createState()` can be accessed as a regular object to read its values.
@@ -60,24 +115,99 @@ The return value of `createState()` can be accessed as a regular object to read 
   debugging.
 * `mutatorFunc` - a function that wraps all changes to the state.
 
-_Any changes made to the state outside of `setState` will throw an error._
+_Any changes made to the state outside of `setState()` will throw an error._
 
 ```javascript
 import { setState } from '@diffx/angular';
-import { coolnessFactor, people } from './the-above-example';
+import { servings, dinnerGuests } from './the-above-example';
 
-setState('Adding myself to the list', () => {
-	people.names.push('Kari Nordmann');
-	coolnessFactor.numberOfCoolPeople++;
+setState('Add guest to dinner party', () => {
+    dinnerGuests.names.push('Kari Nordmann');
+    servings.count++;
 });
 
 // this mutates the state outside of setState() and will throw an error
-people.names.push('Karl the first');
+dinnerGuests.names.push('Karl the first');
+```
+
+#### Using `setState()` inside `setState()`
+
+Diffx supports nesting/wrapping which enables a structured approach to setting state.
+
+```javascript
+import { setState } from '@diffx/angular';
+import { servings, dinnerGuests } from './the-above-example';
+
+// The outer setState is used as a wrapper to create a context for the changes.
+setState('Add guest with two kids', () => {
+    addGuest('Bob the builder');
+    setState('Add serving for kids', () => servings += 2);
+})
+
+function addGuest(name) {
+    setState('Add guest', () => {
+        dinnerGuests.names.push(name);
+        servings++;
+    });
+}
+```
+
+### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
+
+`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and
+enhances tracking of async state in Diffx devtools).
+
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
+
+* `asyncMutatorFunc` - a function that does async work (and returns an `Observable`).
+
+* `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
+
+* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
+  state.
+
+```javascript
+import { createState, setState } from '@diffx/rxjs';
+import { servings } from './the-above-example';
+import { orderFoodAsync } from './some-file';
+
+export const orderState = createState('upload info', {
+    isOrdering: false,
+    successfulOrders: 0,
+    errorMessage: ''
+})
+
+export function uploadGuests() {
+    setStateAsync(
+        'order food',
+        () => {
+            // set state before the async work begins
+            orderState.errorMessage = '';
+            orderState.successfulOrders = 0;
+            orderState.isOrdering = true;
+            // return the async work
+            return orderFood(servings.count);
+        },
+        result => {
+            // the async work succeeded
+            orderState.isOrdering = false;
+            orderState.successfulOrders = result;
+        },
+        error => {
+            // the async work failed
+            orderState.isOrdering = false;
+            orderState.successfulOrders = 0;
+            orderState.errorMessage = error.message;
+        }
+    )
+}
 ```
 
 ### `watchState` <!-- replaceSection:`watchState` -->
 
-`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the state.
+`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the
+state.
 
 * `stateGetter` - a function which returns the state to be watched
 * `options` - options object which describes how to watch the state
@@ -87,32 +217,32 @@ import { watchState } from '@diffx/angular';
 import { coolnessFactor, people } from './the-above-example';
 
 const observable = watchState(() => people, {
-	/**
-	 * [Optional]
-	 * Whether to emit the current value of the watched item(s).
-	 *
-	 * Default: false
-	 */
-	lazy: false,
+    /**
+     * [Optional]
+     * Whether to emit the current value of the watched item(s).
+     *
+     * Default: false
+     */
+    lazy: false,
 
-	/**
-	 * [Optional]
-	 * Whether to emit each change to the state during `.setState` or
-	 * to only emit the final state after the `.setState` function has finished running.
-	 *
-	 * Default: false
-	 */
-	emitIntermediateChanges: false,
+    /**
+     * [Optional]
+     * Whether to emit each change to the state during `.setState` or
+     * to only emit the final state after the `.setState` function has finished running.
+     *
+     * Default: false
+     */
+    emitIntermediateChanges: false,
 
-	/**
-	 * [Optional]
-	 * Custom comparer function to decide if the state has changed.
-	 * Receives newValue and oldValue as arguments and should return `true` for changed
-	 * and `false` for no change.
-	 *
-	 * Default: Diffx does automatic change comparison
-	 */
-	hasChangedComparer: (newValue, oldValue) => 'true or false'
+    /**
+     * [Optional]
+     * Custom comparer function to decide if the state has changed.
+     * Receives newValue and oldValue as arguments and should return `true` for changed
+     * and `false` for no change.
+     *
+     * Default: Diffx does automatic change comparison
+     */
+    hasChangedComparer: (newValue, oldValue) => 'true or false'
 });
 
 // stop watching
@@ -126,6 +256,7 @@ observable.unsubscribe();
 * `namespace` - the namespace (string) to destroy
 
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
+
 ### `@UseWatchers` <!-- append:Usage -->
 
 `@UseWatchers(...watcher)` is used to automatically subscribe to a watcher when a component is instantiated. Accepts one
@@ -144,8 +275,8 @@ Given the example state:
 import { createState } from '@diffx/angular';
 
 export const state1 = createState('state1', {
-	currentTime: Date.now(),
-	timerRunning: false
+    currentTime: Date.now(),
+    timerRunning: false
 });
 ```
 
@@ -160,25 +291,25 @@ import { setState, watchState } from '@diffx/angular';
 let interval;
 
 export default watchState(() => state1.timerRunning, { lazy: true })
-	.pipe(
-		tap(timerRunning => {
-			if (timerRunning) {
-				startTimer();
-			} else {
-				clearInterval(interval);
-			}
-		}),
-		// it's a good idea to use share() to avoid multiple subscriptions
-		// in case multiple components use the same watcher
-		share()
-	);
+    .pipe(
+        tap(timerRunning => {
+            if (timerRunning) {
+                startTimer();
+            } else {
+                clearInterval(interval);
+            }
+        }),
+        // it's a good idea to use share() to avoid multiple subscriptions
+        // in case multiple components use the same watcher
+        share()
+    );
 
 function startTimer(): void {
-	interval = setInterval(() => {
-		setState('Watcher: Update time', () => {
-			state1.currentTime = Date.now();
-		});
-	}, 1000);
+    interval = setInterval(() => {
+        setState('Watcher: Update time', () => {
+            state1.currentTime = Date.now();
+        });
+    }, 1000);
 }
 ```
 
@@ -194,42 +325,66 @@ import timeWatcher from '../example-watcher.ts';
 
 @UseWatchers(timeWatcher) // <-- this thing right here
 @Component({
-	selector: 'app-example',
-	templateUrl: './example.component.html'
+    selector: 'app-example',
+    templateUrl: './example.component.html'
 })
 export class ExampleComponent {
-	time$ = watchState(() => state1.currentTime);
+    time$ = watchState(() => state1.currentTime);
 
-	btnClick() {
-		setState('User toggled timer', () => {
-			state1.timerRunning = !state1.timerRunning;
-		})
-	}
+    btnClick() {
+        setState('User toggled timer', () => {
+            state1.timerRunning = !state1.timerRunning;
+        })
+    }
 }
 ```
 
-## Fix angular change detection and the `async` pipe <!-- prependSection:Typescript -->
+## Devtools browser extension
 
-Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
-detection.
+[Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 
-To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
-file after your import of `zone`.
+The devtools browser extension is made to give insights into
+* Why state was changed
+* Which state was changed
+* When did it change
+* Who made the change
 
-```typescript
-import 'zone.js/dist/zone';
-import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
-```
+The list of changes to the state along with their `reason` provided in `setState(reason)` will be displayed in the left pane.
+Tabs displaying `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled in [setDiffxOptions](#setdiffxoptions)) are shown in the right pane.
 
+### Diff tab 
+![Diff tab preview](../assets/devtools-1.png)
 
-## Typescript
+### State tab
+![State tab preview](../assets/devtools-6.png)
 
-Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.
+### Stacktrace tab
+![Stacktrace tab preview](../assets/devtools-5.png)
+
+### State namespace indicators
+The dots in the left tab indicate which state was changed with their color,
+can be hovered to view the namespace and clicked to filter the list by that state.
+
+![State type hints](../assets/devtools-4.png)
+
+### Nested setState/setStateAsync
+For places where `setState()` has been used inside `setState()`, the left pane
+will display a nested view with colors used for displaying nesting depth.
+
+![Nested setState preview](../assets/devtools-2.png)
+
+### Tracing setStateAsync
+For operations done with `setStateAsync()`, the left pane will display an `async` tag
+where the operation starts, and a `resolved` tag where the async operation finished.  
+These tags are highlighted with a color to make it easier to spot and are also clickable to
+filter by.
+
+![setStateAsync preview](../assets/devtools-3.png)
 
 ## Credits and thanks
 
-Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package this
-project depends on.  
-Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project uses
-for creating diffs.  
-Thanks to [Redux](https://redux.js.org/) for inspiring me to try my hand at decreasing boilerplate.
+* Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package this
+project depends on.
+* Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project uses
+for creating diffs.
+* Thanks to all developers teaming together to share their creations with others
