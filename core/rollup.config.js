@@ -16,7 +16,7 @@ export default {
 			dir: 'dist',
 			format: 'es',
 			exports: 'named',
-			sourcemap: true
+			sourcemap: false
 		}
 	],
 	plugins: [

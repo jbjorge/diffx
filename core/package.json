@@ -7,6 +7,7 @@
     "build": "rm -rf ./dist/* && rollup -c rollup.config.js && npm run generate-readme",
     "generate-readme": "npm run generate-readme ./core/readme-template.md --prefix ../",
     "prepublishOnly": "npm run build",
+    "ci-build": "rollup -c rollup.config.js --watch",
     "ci-test": "nodemon --watch 'src/**/*.ts' --watch './tsconfig.json' --exec 'ts-node --project ./test.tsconfig.json' ./src/index.spec.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

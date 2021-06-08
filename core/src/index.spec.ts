@@ -4,10 +4,18 @@ setDiffxOptions({ createDiffs: true });
 const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] });
 // const s2 = createState('hoho', { miip: 'moop', maap: ['hehehe'] })
 
-watchState(() => state.lal, {
+watchState(() => state.lol, {
 	onChanged: (value) => console.log('On changed', value),
-	onEachChange: value => console.log('On each change', value)
+	// onEachChange: value => console.log('On each change', value)
 });
+
+const ssAsync = () => {
+	setTimeout(() => {
+		setState('async', () => {
+			state.lol.meh = 15;
+		})
+	}, 100)
+}
 
 const x = () => setState('bcos', () => {
 	state.lal.push('hihihi')
@@ -15,6 +23,7 @@ const x = () => setState('bcos', () => {
 	state.lal[0] = 'oiaja';
 	state.lal[0] = 'YES!'
 	state.lol.meh = 2;
+	ssAsync();
 })
 
 setState('reson', () => {

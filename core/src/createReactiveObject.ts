@@ -33,13 +33,14 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 				}
 				newValue = newValue.__diffx_stateReplacementValue;
 			}
+
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
-			const returnValue = Reflect.set(target, key, newValue, receiver);
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
 			if (!internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
 				throw new Error('[diffx] State was changed without using .setState()');
 			}
+			const returnValue = Reflect.set(target, key, newValue, receiver);
 			// If the state is being replaced, buffer the triggering of object setting
 			// so it can be run after the state is done being replaced
 			if (internalState.isReplacingState || internalState.stateModificationsPaused) {

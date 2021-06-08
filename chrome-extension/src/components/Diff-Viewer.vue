@@ -30,6 +30,7 @@ export default defineComponent({
 		const diffs: ComputedRef<Delta[]> = computed(() => props.diffList.map(diffEntry => diffEntry.diff));
 
 		const previousObjectState = ref({});
+
 		watchEffect(async () => {
 			const diffIndex = props.selectedDiffIndex ?? diffs.value.length - 1;
 			const reverseDiff = (diffIndex) > (diffs.value.length / 2);

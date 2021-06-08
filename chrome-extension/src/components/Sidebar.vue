@@ -22,8 +22,8 @@ export default defineComponent({
 			}
 		}
 
-		function onClickedStateName(stateName: string) {
-			emit('filterByState', stateName);
+		function setFilter(stateName: string) {
+			emit('setFilter', stateName);
 		}
 
 		function isSelected(diff: DiffEntry, index: number) {
@@ -46,7 +46,7 @@ export default defineComponent({
 			return diff.isInitialState;
 		}
 
-		return { onClickedDiff, onClickedStateName, isSelected, isInactive, isDisabled };
+		return { onClickedDiff, setFilter, isSelected, isInactive, isDisabled };
 	}
 });
 </script>
@@ -61,7 +61,7 @@ export default defineComponent({
 			:disabled="isDisabled(diff)"
 			:diffEntry="diff"
 			@stateSelected="onClickedDiff($event, index)"
-			@stateNameClicked="onClickedStateName"
+			@setFilter="setFilter"
 		/>
 	</div>
 </template>

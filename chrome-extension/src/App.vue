@@ -52,15 +52,35 @@ export default {
 			return value.concat(subReasons);
 		}
 
+		function flattenAsyncIds(diff: DiffEntry): string[] {
+			const value = [diff.id];
+			if (diff.asyncOrigin) {
+				value.push(diff.asyncOrigin);
+			}
+			if (!diff.subDiffEntries?.length) {
+				return value;
+			}
+			const subAsyncIds = diff.subDiffEntries.reduce((subR, subDiff) => {
+				return subR.concat(flattenAsyncIds(subDiff))
+			}, [] as string[]);
+			return value.concat(subAsyncIds);
+		}
+
 		const filteredDiffs = computed(() => {
 			if (!filterText?.value?.trim()) {
 				return diffs.value;
 			}
 
-			const decoratedDiffs = diffs.value.map((diff, i) => ({ ...diff, diffReasons: flattenReasons(diff), diffKeys: flattenDiffKeys(diff), realIndex: i }));
+			const decoratedDiffs = diffs.value.map((diff, i) => ({
+				...diff,
+				diffReasons: flattenReasons(diff),
+				diffKeys: flattenDiffKeys(diff),
+				asyncIds: flattenAsyncIds(diff),
+				realIndex: i
+			}));
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
-				keys: ['diffReasons', 'diffKeys'],
+				keys: ['diffReasons', 'diffKeys', 'asyncIds'],
 				shouldSort: false,
 				threshold: 0.1
 			};
@@ -223,7 +243,7 @@ export default {
 				:selected-diff-index="selectedDiffIndex"
 				class="left-sidebar"
 				@selectDiff="onDiffSelected"
-				@filterByState="filterText = $event"
+				@setFilter="filterText = $event"
 				:style="{ width: sidebarWidth + 'px' }"
 			/>
 		</div>

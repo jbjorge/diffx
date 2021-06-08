@@ -1,13 +1,13 @@
 import initializeValue from './initializeValue';
-import { createHistoryEntry, getHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
+import { createHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
 import internalState, { DiffxOptions } from './internal-state';
 import { WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
+import { DiffEntry, getStateSnapshot, replaceState } from './internals';
 import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
-import { DiffEntry, getStateSnapshot, replaceState } from './internals';
 import { diff } from 'jsondiffpatch';
 import { createId } from './createId';
 
@@ -55,6 +55,48 @@ export function createState<T extends object>(namespace: string, initialState: T
 	return rootState[namespace];
 }
 
+/**
+ * Set state in diffx synchronously or asynchronously
+ * @param reason The reason why the state changed
+ * @param mutatorFunc A function that changes the state
+ */
+export function setState(reason: string, mutatorFunc: () => (void | Promise<() => void>)) {
+	_setState({ reason, mutatorFunc });
+}
+
+/**
+ * Set state in diffx asynchronously.
+ * @param reason The reason why the state changed
+ * @param asyncMutatorFunc A function (that can change the state and) returns a `Promise`
+ * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
+ * @param onError A mutatorFunc for when the asyncMutatorFunc has encountered an error.
+ */
+export function setStateAsync<ResolvedType, ErrorType = unknown>(
+	reason: string,
+	asyncMutatorFunc: () => Promise<ResolvedType>,
+	onDone: (result: ResolvedType) => void,
+	onError?: (error: ErrorType) => void
+) {
+	_setState({
+		reason,
+		mutatorFunc: () => {
+			return asyncMutatorFunc()
+				.then(
+					value => () => onDone(value),
+					err => () => onError(err)
+				)
+		}
+	})
+}
+
+interface InternalSetStateArgs {
+	reason: string;
+	mutatorFunc: () => (void | Promise<any> | Promise<() => void>);
+	extraProps?: {
+		asyncDiffOrigin: string;
+	}
+}
+
 // --- recursive setState helpers
 let setStateNestingLevel = -1;
 let previousLevel = 0;
@@ -82,14 +124,16 @@ function addChildElement(el: DiffEntry) {
 	paren.push(children);
 	children = current[current.length - 1].subDiffEntries;
 }
+
 // ------------------------------
 
-/**
- * Set state in diffx.
- * @param reason A text that specifies the reason for the change in state.
- * @param valueAssignment A callback in which all the changes to the state happens.
- */
-export function setState(reason: string, valueAssignment: () => void) {
+function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
+	if (typeof reason !== 'string') {
+		throw new Error('[diffx] setState(reason, mutatorFunc) - reason must be a string.');
+	}
+	if (typeof mutatorFunc !== 'function') {
+		throw new Error('[diffx] setState(reason, mutatorFunc) - mutatorFunc must be a function.')
+	}
 	if (internalState.stateModificationsLocked) {
 		console.log(`[diffx] State is paused, skipped processing of "${reason}".`);
 		return;
@@ -111,6 +155,9 @@ export function setState(reason: string, valueAssignment: () => void) {
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
 	}
+	if (extraProps?.asyncDiffOrigin) {
+		diffEntry.asyncOrigin = extraProps.asyncDiffOrigin;
+	}
 	if (level < previousLevel) {
 		// moved up a level
 		addParentLevelElement(diffEntry)
@@ -124,7 +171,26 @@ export function setState(reason: string, valueAssignment: () => void) {
 	}
 	let thisLevelObject = current[current.length - 1];
 	previousLevel = level;
-	valueAssignment();
+
+	const assignmentResult = mutatorFunc();
+	if (assignmentResult instanceof Promise) {
+		thisLevelObject.async = true;
+		assignmentResult.then(
+			innerMutatorFunc => {
+				if (typeof innerMutatorFunc !== 'function') {
+					console.warn('[diffx] Asynchronous usage of setState(reason, mutatorFunc): The mutatorFunc did not return a mutatorFunc. No state was changed after the asynchronous code ran.');
+					return;
+				}
+				_setState({
+					reason,
+					mutatorFunc: innerMutatorFunc,
+					extraProps: { asyncDiffOrigin: thisLevelObject.id }
+				});
+			}
+		)
+			.catch(err => console.error(err))
+	}
+
 	const newState = getStateSnapshot();
 	thisLevelObject.diff = diff(currentState, newState);
 	setStateNestingLevel--;
@@ -146,6 +212,7 @@ export function setState(reason: string, valueAssignment: () => void) {
 		paren = [hist];
 		current = hist;
 		children = undefined;
+		console.log(Date.now());
 	}
 }
 

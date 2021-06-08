@@ -2,6 +2,7 @@
 import { computed, defineComponent, PropType, reactive } from 'vue';
 import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
+import { leftpad } from '../utils/leftpad';
 
 export default defineComponent({
 	name: 'SidebarEntry',
@@ -20,10 +21,10 @@ export default defineComponent({
 	setup(props) {
 		const formattedDate = computed(() => {
 			const d = new Date(props?.diffEntry?.timestamp || 0);
-			const hours = d.getHours();
-			const minutes = d.getMinutes();
-			const seconds = d.getSeconds();
-			const milliseconds = d.getMilliseconds();
+			const hours = leftpad(d.getHours().toString(), 2);
+			const minutes = leftpad(d.getMinutes().toString(), 2);
+			const seconds = leftpad(d.getSeconds().toString(), 2);
+			const milliseconds = leftpad(d.getMilliseconds().toString(), 3);
 			return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 		});
 		const changedStateNames = computed(() => Object.keys((props.diffEntry as DiffEntry)?.diff || {}));
@@ -54,7 +55,23 @@ export default defineComponent({
 			hoverPosition.left = evt.clientX + 5 + 'px';
 		}
 
-		return { backgroundColor, formattedDate, stateNameEntries, onColorHover, hoverPosition };
+		function getColorFromString(seed: string) {
+			return randomColor({
+				seed,
+				luminosity: 'dark',
+				alpha: 0.5,
+				format: 'rgba'
+			})
+		}
+
+		return {
+			backgroundColor,
+			formattedDate,
+			stateNameEntries,
+			onColorHover,
+			hoverPosition,
+			getColorFromString
+		};
 	}
 });
 </script>
@@ -65,6 +82,10 @@ export default defineComponent({
 			@click.stop="$emit('stateSelected', diffEntry)"
 			class="diff-entry"
 			:class="{ selected, inactive, disabled, nested: nestingLevel > 0 }"
+			:style="{
+				boxShadow: nestingLevel > 0 && selected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
+				animation: nestingLevel > 0 && selected ? 'none' : ''
+			}"
 		>
 			<div class="flex row i-align-center">
 				<div
@@ -75,7 +96,27 @@ export default defineComponent({
 				</div>
 				<div class="grow">
 					<div class="flex row c-justify-space-between i-align-center wrap">
-						<div class="diff-list-timestamp">{{ formattedDate }}</div>
+						<div class="flex row gutter-5">
+							<div class="diff-list-timestamp">{{ formattedDate }}</div>
+							<div
+								v-if="diffEntry.asyncOrigin"
+								class="tag async-end"
+								:style="{ backgroundColor: getColorFromString(diffEntry.asyncOrigin) }"
+								title="View async origin"
+								@click.stop="$emit('setFilter', diffEntry.asyncOrigin)"
+							>
+								resolve
+							</div>
+							<div
+								v-if="diffEntry.async"
+								class="tag async-start"
+								:style="{ backgroundColor: getColorFromString(diffEntry.id) }"
+								title="View async result"
+								@click.stop="$emit('setFilter', diffEntry.id)"
+							>
+								async
+							</div>
+						</div>
 						<div
 							class="flex row i-align-center wrap"
 							:style="{ marginRight: nestingLevel !== 0 ? '5px' : '0px' }"
@@ -86,7 +127,7 @@ export default defineComponent({
 								:style="{backgroundColor: entry.color}"
 								class="state-name-circle"
 								@mouseover="onColorHover"
-								@click.stop="$emit('stateNameClicked', entry.stateName)"
+								@click.stop="$emit('setFilter', entry.stateName)"
 							>
 								<div :style="hoverPosition">
 									{{ entry.stateName }}
@@ -105,7 +146,10 @@ export default defineComponent({
 			:diffEntry="subEntry"
 			:nestingLevel="nestingLevel + 1"
 			:style="{borderLeft: `7px solid ${backgroundColor}`}"
-			@stateNameClicked="$emit('stateNameClicked', $event)"
+			:disabled="disabled"
+			:selected="selected"
+			:inactive="inactive"
+			@setFilter="$emit('setFilter', $event)"
 			@stateSelected="$emit('stateSelected', $event)"
 		/>
 	</div>
@@ -151,6 +195,17 @@ export default defineComponent({
 	&.disabled {
 		opacity: 0.5;
 		pointer-events: none;
+	}
+
+	& .tag {
+		border-radius: 10px;
+		padding: 1px 7px 0 7px;
+		font-size: 0.8rem;
+		border: 1px solid rgba(255,255,255,0.09);
+
+		&:hover {
+			opacity: 0.85;
+		}
 	}
 }
 
