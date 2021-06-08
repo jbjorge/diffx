@@ -20,11 +20,11 @@ experience at any scale.
 
 ## Supported frameworks
 
-* [React](https://reactjs.org/) --> [@diffx/react](https://www.npmjs.com/package/@diffx/react)
-* [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://www.npmjs.com/package/@diffx/vue)
-* [Angular](https://angular.io/) --> [@diffx/angular](https://www.npmjs.com/package/@diffx/angular)
-* [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
-* No framework --> [@diffx/core](https://www.npmjs.com/package/@diffx/core)
+* [React](https://reactjs.org/) --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)
+* [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)
+* [Angular](https://angular.io/) --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)
+* [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)
+* No framework --> Described in this readme
 
 ## Notice
 
