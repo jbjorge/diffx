@@ -36,16 +36,16 @@ const orderState = createState('upload info', {
 	errorMessage: ''
 })
 
-// setState('Add "Hanna" to dinnerGuests', () => {
-// 	s1.names.push('Hanna');
-// });
-// setState('Add serving', () => {
-// 	s2.count++;
-// })
-// setState('Add "Joachim" to dinnerGuests and add serving', () => {
-// 	s1.names.push('Joachim');
-// 	s2.count++;
-// })
+setState('Add "Hanna" to dinnerGuests', () => {
+	s1.names.push('Hanna');
+});
+setState('Add serving', () => {
+	s2.count++;
+})
+setState('Add "Joachim" to dinnerGuests and add serving', () => {
+	s1.names.push('Joachim');
+	s2.count++;
+})
 
 // setState('setState inside setState', () => {
 // 	setState('Add serving', () => {
@@ -95,12 +95,6 @@ const orderState = createState('upload info', {
 // setState('Other state changes while async is running', () => {});
 // setState('Other state changes while async is running', () => {});
 // setState('Other state changes while async is running', () => {});
-
-setStateAsync(
-	'Because',
-	() => Promise.resolve(),
-	() => {}
-)
 
 //
 const addPerson = function (name: string) {
