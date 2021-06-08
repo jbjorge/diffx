@@ -28,9 +28,9 @@ export function setDiffxOptions(options: DiffxOptions) {
 /**
  * Declare state in diffx.
  * @param namespace A string that identifies this state. Must be unique.
- * @param initialState
+ * @param initialState An object that contains the initial state.
  */
-export function createState<T extends object>(namespace: string, initialState: T): T {
+export function createState<StateType extends object>(namespace: string, initialState: StateType): StateType {
 	if (rootState[namespace]) {
 		if (!internalState.instanceOptions?.devtools) {
 			throw new Error(
