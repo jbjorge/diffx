@@ -159,7 +159,7 @@ function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
 		subDiffEntries: []
 	};
 	if (internalState.instanceOptions?.includeStackTrace) {
-		diffEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
+		diffEntry.stackTrace = new Error().stack;
 	}
 	if (extraProps?.asyncDiffOrigin) {
 		diffEntry.asyncOrigin = extraProps.asyncDiffOrigin;
