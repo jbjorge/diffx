@@ -9,24 +9,16 @@
 * `getterFunc` - a function that returns state or a projection of state.
 
 ```javascript
-import { counterState } from './store';
-import { setState, useDiffx } from '@diffx/react';
+import { servings } from './the-above-example';
+import { useDiffx } from '@diffx/react';
 
 export default function App() {
-	const count = useDiffx(() => counterState.count);
+    const dinnerServingsCount = useDiffx(() => servings.count);
 
-	function incrementCounter() {
-		setState('Incremented counter', () => {
-			counterState.count++
-		});
-	}
-
-	return (
-		<div>
-			<div>Current count: {count}</div>
-			<button onClick={incrementCounter}>Increment</button>
-		</div>
-	);
+    return (
+        <div>
+            <div>Current servings count: {dinnerServingsCount}</div>
+        </div>
+    );
 }
-
 ```

@@ -3,51 +3,93 @@
 
 ## Introduction
 
-Diffx is a state management library that focuses on minimizing boilerplate, effortless usage with typescript as well as
-support for:
+Diffx is a state management library that focuses on being easy to learn and use, and to offer a great development
+experience at any scale.
+
+## Features
+
+* Minimal API
+* No forced usage patterns
+    * Minimal boilerplate
+* Supports asynchronous and nested changes to state
+* Built with typescript
+* [Devtools extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec) for
+  Google Chrome
+    * Step through states
+    * View diffs, current state, and a stacktrace of what initiated the change
+    * View and track nested state changes
+
+## Supported frameworks
 
 * [React](https://reactjs.org/) --> [@diffx/react](https://www.npmjs.com/package/@diffx/react)
 * [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://www.npmjs.com/package/@diffx/vue)
 * [Angular](https://angular.io/) --> [@diffx/angular](https://www.npmjs.com/package/@diffx/angular)
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://www.npmjs.com/package/@diffx/rxjs)
+* No framework --> [@diffx/core](https://www.npmjs.com/package/@diffx/core)
 
-Debugging can be done with
+## Installation
+
+```shell
+npm install @diffx/react
+```
+
+And install
 the [devtools extension for Google Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
-.
+for a better debugging experience.
 
 ## Usage
 
 ### `setDiffxOptions`
 
-`setDiffxOptions(options)` is used to enable communication with the devtools extension.
+`setDiffxOptions(options)` is used to configure which global features to enable for Diffx.
 
 ```javascript
 import { setDiffxOptions } from '@diffx/react';
 
 setDiffxOptions({
-	debug: false / {
-		/** Enable viewing the state history in devtools. Not recommended for use in a production environment. */
-		devtools: true / false,
-		/** Beware, creating stack traces for each state change is a slow operation. Not recommended for use in a production environment. */
-		includeStackTrace: true / false
-	}
+    /**
+     * Whether to record a history of state changes in-memory.
+     * Useful if e.g. the application wants to upload the history that lead to a crash.
+     * History can be obtained through `diffxInternals.getDiffs()`.
+     *
+     * Default: false
+     **/
+    createDiffs: false,
+    /**
+     * Enable viewing the state history in devtools.
+     * If set to true, `createDiffs` will also be implicitly true since it
+     * is required by devtools.
+     *
+     * Default: false
+     */
+    devtools: false,
+    /**
+     * Store a stack-trace with every history entry if `createDiffs` is enabled.
+     * Will be displayed in devtools to help with tracking down
+     * which code is making state changes.
+     *
+     * NOT recommended for production environments since creating stack traces is a slow operation!
+     *
+     * Default: false
+     */
+    includeStackTrace: false
 })
 ```
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in diffx and returns a readonly copy of the state which diffx
+`createState(namespace, state)` is used to create state in Diffx. It returns a readonly copy of the state which Diffx
 will watch for changes.
 
-* `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace has to be
+* `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace must be
   unique_.
 * `state` - an object which contains the initial state
 
 ```javascript
 import { createState } from '@diffx/react';
 
-export const coolnessFactor = createState('coolnessFactor', { numberOfCoolPeople: 1 });
-export const people = createState('people', { names: ['Ola Nordmann'] });
+export const dinnerGuests = createState('dinnerGuests', { names: [] });
+export const servings = createState('servings', { count: 0 });
 ```
 
 The return value of `createState()` can be accessed as a regular object to read its values.
@@ -59,26 +101,18 @@ The return value of `createState()` can be accessed as a regular object to read 
 * `getterFunc` - a function that returns state or a projection of state.
 
 ```javascript
-import { counterState } from './store';
-import { setState, useDiffx } from '@diffx/react';
+import { servings } from './the-above-example';
+import { useDiffx } from '@diffx/react';
 
 export default function App() {
-	const count = useDiffx(() => counterState.count);
+    const dinnerServingsCount = useDiffx(() => servings.count);
 
-	function incrementCounter() {
-		setState('Incremented counter', () => {
-			counterState.count++
-		});
-	}
-
-	return (
-		<div>
-			<div>Current count: {count}</div>
-			<button onClick={incrementCounter}>Increment</button>
-		</div>
-	);
+    return (
+        <div>
+            <div>Current servings count: {dinnerServingsCount}</div>
+        </div>
+    );
 }
-
 ```
 
 ### `setState`
@@ -89,26 +123,154 @@ export default function App() {
   debugging.
 * `mutatorFunc` - a function that wraps all changes to the state.
 
-_Any changes made to the state outside of `setState` will throw an error._
+_Any changes made to the state outside of `setState()` will throw an error._
 
 ```javascript
 import { setState } from '@diffx/react';
-import { coolnessFactor, people } from './the-above-example';
+import { servings, dinnerGuests } from './the-above-example';
 
-setState('Adding myself to the list', () => {
-	people.names.push('Kari Nordmann');
-	coolnessFactor.numberOfCoolPeople++;
+setState('Add guest to dinner party', () => {
+    dinnerGuests.names.push('Kari Nordmann');
+    servings.count++;
 });
 
 // this mutates the state outside of setState() and will throw an error
-people.names.push('Karl the first');
+dinnerGuests.names.push('Karl the first');
+```
+
+#### Wrapping `setState()` inside `setState()`
+
+Diffx has full support for nesting which enables a structured approach to setting state.
+
+```javascript
+import { setState } from '@diffx/react';
+import { servings, dinnerGuests } from './the-above-example';
+
+export const addGuest = (name) => setState('Add guest', () => {
+    dinnerGuests.names.push(name);
+    servings++;
+});
+
+// in some other file
+import { addGuest } from './code-above';
+
+// The outer setState is used as a wrapper to create a context for the changes.
+setState('Add guest with two kids', () => {
+    addGuest('Bob the builder');
+    setState('Add serving for kids', () => servings += 2);
+})
+```
+
+#### Async `setState()`
+
+When working with [wrapped setState()](#wrapping-setstate-in-setstate), it is likely that the situation occurs where a
+function wants to do some asynchronous work before setting the state.
+
+To enhance tracking of async state in Diffx devtools, it is recommended to wrap asynchronous work inside a `setState()`.
+
+This can be done via two options:
+
+`setState(reason, asyncMutatorFunc)`
+
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
+* `asyncMutatorFunc` - an async function that returns a new function that wraps any changes to state (after anything has
+  been awaited).
+
+```javascript
+// in some file
+import { createState, setState } from '@diffx/react';
+import { servings } from './the-above-example';
+import { orderFoodAsync } from './some-file';
+
+export const orderState = createState('upload info', {
+    isOrdering: false,
+    successfulOrders: 0,
+    errorMessage: ''
+})
+
+export function orderFood(servingsCount) {
+    setState('Order food', async () => {
+        // the state can be changed before `await` has been used
+        orderState.errorMessage = '';
+        orderState.successfulOrders = 0;
+        orderState.isOrdering = true;
+        try {
+            const successfulOrders = await orderFoodAsync(servings.count);
+            // any changes to state after `await` needs to happen in
+            // the returned function
+            return () => {
+                orderState.isOrdering = false;
+                orderState.successfulOrders = successfulOrders;
+            };
+        } catch (error) {
+            // any changes to state after `await` needs to happen in
+            // the returned function
+            return () => {
+                orderState.isOrdering = false;
+                orderState.errorMessage = error.message;
+            }
+        }
+    })
+}
+```
+
+The other option is through a dedicated API
+
+`setStateAsync(reason, asyncMutatorFunc, onDone, onError)`
+
+* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
+  debugging.
+
+* `asyncMutatorFunc` - a function that does async work (and returns a `Promise`).
+
+* `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
+
+* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
+  state.
+
+```javascript
+import { createState, setState } from '@diffx/react';
+import { servings } from './the-above-example';
+import { orderFoodAsync } from './some-file';
+
+export const orderState = createState('upload info', {
+    isOrdering: false,
+    successfulOrders: 0,
+    errorMessage: ''
+})
+
+function uploadGuests() {
+    setStateAsync(
+        'order food',
+        () => {
+            // set state before the async work begins
+            orderState.errorMessage = '';
+            orderState.successfulOrders = 0;
+            orderState.isOrdering = true;
+            // return the async work
+            return orderFood(servings.count);
+        },
+        result => {
+            // the async work succeeded
+            uploadState.isUploading = false;
+            uploadState.uploadedCount = result;
+        },
+        error => {
+            // the async work failed
+            uploadState.isUploading = false;
+            uploadState.uploadedCount = 0;
+            uploadState.uploadErrorMessage = error.message;
+        }
+    )
+}
 ```
 
 ### `watchState`
 
 `watchState(stateGetter, options)` is used for watching the state and being notified/reacting when it changes.
 
-* `stateGetter` - a function which returns the state to be watched
+* `stateGetter` - a function which returns the state(s) to be watched
 * `options` - options object which describes how to watch the state
     * An error will be thrown if both `onChanged` and `onEachChange` are `undefined` (one of them needs to be set).
 
@@ -116,41 +278,61 @@ people.names.push('Karl the first');
 
 ```javascript
 import { watchState } from '@diffx/react';
-import { coolnessFactor, people } from './the-above-example';
+import { servings, dinnerGuests } from './the-above-example';
 
-const unwatchFunc = watchState(() => people, {
-	/**
-	 * [Optional]
-	 * Whether to emit the current value of the watched item(s).
-	 *
-	 * Default: false
-	 */
-	lazy: true / false,
+const unwatchFunc = watchState(() => dinnerGuests, {
+    /**
+     * [Optional]
+     * Whether to emit the current value of the watched item(s).
+     *
+     * Default: false
+     */
+    lazy: false,
 
-	/**
-	 * Callback called with the final state after
-	 * the .setState() function has finished running.
-	 */
-	onChanged: newValue => 'do whatever you want',
+    /**
+     * Callback called with the final state after
+     * the .setState() function has finished running.
+     */
+    onChanged: newValue => 'do whatever you want',
 
-	/**
-	 * Callback for each change to the state during .setState().
-	 */
-	onEachChange: newValue => 'do whatever you want',
+    /**
+     * Callback for each change to the state during .setState().
+     */
+    onEachChange: newValue => 'do whatever you want',
 
-	/**
-	 * [Optional]
-	 * Custom comparer function to decide if the state has changed.
-	 * Receives newValue and oldValue as arguments and should return `true` for changed
-	 * and `false` for no change.
-	 *
-	 * Default: Diffx does automatic change comparison
-	 */
-	hasChangedComparer: (newValue, oldValue) => true / false
+    /**
+     * [Optional]
+     * Custom comparer function to decide if the state has changed.
+     * Receives newValue and oldValue as arguments and should return `true` for changed
+     * and `false` for no change.
+     *
+     * Default: undefined, Diffx does automatic change comparison
+     */
+    hasChangedComparer: (newValue, oldValue) => true / false
 });
 
 // stop watching
 unwatchFunc();
+```
+
+The `watchState()` function can also watch projections of state or multiple states
+
+```javascript
+// projection of state
+watchState(
+    () => servings.count - dinnerGuests.names.length,
+    {
+        onChanged: (extraServings) => 'do whatever you want'
+    }
+);
+
+// multiple states (which is actually just a projection of state)
+watchState(
+    () => [dinnerGuests.names, servings.count],
+    {
+        onChanged: ([guestNames, servingsCount]) => 'do whatever you want'
+    }
+);
 ```
 
 ### `destroyState`
@@ -160,10 +342,6 @@ unwatchFunc();
 * `namespace` - the namespace (string) to destroy
 
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
-
-## Typescript
-
-Diffx is written in typescript and leans on typescript's type inference to avoid interface boilerplate.
 
 ## Credits and thanks
 
