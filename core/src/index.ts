@@ -212,7 +212,6 @@ function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
 		paren = [hist];
 		current = hist;
 		children = undefined;
-		console.log(Date.now());
 	}
 }
 
