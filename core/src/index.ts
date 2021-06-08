@@ -83,7 +83,13 @@ export function setStateAsync<ResolvedType, ErrorType = unknown>(
 			return asyncMutatorFunc()
 				.then(
 					value => () => onDone(value),
-					err => () => onError(err)
+					err => () => {
+						const errorFunc = onError || (() => {
+							console.warn('[diffx] setStateAsync() threw an error, but no error handler was provided. The error was:');
+							console.error(err);
+						})
+						return errorFunc(err);
+					}
 				)
 		}
 	})
