@@ -107,7 +107,7 @@ export default defineComponent({
 				></div>
 				<div
 					v-if="selectedTab === 'stackTrace'"
-					style="white-space: pre-wrap"
+					style="white-space: pre"
 				>
 					{{ diffToDisplay.stackTrace }}
 				</div>
