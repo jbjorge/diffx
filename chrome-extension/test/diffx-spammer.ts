@@ -1,8 +1,8 @@
-import { createState, diffxInternals, setDiffxOptions, setState } from '@diffx/core';
+import { setStateAsync, createState, diffxInternals, setDiffxOptions, setState } from '@diffx/core';
 
 setDiffxOptions({
 	devtools: true,
-	includeStackTrace: false
+	includeStackTrace: true
 });
 
 // setup communication bridge
@@ -28,74 +28,109 @@ window.addEventListener('message', evt => {
 });
 
 // spam
-const s1 = createState('testState', { time: 0 });
-const s2 = createState('timer', { time: 0 });
-
-function updateTime() {
-	setState('One second has passed', () => {
-		s2.time = Date.now();
-	})
-}
-
-setInterval(updateTime, 1000);
-
-setState('Wrapping test', () => {
-	s1.time++;
-	setState('Level 1', () => {
-		s1.time = 15;
-		setState('Level 2', () => {
-			s1.time++;
-			setState('Level 3', () => {
-				s1.time++;
-				setState('Level 4', () => {
-					s1.time++;
-				})
-			})
-		})
-	})
-	setState('Level 1 again', () => {
-		s1.time++;
-	})
+const s1 = createState('dinnerGuests', { names: [] as string[] });
+const s2 = createState('servings', { count: 0 });
+const orderState = createState('upload info', {
+	isOrdering: false,
+	successfulOrders: 0,
+	errorMessage: ''
 })
 
+// setState('Add "Hanna" to dinnerGuests', () => {
+// 	s1.names.push('Hanna');
+// });
+// setState('Add serving', () => {
+// 	s2.count++;
+// })
+// setState('Add "Joachim" to dinnerGuests and add serving', () => {
+// 	s1.names.push('Joachim');
+// 	s2.count++;
+// })
+
+// setState('setState inside setState', () => {
+// 	setState('Add serving', () => {
+// 		s2.count++;
+// 		setState('Add serving', () => {
+// 			s2.count++;
+// 			setState('Add "Jan" to dinnerGuests', () => {
+// 				s1.names.push('Jan');
+// 				setState('Add serving', () => {
+// 					s2.count++;
+// 				})
+// 			})
+// 		})
+// 	})
+// 	setState('Add serving', () => {
+// 		s2.count++;
+// 	})
+// })
+
+// setState('setStateAsync (nested)', () => {
+// 	setStateAsync(
+// 		'Fetch existing table reservations',
+// 		() => {
+// 			orderState.errorMessage = '';
+// 			orderState.successfulOrders = 0;
+// 			orderState.isOrdering = true;
+// 			return Promise.resolve(5);
+// 		},
+// 		orderedCount => {
+// 			orderState.isOrdering = false;
+// 			setStateAsync(
+// 				'Upload food order',
+// 				() => {
+// 					orderState.isOrdering = true;
+// 					orderState.successfulOrders = 0;
+// 					return Promise.resolve()
+// 				},
+// 				() => {
+// 					orderState.isOrdering = false;
+// 					orderState.successfulOrders = 5;
+// 				}
+// 				)
+// 		}
+// 	)
+// })
+//
+// setState('Other state changes while async is running', () => {});
+// setState('Other state changes while async is running', () => {});
+// setState('Other state changes while async is running', () => {});
+
+setStateAsync(
+	'Because',
+	() => Promise.resolve(),
+	() => {}
+)
+
+//
 const addPerson = function (name: string) {
 	setState(name, () => {
-		s1.time++;
-		;
+		s1.names.push(name);
 	});
 }
 
 const addPersonAsync = function (name: string) {
-	setState(name, async () => {
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		return () => {
-			s1.time++;
-			;
-		};
-	});
+	setStateAsync(
+		name,
+		() => Promise.resolve(),
+		() => s1.names.push(name)
+	);
 }
 
-setState('Async test', () => {
-	setState('Level 1', () => {
-		s1.time++;
-		setState('Level 2', () => {
-			s1.time++;
-			addPersonAsync('Level 3')
-		})
-		addPersonAsync('Level 2 again');
-	})
-})
-// setInterval(() => {
-// setState('Update time', () => {
-// 	s1.time = Date.now();
-// })
-// 	if (Math.floor((s1.time / 1000)) % 3 === 0) {
-// 		setState('Update other state', () => {
-// 			s4.isTrue = !s4.isTrue;
-// 			s1.time++;
+// setState('Async test', () => {
+// 	setState('Level 1', () => {
+// 		setState('Level 2', () => {
+// 			addPersonAsync('Level 3')
 // 		})
-// 	}
-// }, 3000);
+// 		addPersonAsync('Level 2 again');
+// 	})
+// })
+
+// for (let i = 0; i < 50; i++) {
+// 	setState('Update time', () => {
+// 		s2.time = Date.now();
+// 	})
+// }
 
 // for (let i = 0; i < 10; i++) {
 // 	setState('upd', () => {
