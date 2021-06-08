@@ -99,20 +99,20 @@ export default defineComponent({
 						<div class="flex row gutter-5">
 							<div class="diff-list-timestamp">{{ formattedDate }}</div>
 							<div
-								v-if="diffEntry.asyncOrigin"
+								v-if="diffEntry?.asyncOrigin"
 								class="tag async-end"
-								:style="{ backgroundColor: getColorFromString(diffEntry.asyncOrigin) }"
+								:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
 								title="View async origin"
-								@click.stop="$emit('setFilter', diffEntry.asyncOrigin)"
+								@click.stop="$emit('setFilter', diffEntry?.asyncOrigin)"
 							>
 								resolve
 							</div>
 							<div
-								v-if="diffEntry.async"
+								v-if="diffEntry?.async"
 								class="tag async-start"
-								:style="{ backgroundColor: getColorFromString(diffEntry.id) }"
+								:style="{ backgroundColor: getColorFromString(diffEntry?.id) }"
 								title="View async result"
-								@click.stop="$emit('setFilter', diffEntry.id)"
+								@click.stop="$emit('setFilter', diffEntry?.id)"
 							>
 								async
 							</div>
