@@ -18,7 +18,7 @@ export function useDiffx<StateType>(getter: StateGetter<StateType>): StateType {
 		}
 
 		return watchState(getter, { lazy: true, onChanged: updateState });
-	});
+	}, []);
 
 	return state;
 }
