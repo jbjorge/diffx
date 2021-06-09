@@ -1,6 +1,6 @@
 import initializeValue from './initializeValue';
 import { createHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
-import internalState, { DiffxOptions } from './internal-state';
+import internalState, { CreateStateOptions, DiffxOptions } from './internal-state';
 import { WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
@@ -10,6 +10,7 @@ import runDelayedEmitters from './runDelayedEmitters';
 import { effect } from '@vue/reactivity';
 import { diff } from 'jsondiffpatch';
 import { createId } from './createId';
+import { getInitialState } from './initial-state';
 
 export * as diffxInternals from './internals';
 
@@ -29,8 +30,9 @@ export function setDiffxOptions(options: DiffxOptions) {
  * Declare state in diffx.
  * @param namespace A string that identifies this state. Must be unique.
  * @param initialState An object that contains the initial state.
+ * @param options Options for this specific state
  */
-export function createState<StateType extends object>(namespace: string, initialState: StateType): StateType {
+export function createState<StateType extends object>(namespace: string, initialState: StateType, options: CreateStateOptions = {}): StateType {
 	if (rootState[namespace]) {
 		if (!internalState.instanceOptions?.devtools) {
 			throw new Error(
@@ -48,10 +50,21 @@ export function createState<StateType extends object>(namespace: string, initial
 		createHistoryEntry(`@replace ${namespace}`, true);
 		return rootState[namespace];
 	}
+
 	internalState.isCreatingState = true;
-	rootState[namespace] = initialState;
+	const [resolvedInitialState, isPersistent, persistenceLocation] = getInitialState(namespace, initialState, options);
+	rootState[namespace] = resolvedInitialState;
 	internalState.isCreatingState = false;
 	createHistoryEntry(`@init ${namespace}`, true);
+
+	if (isPersistent) {
+		// setup watcher to keep state up to date
+		watchState(() => rootState[namespace], {
+			lazy: true,
+			onChanged: value => persistenceLocation.setItem('__diffx__' + namespace, JSON.stringify(value))
+		});
+	}
+
 	return rootState[namespace];
 }
 

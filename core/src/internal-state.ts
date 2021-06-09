@@ -9,6 +9,23 @@ export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
  */
 type DelayedEmitterMap = { [id: string]: () => void };
 
+export type PersistenceLocation = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+
+export interface CreateStateOptions {
+	/**
+	 * Persist the latest snapshot of this state and automatically use that as the initial state
+	 *
+	 * Default: false
+	 */
+	persistent?: boolean;
+	/**
+	 * Location for storing persistent state.
+	 *
+	 * Default: persistenceLocation defined in setDiffxOptions or `sessionStorage`
+	 */
+	persistenceLocation?: PersistenceLocation
+}
+
 /**
  * Set options for the diffx runtime
  */
@@ -37,6 +54,18 @@ export interface DiffxOptions {
 	 * Default: false
 	 */
 	includeStackTrace?: boolean;
+	/**
+	 * Persist the latest snapshot of all states and automatically use that as the initial state
+	 *
+	 * Default: false
+	 */
+	persistent?: boolean;
+	/**
+	 * Location for storing persistent state.
+	 *
+	 * Default: sessionStorage
+	 */
+	persistenceLocation?: PersistenceLocation
 }
 
 export default {

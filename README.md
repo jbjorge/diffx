@@ -78,18 +78,36 @@ setDiffxOptions({
      *
      * Default: false
      */
-    includeStackTrace: false
+    includeStackTrace: false,
+    /**
+     * Persist the latest snapshot of all states and automatically use that as the initial state
+     *
+     * Default: false
+     */
+    persistent: false,
+    /**
+     * Location for storing persistent state.
+     *
+     * Default: sessionStorage
+     */
+    persistenceLocation: sessionStorage
 })
 ```
 
 ### `createState`
 
-`createState(namespace, state)` is used to create state in Diffx. It returns a readonly copy of the state which Diffx
-will watch for changes.
+`createState(namespace, state, options)` is used to create state in Diffx. It returns a readonly copy of the state which
+Diffx will watch for changes.
 
 * `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace must be
   unique_.
 * `state` - an object which contains the initial state
+* `options`- optional settings for this particular state
+    * `persistent` - Persist the latest snapshot of this state and automatically use that as the initial state. Setting
+      it to `false` will exclude the state from persistence, even though it is globally set to `true`
+      in `setDiffxOptions`.
+
+    * `persistenceLocation` - Location for storing persistent state. Default: sessionStorage
 
 ```javascript
 import { createState } from '@diffx/core';
@@ -146,8 +164,9 @@ function addGuest(name) {
 ```
 
 ### `setStateAsync`
-`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes
-to the state (and enhances tracking of async state in Diffx devtools).
+
+`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and
+enhances tracking of async state in Diffx devtools).
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
@@ -278,47 +297,54 @@ _Any watchers of the destroyed state will **not** be automatically unwatched_.
 [Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 
 The devtools browser extension is made to give insights into
+
 * Why state was changed
 * Which state was changed
 * When did it change
 * Who made the change
 
-The list of changes to the state along with their `reason` provided in `setState(reason)` will be displayed in the left pane.
-Tabs displaying `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled in [setDiffxOptions](#setdiffxoptions)) are shown in the right pane.
+The list of changes to the state along with their `reason` provided in `setState(reason)` will be displayed in the left
+pane. Tabs displaying `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
+in [setDiffxOptions](#setdiffxoptions)) are shown in the right pane.
 
-### Diff tab 
+### Diff tab
+
 ![Diff tab preview](./assets/devtools-1.png)
 
 ### State tab
+
 ![State tab preview](./assets/devtools-6.png)
 
 ### Stacktrace tab
+
 ![Stacktrace tab preview](./assets/devtools-5.png)
 
 ### State namespace indicators
-The dots in the left tab indicate which state was changed with their color,
-can be hovered to view the namespace and clicked to filter the list by that state.
+
+The dots in the left tab indicate which state was changed with their color, can be hovered to view the namespace and
+clicked to filter the list by that state.
 
 ![State type hints](./assets/devtools-4.png)
 
 ### Nested setState/setStateAsync
-For places where `setState()` has been used inside `setState()`, the left pane
-will display a nested view with colors used for displaying nesting depth.
+
+For places where `setState()` has been used inside `setState()`, the left pane will display a nested view with colors
+used for displaying nesting depth.
 
 ![Nested setState preview](./assets/devtools-2.png)
 
 ### Tracing setStateAsync
-For operations done with `setStateAsync()`, the left pane will display an `async` tag
-where the operation starts, and a `resolved` tag where the async operation finished.  
-These tags are highlighted with a color to make it easier to spot and are also clickable to
-filter by.
+
+For operations done with `setStateAsync()`, the left pane will display an `async` tag where the operation starts, and
+a `resolved` tag where the async operation finished.  
+These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
 
 ![setStateAsync preview](./assets/devtools-3.png)
 
 ## Credits and thanks
 
-* Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package this
-project depends on.
-* Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project uses
-for creating diffs.
+* Thanks to the team behind [Vue.js](https://vuejs.org/) for making a great framework and the `@vue/reactive` package
+  this project depends on.
+* Thanks to Benjamine, the creator of [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) which this project
+  uses for creating diffs.
 * Thanks to all developers teaming together to share their creations with others
