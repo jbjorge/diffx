@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { setState, watchState } from '@diffx/core';
 
-export { createState, setState, destroyState, setDiffxOptions, watchState } from '@diffx/core';
+export {
+	setDiffxOptions,
+	createState,
+	setState,
+	setStateAsync,
+	watchState,
+	destroyState,
+	diffxInternals
+} from '@diffx/core';
 
 type StateGetter<StateType> = () => StateType;
 
