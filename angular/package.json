@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
-    "@diffx/rxjs": "^1.0.0"
+    "@diffx/rxjs": "^1.0.1"
   },
   "peerDependencies": {
     "@angular/core": ">=9.0.0",
