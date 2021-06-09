@@ -1,1 +1,9 @@
-export { createState, setState, destroyState, setDiffxOptions, watchState } from '@diffx/core';
+export {
+	setDiffxOptions,
+	createState,
+	setState,
+	setStateAsync,
+	watchState,
+	destroyState,
+	diffxInternals
+} from '@diffx/core';
