@@ -14,7 +14,7 @@ export { createState, setDiffxOptions, destroyState, diffxInternals, setState } 
  * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
  * @param onError A mutatorFunc for when the asyncMutatorFunc has encountered an error.
  */
-export function setStateAsync<ResolvedType, ErrorType = unknown>(
+export function setStateAsync<ResolvedType, ErrorType = any>(
 	reason: string,
 	asyncMutatorFunc: () => Observable<ResolvedType>,
 	onDone: (result: ResolvedType) => void,
@@ -26,8 +26,9 @@ export function setStateAsync<ResolvedType, ErrorType = unknown>(
 			asyncMutatorFunc()
 				.pipe(take(1))
 				.subscribe({
-					next: resolve,
-					error: reject
+					next(value) { resolve(value) },
+					error(err) { reject(err as ErrorType) },
+					complete() {}
 				});
 		}),
 		onDone,
