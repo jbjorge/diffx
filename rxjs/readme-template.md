@@ -1,7 +1,5 @@
 # @diffx/rxjs <!-- replaceLine:Diffx -->
 
-## Notice <!-- removeSection -->
-
 ### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
 `setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes
 to the state (and enhances tracking of async state in Diffx devtools).

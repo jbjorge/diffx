@@ -13,8 +13,6 @@ import 'zone.js/dist/zone';
 import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 ```
 
-## Notice <!-- removeSection -->
-
 ### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
 
 `setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and

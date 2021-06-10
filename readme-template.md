@@ -1,4 +1,4 @@
-# @diffx/react 
+# Diffx
 
 ## Introduction
 
@@ -25,7 +25,7 @@ experience at any scale.
 ## Installation
 
 ```shell
-npm install @diffx/react
+npm install @diffx/core
 ```
 
 And install
@@ -39,7 +39,7 @@ for a better development experience ([view documentation](#devtools-browser-exte
 `setDiffxOptions(options)` is used to configure which global features to enable for Diffx.
 
 ```javascript
-import { setDiffxOptions } from '@diffx/react';
+import { setDiffxOptions } from '@diffx/core';
 
 setDiffxOptions({
     /**
@@ -99,34 +99,13 @@ Diffx will watch for changes.
     * `persistenceLocation` - Location for storing persistent state. Default: sessionStorage
 
 ```javascript
-import { createState } from '@diffx/react';
+import { createState } from '@diffx/core';
 
 export const dinnerGuests = createState('dinnerGuests', { names: [] });
 export const servings = createState('servings', { count: 0 });
 ```
 
 The return value of `createState()` can be accessed as a regular object to read its values.
-
-### `useDiffx` 
-
-`useDiffx(getterFunc)` is a React hook that enables reading the state in Diffx.
-
-* `getterFunc` - a function that returns state or a projection of state.
-
-```javascript
-import { servings } from './the-above-example';
-import { useDiffx } from '@diffx/react';
-
-export default function App() {
-    const dinnerServingsCount = useDiffx(() => servings.count);
-
-    return (
-        <div>
-            <div>Current servings count: {dinnerServingsCount}</div>
-        </div>
-    );
-}
-```
 
 ### `setState`
 
@@ -139,7 +118,7 @@ export default function App() {
 _Any changes made to the state outside of `setState()` will throw an error._
 
 ```javascript
-import { setState } from '@diffx/react';
+import { setState } from '@diffx/core';
 import { servings, dinnerGuests } from './the-above-example';
 
 setState('Add guest to dinner party', () => {
@@ -156,7 +135,7 @@ dinnerGuests.names.push('Karl the first');
 Diffx supports nesting/wrapping which enables a structured approach to setting state.
 
 ```javascript
-import { setState } from '@diffx/react';
+import { setState } from '@diffx/core';
 import { servings, dinnerGuests } from './the-above-example';
 
 // The outer setState is used as a wrapper to create a context for the changes.
@@ -189,7 +168,7 @@ enhances tracking of async state in Diffx devtools).
   state.
 
 ```javascript
-import { createState, setState } from '@diffx/react';
+import { createState, setState } from '@diffx/core';
 import { servings } from './the-above-example';
 import { orderFoodAsync } from './some-file';
 
@@ -236,7 +215,7 @@ export function uploadGuests() {
 `watchState` is useful when creating "background services" that watches the state and reacts to changes.
 
 ```javascript
-import { watchState } from '@diffx/react';
+import { watchState } from '@diffx/core';
 import { servings, dinnerGuests } from './the-above-example';
 
 const unwatchFunc = watchState(() => dinnerGuests, {
@@ -316,7 +295,7 @@ Diffx devtools is made to give insights into
 The extension will show up as a tab in the browser devtools
 when it detects that the page is using Diffx, and the devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
 
-![Devtools location](../assets/devtools-7.png)
+![Devtools location](./assets/devtools-7.png)
 
 The left pane displays a list of changes to the state along with their `reason`.  
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
@@ -324,29 +303,29 @@ in [setDiffxOptions](#setdiffxoptions)).
 
 ### Diff tab
 
-![Diff tab preview](../assets/devtools-1.png)
+![Diff tab preview](./assets/devtools-1.png)
 
 ### State tab
 
-![State tab preview](../assets/devtools-6.png)
+![State tab preview](./assets/devtools-6.png)
 
 ### Stacktrace tab
 
-![Stacktrace tab preview](../assets/devtools-5.png)
+![Stacktrace tab preview](./assets/devtools-5.png)
 
 ### State namespace indicators
 
 The dots in the left tab indicate which state was changed with their color, can be hovered to view the namespace and
 clicked to filter the list by that state.
 
-![State type hints](../assets/devtools-4.png)
+![State type hints](./assets/devtools-4.png)
 
 ### Nested setState/setStateAsync
 
 For places where `setState()` has been used inside `setState()`, the left pane will display a nested view with colors
 used for displaying nesting depth.
 
-![Nested setState preview](../assets/devtools-2.png)
+![Nested setState preview](./assets/devtools-2.png)
 
 ### Tracing setStateAsync
 
@@ -354,7 +333,7 @@ For operations done with `setStateAsync()`, the left pane will display an `async
 a `resolved` tag where the async operation finished.  
 These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
 
-![setStateAsync preview](../assets/devtools-3.png)
+![setStateAsync preview](./assets/devtools-3.png)
 
 ## Credits and thanks
 
