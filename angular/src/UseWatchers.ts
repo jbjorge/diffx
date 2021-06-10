@@ -14,7 +14,7 @@ type FactoryFn<T> = {
 type ComponentType<T> = ɵComponentType<T>;
 
 /**
- * Diffx component decorator the will subscribe to watchers while the component is in use
+ * Diffx component decorator will subscribe to watchers while the component is in use
  * and automatically unsubscribe when the component is destroyed.
  *
  * Since multiple instances of a component can be rendered, it is wise to use
