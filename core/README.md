@@ -77,9 +77,9 @@ setDiffxOptions({
     /**
      * Location for storing persistent state.
      *
-     * Default: sessionStorage
+     * Default: null
      */
-    persistenceLocation: sessionStorage
+    persistenceLocation: 'e.g. sessionStorage or localStorage'
 })
 ```
 
@@ -96,7 +96,7 @@ Diffx will watch for changes.
       it to `false` will exclude the state from persistence, even though it is globally set to `true`
       in `setDiffxOptions`.
 
-    * `persistenceLocation` - Location for storing persistent state. Default: sessionStorage
+    * `persistenceLocation` - Location for storing persistent state. Default: persistenceLocation defined in `setDiffxOptions`.
 
 ```javascript
 import { createState } from '@diffx/core';

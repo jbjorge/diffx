@@ -20,8 +20,9 @@ export interface CreateStateOptions {
 	persistent?: boolean;
 	/**
 	 * Location for storing persistent state.
+	 * E.g. localStorage or sessionStorage
 	 *
-	 * Default: persistenceLocation defined in setDiffxOptions or `sessionStorage`
+	 * Default: persistenceLocation defined in setDiffxOptions
 	 */
 	persistenceLocation?: PersistenceLocation
 }
@@ -62,8 +63,9 @@ export interface DiffxOptions {
 	persistent?: boolean;
 	/**
 	 * Location for storing persistent state.
+	 * E.g. localStorage or sessionStorage
 	 *
-	 * Default: sessionStorage
+	 * Default: null
 	 */
 	persistenceLocation?: PersistenceLocation
 }

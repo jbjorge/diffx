@@ -57,7 +57,7 @@ export function createState<StateType extends object>(namespace: string, initial
 	internalState.isCreatingState = false;
 	createHistoryEntry(`@init ${namespace}`, true);
 
-	if (isPersistent) {
+	if (isPersistent && persistenceLocation) {
 		// setup watcher to keep state up to date
 		watchState(() => rootState[namespace], {
 			lazy: true,

@@ -5,14 +5,14 @@ export function getInitialState<T>(namespace: string, initialState: T, options: 
 	const isPersistent = options?.persistent === false ? false : internalState.instanceOptions.persistent;
 
 	// resolve persistence location
-	const persistenceLocation = options.persistenceLocation || internalState.instanceOptions.persistenceLocation || sessionStorage;
+	const persistenceLocation = options.persistenceLocation || internalState.instanceOptions.persistenceLocation;
 
-	if (isPersistent === false) {
+	if (persistenceLocation && isPersistent === false) {
 		// clean up previously persistent state
 		persistenceLocation.removeItem('__diffx__' + namespace);
 	}
 
-	if (isPersistent) {
+	if (isPersistent && persistenceLocation) {
 		const storedState = (isPersistent && JSON.parse(persistenceLocation.getItem('__diffx__' + namespace) || '""'));
 
 		if (storedState) {
