@@ -1,5 +1,10 @@
 # @diffx/react <!-- replaceLine:Diffx -->
 
+### Watch state for changes <!-- replaceSection:Watch state for changes -->
+```javascript
+const fishCount = useDiffx(() => dinnerOptions.fish);
+```
+
 ### `useDiffx` <!-- append:`createState` -->
 
 `useDiffx(getterFunc)` is a React hook that enables reading the state in Diffx.

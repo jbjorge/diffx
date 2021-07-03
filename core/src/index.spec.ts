@@ -2,9 +2,9 @@ import { createState, setDiffxOptions, setState, watchState, diffxInternals } fr
 
 setDiffxOptions({ createDiffs: true });
 const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] });
-// const s2 = createState('hoho', { miip: 'moop', maap: ['hehehe'] })
+const s2 = createState('hoho', ['hello']);
 
-watchState(() => state.lol, {
+watchState(() => state.lal, {
 	onChanged: (value) => console.log('On changed', value),
 	// onEachChange: value => console.log('On each change', value)
 });
@@ -16,6 +16,28 @@ const ssAsync = () => {
 		})
 	}, 100)
 }
+
+setState('hah', async () => {
+	state.lal.push('oaeijrfaerfij');
+	const value = await doAsync();
+	state.lal.push(value);
+	return value;
+}, val => state.lal.push(val), err => state.lal.push((err as any).message))
+
+function maeri() {
+	setState('hah', async () => {
+		state.lal.push('oaeijrfaerfij');
+		await doAsync();
+	});
+}
+
+function doAsync(): Promise<string> {
+	return new Promise(resolve => {
+		setTimeout(() => resolve('hey'), 10);
+	})
+}
+
+// setState('lol', () => Promise.resolve().then(() => state.lal.push('hihi')));
 
 const x = () => setState('bcos', () => {
 	state.lal.push('hihihi')

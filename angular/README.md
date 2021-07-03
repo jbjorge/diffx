@@ -1,18 +1,50 @@
-# @diffx/angular 
+
+# @diffx/angular
+
 
 ## Introduction
 
 Diffx is a state management library that focuses on being easy to learn and use, and to offer a great development
 experience at any scale.
 
-## Features
+### Features
 
 * Minimal API
-* No forced usage patterns
-    * Minimizing boilerplate
-* Tracks asynchronous and nested changes to state
+* Minimal boilerplate
+    * No forced usage patterns
+    * Change any state from anywhere
+    * Proxy/mutation based
+* Tracking of asynchronous and nested changes to state
+* Built in support for persistence
+* Supports all major frameworks
 * Built with typescript
 * Devtools browser extension
+
+### Why choose Diffx?
+
+There are **a lot** of great state management libraries out there.  
+Some focus on a rigid structure, suitable for large teams that want predictable code patterns, sometimes at the cost of
+writing a lot of boilerplate code.  
+Others give freedom to the developers to use it how they see fit at the cost of potentially losing control due to lack
+of structure/patterns.
+
+Diffx aims to get rid of the need for patterns by making it the library's responsibility to stay in control, and let the
+developer stay on top of any shenanigans with the devtools extension.
+
+#### Goals of Diffx
+
+* be quick and easy to learn
+* write as little code as possible
+* use it with any framework
+* allow developers to interact with the state however they want
+* stay in control with the devtools extension
+
+#### Is it better than Redux/Zustand/Mobx/Valtio/Vuex/Recoil/jotai/...?
+
+I don't know. I haven't spent time trying all of them (yet).  
+There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
+long time.  
+I recommend you to look into several of the popular ones and see if you like them better than Diffx.
 
 ## Supported frameworks
 
@@ -31,7 +63,9 @@ npm install @diffx/angular
 And install
 the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 for a better development experience ([view documentation](#devtools-browser-extension)).
-## Fix angular change detection and the `async` pipe 
+
+
+## Fix angular change detection and the `async` pipe
 
 Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
 detection.
@@ -39,188 +73,50 @@ detection.
 To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
 file after your import of `zone`.
 
-```typescript
+```javascript
 import 'zone.js/dist/zone';
 import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 ```
 
-### `setStateAsync` 
+## Quick start
 
-`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and
-enhances tracking of async state in Diffx devtools).
-
-* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
-  debugging.
-
-* `asyncMutatorFunc` - a function that does async work (and returns an `Observable`).
-
-* `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
-
-* `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
-  state.
+### Create state
 
 ```javascript
-import { createState, setState } from '@diffx/rxjs';
-import { servings } from './the-above-example';
-import { orderFoodAsync } from './some-file';
-
-export const orderState = createState('upload info', {
-    isOrdering: false,
-    successfulOrders: 0,
-    errorMessage: ''
-})
-
-export function uploadGuests() {
-    setStateAsync(
-        'order food',
-        () => {
-            // set state before the async work begins
-            orderState.errorMessage = '';
-            orderState.successfulOrders = 0;
-            orderState.isOrdering = true;
-            // return the async work
-            return orderFood(servings.count);
-        },
-        result => {
-            // the async work succeeded
-            orderState.isOrdering = false;
-            orderState.successfulOrders = result;
-        },
-        error => {
-            // the async work failed
-            orderState.isOrdering = false;
-            orderState.successfulOrders = 0;
-            orderState.errorMessage = error.message;
-        }
-    )
-}
-```
-
-### `watchState` 
-
-`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the
-state.
-
-* `stateGetter` - a function which returns the state to be watched
-* `options` - options object which describes how to watch the state
-
-```javascript
-import { watchState } from '@diffx/angular';
-import { coolnessFactor, people } from './the-above-example';
-
-const observable = watchState(() => people, {
-    /**
-     * [Optional]
-     * Whether to emit the current value of the watched item(s).
-     *
-     * Default: false
-     */
-    lazy: false,
-
-    /**
-     * [Optional]
-     * Whether to emit each change to the state during `.setState` or
-     * to only emit the final state after the `.setState` function has finished running.
-     *
-     * Default: false
-     */
-    emitIntermediateChanges: false,
-
-    /**
-     * [Optional]
-     * Custom comparer function to decide if the state has changed.
-     * Receives newValue and oldValue as arguments and should return `true` for changed
-     * and `false` for no change.
-     *
-     * Default: Diffx does automatic change comparison
-     */
-    hasChangedComparer: (newValue, oldValue) => 'true or false'
-});
-
-// stop watching
-observable.unsubscribe();
-```
-
-### `@UseWatchers` 
-
-`@UseWatchers(...watcher)` is used to automatically subscribe to a watcher when a component is instantiated. Accepts one
-or more watchers as argument.
-
-* `watcher` - an observable created with `watchState`.
-
-This should only be used for watchers that should be started when a component is created, but not stopped when it is
-destroyed. **Due to limitations in angular**, there is no way for the decorator to know when a component is destroyed or
-to hook into lifecycle events.
-
-Given the example state:
-
-```typescript
-// example-state.ts
 import { createState } from '@diffx/angular';
 
-export const state1 = createState('state1', {
-    currentTime: Date.now(),
-    timerRunning: false
+const dinnerOptions = createState('dinnerOptions', {
+    fish: 0,
+    meat: 0,
+    vegetarian: 0
 });
+const guests = createState('guests', { names: [] });
 ```
 
-And the example watcher:
+### Read state once
 
-```typescript
-// example-watcher.ts
-import { state1 } from '../example-state.ts';
-import { share } from 'rxjs/operators';
-import { setState, watchState } from '@diffx/angular';
-
-let interval;
-
-export default watchState(() => state1.timerRunning, { lazy: true })
-    .pipe(
-        tap(timerRunning => {
-            if (timerRunning) {
-                startTimer();
-            } else {
-                clearInterval(interval);
-            }
-        }),
-        // it's a good idea to use share() to avoid multiple subscriptions
-        // in case multiple components use the same watcher
-        share()
-    );
-
-function startTimer(): void {
-    interval = setInterval(() => {
-        setState('Watcher: Update time', () => {
-            state1.currentTime = Date.now();
-        });
-    }, 1000);
-}
+```javascript
+console.log(dinnerOptions.fish); // --> 0
 ```
 
-It can be used in a component like so:
+### Set state
 
-```typescript
-// example.component.ts
-import { Component } from '@angular/core';
-import { setState, watchState } from '@diffx/angular';
-import { UseWatchers } from '@diffx/angular';
-import { state1 } from '../example-state';
-import timeWatcher from '../example-watcher.ts';
+```javascript
+// set any state from anywhere
+setState('add guest who wants fish and meat', () => {
+    dinnerOptions.fish++;
+    dinnerOptions.meat++;
+    guests.names.push('John');
+});
 
-@UseWatchers(timeWatcher) // <-- this thing right here
-@Component({
-    selector: 'app-example',
-    templateUrl: './example.component.html'
-})
-export class ExampleComponent {
-    time$ = watchState(() => state1.currentTime);
+console.log(dinnerOptions.fish); // --> 1
+```
 
-    btnClick() {
-        setState('User toggled timer', () => {
-            state1.timerRunning = !state1.timerRunning;
-        })
-    }
-}
+
+### Watch state for changes
+
+```javascript
+const observable = watchState(() => state.meat);
 ```
 
 ## Usage
@@ -343,6 +239,7 @@ function addGuest(name) {
 }
 ```
 
+
 ### `setStateAsync`
 
 `setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and
@@ -351,7 +248,7 @@ enhances tracking of async state in Diffx devtools).
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
 
-* `asyncMutatorFunc` - a function that does async work (and returns a `Promise`).
+* `asyncMutatorFunc` - a function that does async work (and returns an `Observable`).
 
 * `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
 
@@ -359,7 +256,7 @@ enhances tracking of async state in Diffx devtools).
   state.
 
 ```javascript
-import { createState, setState } from '@diffx/angular';
+import { createState, setStateAsync } from '@diffx/angular';
 import { servings } from './the-above-example';
 import { orderFoodAsync } from './some-file';
 
@@ -395,21 +292,20 @@ export function uploadGuests() {
 }
 ```
 
+
 ### `watchState`
 
-`watchState(stateGetter, options)` is used for watching the state and being notified/reacting when it changes.
+`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the
+state.
 
-* `stateGetter` - a function which returns the state(s) to be watched
+* `stateGetter` - a function which returns the state to be watched
 * `options` - options object which describes how to watch the state
-    * An error will be thrown if both `onChanged` and `onEachChange` are `undefined` (one of them needs to be set).
-
-`watchState` is useful when creating "background services" that watches the state and reacts to changes.
 
 ```javascript
 import { watchState } from '@diffx/angular';
-import { servings, dinnerGuests } from './the-above-example';
+import { coolnessFactor, people } from './the-above-example';
 
-const unwatchFunc = watchState(() => dinnerGuests, {
+const observable = watchState(() => people, {
     /**
      * [Optional]
      * Whether to emit the current value of the watched item(s).
@@ -419,15 +315,13 @@ const unwatchFunc = watchState(() => dinnerGuests, {
     lazy: false,
 
     /**
-     * Callback called with the final state after
-     * the .setState() function has finished running.
+     * [Optional]
+     * Whether to emit each change to the state during `.setState` or
+     * to only emit the final state after the `.setState` function has finished running.
+     *
+     * Default: false
      */
-    onChanged: newValue => 'do whatever you want',
-
-    /**
-     * Callback for each change to the state during .setState().
-     */
-    onEachChange: newValue => 'do whatever you want',
+    emitIntermediateChanges: false,
 
     /**
      * [Optional]
@@ -435,33 +329,13 @@ const unwatchFunc = watchState(() => dinnerGuests, {
      * Receives newValue and oldValue as arguments and should return `true` for changed
      * and `false` for no change.
      *
-     * Default: undefined, Diffx does automatic change comparison
+     * Default: Diffx does automatic change comparison
      */
-    hasChangedComparer: (newValue, oldValue) => true / false
+    hasChangedComparer: (newValue, oldValue) => 'true or false'
 });
 
 // stop watching
-unwatchFunc();
-```
-
-The `watchState()` function can also watch projections of state or multiple states
-
-```javascript
-// projection of state
-watchState(
-    () => servings.count - dinnerGuests.names.length,
-    {
-        onChanged: (extraServings) => 'do whatever you want'
-    }
-);
-
-// multiple states (which is actually just a projection of state)
-watchState(
-    () => [dinnerGuests.names, servings.count],
-    {
-        onChanged: ([guestNames, servingsCount]) => 'do whatever you want'
-    }
-);
+observable.unsubscribe();
 ```
 
 ### `destroyState`
@@ -472,7 +346,8 @@ watchState(
 
 _Any watchers of the destroyed state will **not** be automatically unwatched_.
 
-### `@UseWatchers` 
+
+### `@UseWatchers`
 
 `@UseWatchers(...watcher)` is used to automatically subscribe to a watcher when a component is instantiated. Accepts one
 or more watchers as argument.
@@ -565,8 +440,8 @@ Diffx devtools is made to give insights into
 * When did it change
 * What caused the change
 
-The extension will show up as a tab in the browser devtools
-when it detects that the page is using Diffx, and the devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
+The extension will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
+devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](../assets/devtools-7.png)
 
@@ -607,6 +482,8 @@ a `resolved` tag where the async operation finished.
 These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
 
 ![setStateAsync preview](../assets/devtools-3.png)
+
+## Diffx compared to other state management libraries
 
 ## Credits and thanks
 

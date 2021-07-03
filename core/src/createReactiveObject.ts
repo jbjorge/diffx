@@ -1,5 +1,6 @@
 import { track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
 import internalState from './internal-state';
+import { stateChangedWithoutSetState } from './console-messages';
 
 /**
  * Creates a reactive object.
@@ -38,7 +39,7 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// This drops all attempts at changing it.
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
 			if (!internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
-				throw new Error('[diffx] State was changed without using .setState()');
+				throw new Error(stateChangedWithoutSetState);
 			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);
 			// If the state is being replaced, buffer the triggering of object setting

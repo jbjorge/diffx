@@ -1,6 +1,19 @@
-# @diffx/angular <!-- replaceLine:Diffx -->
+<!-- replaceLine:# Diffx -->
+# @diffx/angular
+<!-- end -->
 
-## Fix angular change detection and the `async` pipe <!-- prependSection:Usage -->
+<!-- replaceSection:### Watch state for changes -->
+### Watch state for changes
+
+```javascript
+const observable = watchState(() => state.fish);
+```
+
+<!-- end -->
+
+<!-- prependSection:## Quick start -->
+
+## Fix angular change detection and the `async` pipe
 
 Angular has the concept of code running inside zones, and anything running outside a zone will not trigger change
 detection.
@@ -8,12 +21,16 @@ detection.
 To ensure observables returned from Diffx are run in the correct zone, import zone-patch-rxjs in your `polyfills.ts`
 file after your import of `zone`.
 
-```typescript
+```javascript
 import 'zone.js/dist/zone';
 import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 ```
 
-### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
+<!-- end -->
+
+<!-- replaceSection:### `setStateAsync` -->
+
+### `setStateAsync`
 
 `setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and
 enhances tracking of async state in Diffx devtools).
@@ -29,7 +46,7 @@ enhances tracking of async state in Diffx devtools).
   state.
 
 ```javascript
-import { createState, setState } from '@diffx/rxjs';
+import { createState, setStateAsync } from '@diffx/core';
 import { servings } from './the-above-example';
 import { orderFoodAsync } from './some-file';
 
@@ -65,7 +82,11 @@ export function uploadGuests() {
 }
 ```
 
-### `watchState` <!-- replaceSection:`watchState` -->
+<!-- end -->
+
+<!-- replaceSection:### `watchState` -->
+
+### `watchState`
 
 `watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the
 state.
@@ -110,7 +131,11 @@ const observable = watchState(() => people, {
 observable.unsubscribe();
 ```
 
-### `@UseWatchers` <!-- append:Usage -->
+<!-- end -->
+
+<!-- append:## Usage -->
+
+### `@UseWatchers`
 
 `@UseWatchers(...watcher)` is used to automatically subscribe to a watcher when a component is instantiated. Accepts one
 or more watchers as argument.
@@ -191,3 +216,5 @@ export class ExampleComponent {
     }
 }
 ```
+
+<!-- end -->

@@ -70,6 +70,11 @@ export interface DiffxOptions {
 	persistenceLocation?: PersistenceLocation
 }
 
+interface InternalWatcher {
+	namespace: string;
+	unwatchFunc: () => void;
+}
+
 export default {
 	isReplacingState: false,
 	stateModificationsPaused: false,
@@ -82,5 +87,6 @@ export default {
 	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners,
 	delayedEmitters: {} as DelayedEmitterMap,
-	delayedEmittersId: 1
+	delayedEmittersId: 1,
+	watchers: [] as InternalWatcher[]
 };

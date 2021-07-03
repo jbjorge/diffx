@@ -5,14 +5,44 @@
 Diffx is a state management library that focuses on being easy to learn and use, and to offer a great development
 experience at any scale.
 
-## Features
+### Features
 
 * Minimal API
-* No forced usage patterns
-    * Minimizing boilerplate
-* Tracks asynchronous and nested changes to state
+* Minimal boilerplate
+    * No forced usage patterns
+    * Change any state from anywhere
+    * Proxy/mutation based
+* Tracking of asynchronous and nested changes to state
+* Built in support for persistence
+* Supports all major frameworks
 * Built with typescript
 * Devtools browser extension
+
+### Why choose Diffx?
+
+There are **a lot** of great state management libraries out there.  
+Some focus on a rigid structure, suitable for large teams that want predictable code patterns, sometimes at the cost of
+writing a lot of boilerplate code.  
+Others give freedom to the developers to use it how they see fit at the cost of potentially losing control due to lack
+of structure/patterns.
+
+Diffx aims to get rid of the need for patterns by making it the library's responsibility to stay in control, and let the
+developer stay on top of any shenanigans with the devtools extension.
+
+#### Goals of Diffx
+
+* be quick and easy to learn
+* write as little code as possible
+* use it with any framework
+* allow developers to interact with the state however they want
+* stay in control with the devtools extension
+
+#### Is it better than Redux/Zustand/Mobx/Valtio/Vuex/Recoil/jotai/...?
+
+I don't know. I haven't spent time trying all of them (yet).  
+There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
+long time.  
+I recommend you to look into several of the popular ones and see if you like them better than Diffx.
 
 ## Supported frameworks
 
@@ -32,7 +62,44 @@ And install
 the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 for a better development experience ([view documentation](#devtools-browser-extension)).
 
-## Usage
+## Quick start
+
+### Create state
+
+```javascript
+import { createState } from '@diffx/rxjs';
+
+const dinnerOptions = createState('dinnerOptions', {
+    fish: 0,
+    meat: 0,
+    vegetarian: 0
+});
+const guests = createState('guests', { names: [] });
+```
+
+### Read state once
+
+```javascript
+console.log(dinnerOptions.fish); // --> 0
+```
+
+### Set state
+
+```javascript
+// set any state from anywhere
+setState('add guest who wants fish and meat', () => {
+    dinnerOptions.fish++;
+    dinnerOptions.meat++;
+    guests.names.push('John');
+});
+
+console.log(dinnerOptions.fish); // --> 1
+```
+
+### Watch state for changes 
+```javascript
+const observable = watchState(() => state.meat);
+```
 
 ### `setDiffxOptions`
 
@@ -265,8 +332,8 @@ Diffx devtools is made to give insights into
 * When did it change
 * What caused the change
 
-The extension will show up as a tab in the browser devtools
-when it detects that the page is using Diffx, and the devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
+The extension will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
+devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](../assets/devtools-7.png)
 
@@ -307,6 +374,8 @@ a `resolved` tag where the async operation finished.
 These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
 
 ![setStateAsync preview](../assets/devtools-3.png)
+
+## Diffx compared to other state management libraries
 
 ## Credits and thanks
 
