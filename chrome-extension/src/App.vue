@@ -9,6 +9,7 @@ import IFuseOptions = Fuse.IFuseOptions;
 import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
 import FilterInput from './components/Filter-Input.vue';
+import { getStateAtPath } from './utils/get-state-at-path';
 
 const {
 	addDiffListener,
@@ -26,6 +27,7 @@ export default {
 		const diffListRef = ref();
 		const diffs: Ref<DiffEntry[]> = ref([]);
 		const selectedDiffIndex: Ref<number> = ref(-1);
+		const selectedDiffPath: Ref<number[]> = ref([]);
 		const stateLocked = ref(false);
 
 		const filterText = ref('');
@@ -91,21 +93,41 @@ export default {
 
 		let latestStateSnapshot: any = null;
 		async function onDiffSelected(index: number) {
-			if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
-				selectedDiffIndex.value = -1;
+			// if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
+			// 	selectedDiffIndex.value = -1;
+			// 	if (latestStateSnapshot) {
+			// 		await replaceState(latestStateSnapshot);
+			// 		latestStateSnapshot = null;
+			// 	}
+			// 	await unpauseState();
+			// } else {
+			// 	selectedDiffIndex.value = index;
+			// 	await pauseState();
+			// 	const currentStateSnapshot = await getStateSnapshot();
+			// 	if (!latestStateSnapshot) {
+			// 		latestStateSnapshot = jsonClone(currentStateSnapshot);
+			// 	}
+			// 	const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
+			// 	await replaceState(stateAtIndex);
+			// }
+		}
+
+		async function onDiffSelected2(path: number[]) {
+			if (selectedDiffPath.value.join('.') === path.join('.')) {
+				selectedDiffPath.value = [];
 				if (latestStateSnapshot) {
 					await replaceState(latestStateSnapshot);
 					latestStateSnapshot = null;
 				}
 				await unpauseState();
 			} else {
-				selectedDiffIndex.value = index;
+				selectedDiffPath.value = path;
 				await pauseState();
 				const currentStateSnapshot = await getStateSnapshot();
 				if (!latestStateSnapshot) {
 					latestStateSnapshot = jsonClone(currentStateSnapshot);
 				}
-				const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
+				const stateAtIndex = getStateAtPath(diffs.value, currentStateSnapshot, path);
 				await replaceState(stateAtIndex);
 			}
 		}
@@ -203,7 +225,9 @@ export default {
 			resizeBarElement,
 			filterText,
 			pauseState,
-			unpauseState
+			unpauseState,
+			onDiffSelected2,
+			selectedDiffPath
 		}
 	}
 }
@@ -241,8 +265,10 @@ export default {
 				ref="diffListRef"
 				:diffList="filteredDiffs"
 				:selected-diff-index="selectedDiffIndex"
+				:selected-diff-path="selectedDiffPath"
 				class="left-sidebar"
 				@selectDiff="onDiffSelected"
+				@onDiffSelected="onDiffSelected2"
 				@setFilter="filterText = $event"
 				:style="{ width: sidebarWidth + 'px' }"
 			/>
@@ -253,6 +279,7 @@ export default {
 		<DiffViewer
 			:diffList="diffs"
 			:selected-diff-index="selectedDiffIndex"
+			:selected-diff-path="selectedDiffPath"
 		/>
 	</div>
 </template>

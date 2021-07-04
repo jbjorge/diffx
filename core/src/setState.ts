@@ -66,6 +66,7 @@ let hist: DiffEntry[] = [];
 let paren = [hist];
 let current = hist;
 let children;
+let isTriggeringWatchers = false;
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -90,8 +91,7 @@ function addChildElement(el: DiffEntry) {
 // ------------------------------
 
 export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
-	const level = ++setStateNestingLevel;
-	if (level > internalState.instanceOptions.maxNestingDepth) {
+	if (setStateNestingLevel > internalState.instanceOptions.maxNestingDepth) {
 		throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
 	}
 	if (typeof reason !== 'string') {
@@ -108,6 +108,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 
 	// ---- handle recursive setState
 
+	const level = ++setStateNestingLevel;
 	const currentState = getStateSnapshot();
 	let didMoveDown = false;
 	const diffEntry: DiffEntry = {
@@ -117,6 +118,10 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		diff: {},
 		subDiffEntries: []
 	};
+	if (isTriggeringWatchers) {
+		diffEntry.triggeredByWatcher = true;
+		isTriggeringWatchers = false;
+	}
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack;
 	}
@@ -162,7 +167,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 			})
 	}
 
+	isTriggeringWatchers = true;
 	runEachSetStateEmitters();
+	isTriggeringWatchers = false;
 	const newState = getStateSnapshot();
 	thisLevelObject.diff = diff(currentState, newState);
 	setStateNestingLevel--;

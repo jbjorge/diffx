@@ -14,6 +14,10 @@ export default defineComponent({
 			type: Number,
 			default: 0
 		},
+		path: {
+			type: Array as PropType<number[]>,
+			default: []
+		},
 		selected: Boolean,
 		inactive: Boolean,
 		disabled: Boolean
@@ -79,7 +83,7 @@ export default defineComponent({
 <template>
 	<div>
 		<div
-			@click.stop="$emit('stateSelected', diffEntry)"
+			@click.stop="$emit('stateSelected', diffEntry);$emit('stateClicked', path)"
 			class="diff-entry"
 			:class="{ selected, inactive, disabled, nested: nestingLevel > 0 }"
 			:style="{
@@ -99,6 +103,13 @@ export default defineComponent({
 						<div class="flex row gutter-5">
 							<div class="diff-list-timestamp">{{ formattedDate }}</div>
 							<div
+								v-if="diffEntry?.triggeredByWatcher"
+								class="tag watcher"
+								title="Triggered by watchState"
+							>
+								watchState
+							</div>
+							<div
 								v-if="diffEntry?.asyncOrigin"
 								class="tag async-end"
 								:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
@@ -117,6 +128,7 @@ export default defineComponent({
 								async
 							</div>
 						</div>
+						<!-- State color button -->
 						<div
 							class="flex row i-align-center wrap"
 							:style="{ marginRight: nestingLevel !== 0 ? '5px' : '0px' }"
@@ -141,7 +153,7 @@ export default defineComponent({
 		</div>
 
 		<SidebarEntry
-			v-for="subEntry in diffEntry?.subDiffEntries"
+			v-for="(subEntry, subIndex) in diffEntry?.subDiffEntries"
 			:key="subEntry.id"
 			:diffEntry="subEntry"
 			:nestingLevel="nestingLevel + 1"
@@ -149,8 +161,10 @@ export default defineComponent({
 			:disabled="disabled"
 			:selected="selected"
 			:inactive="inactive"
+			:path="path.concat(subIndex)"
 			@setFilter="$emit('setFilter', $event)"
-			@stateSelected="$emit('stateSelected', $event)"
+			@stateSelected="$emit('stateSelected', $event);"
+			@stateClicked="$emit('stateClicked', $event)"
 		/>
 	</div>
 </template>
@@ -205,6 +219,11 @@ export default defineComponent({
 
 		&:hover {
 			opacity: 0.85;
+		}
+
+		&.watcher {
+			background-color: rgba(0,0,0,0.3);
+			cursor: default;
 		}
 	}
 }

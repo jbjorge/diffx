@@ -5,6 +5,8 @@ import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { getStateSnapshot } from '../utils/diffx-bridge';
+import { getStateAtPath } from '../utils/get-state-at-path';
+import { getDiffAtPath } from '../utils/get-diff-at-path';
 
 export default defineComponent({
 	props: {
@@ -15,10 +17,24 @@ export default defineComponent({
 		selectedDiffIndex: {
 			type: Number,
 			default: null
+		},
+		selectedDiffPath: {
+			type: Array as PropType<number[]>,
+			default: []
 		}
 	},
 	setup(props) {
 		const selectedTab = ref('diff');
+
+		const diffToShow: ComputedRef<DiffEntry> = computed(() => {
+			const rootIndex = props.selectedDiffPath[0];
+			if (rootIndex == null) {
+				return props.diffList[props.diffList.length - 1];
+			}
+			const rootDiff = props.diffList[rootIndex];
+			return getDiffAtPath(rootDiff, props.selectedDiffPath.slice(1));
+		})
+
 		const diffToDisplay: ComputedRef<DiffEntry> = computed(() => {
 			return props.diffList[props.selectedDiffIndex] || props.diffList[props.diffList.length - 1];
 		});
@@ -32,50 +48,57 @@ export default defineComponent({
 		const previousObjectState = ref({});
 
 		watchEffect(async () => {
-			const diffIndex = props.selectedDiffIndex ?? diffs.value.length - 1;
-			const reverseDiff = (diffIndex) > (diffs.value.length / 2);
-			const diffsClone = jsonClone(diffs.value);
-			const diffsToReplay: Delta[] = reverseDiff
-				? diffsClone.slice(diffIndex).reverse()
-				: diffsClone.slice(0, diffIndex);
-			if (reverseDiff) {
-				const stateSnapshot = await getStateSnapshot();
-				diffsToReplay.forEach((diff) => {
-					if (diff) {
-						jsondiffpatch.unpatch(stateSnapshot, diff)
-					}
-				});
-				previousObjectState.value = stateSnapshot;
-			} else {
-				const patched = {};
-				diffsToReplay.forEach((diff) => {
-					if (diff) {
-						jsondiffpatch.patch(patched, diff)
-					}
-				});
-				previousObjectState.value = patched;
-			}
+			const diffPath = props.selectedDiffPath ?? [diffs.value.length - 1];
+			const stateSnapshot = await getStateSnapshot();
+			previousObjectState.value = getStateAtPath(props.diffList, stateSnapshot, diffPath);
+		})
+
+		watchEffect(async () => {
+			// const diffIndex = props.selectedDiffIndex ?? diffs.value.length - 1;
+
+			// const reverseDiff = (diffIndex) > (diffs.value.length / 2);
+			// const diffsClone = jsonClone(diffs.value);
+			// const diffsToReplay: Delta[] = reverseDiff
+			// 	? diffsClone.slice(diffIndex).reverse()
+			// 	: diffsClone.slice(0, diffIndex);
+			// if (reverseDiff) {
+			// 	const stateSnapshot = await getStateSnapshot();
+			// 	diffsToReplay.forEach((diff) => {
+			// 		if (diff) {
+			// 			jsondiffpatch.unpatch(stateSnapshot, diff)
+			// 		}
+			// 	});
+			// 	previousObjectState.value = stateSnapshot;
+			// } else {
+			// 	const patched = {};
+			// 	diffsToReplay.forEach((diff) => {
+			// 		if (diff) {
+			// 			jsondiffpatch.patch(patched, diff)
+			// 		}
+			// 	});
+			// 	previousObjectState.value = patched;
+			// }
 		});
 
 		const formattedOutput = computed(() => {
-			if (!diffToDisplay.value.diff && selectedTab.value === 'diff') {
+			if (!diffToShow.value.diff && selectedTab.value === 'diff') {
 				return 'No change in state.'
 			}
 			const prevCopy = jsonClone(previousObjectState.value);
-			return jsondiffpatch.formatters.html.format(diffToDisplay.value.diff || {}, prevCopy);
+			return jsondiffpatch.formatters.html.format(diffToShow.value.diff || {}, prevCopy);
 		});
 
-		return { diffToDisplay, formatDate, formattedOutput, selectedTab };
+		return { diffToShow, formatDate, formattedOutput, selectedTab };
 	}
 });
 </script>
 
 <template>
 	<div class="diff-viewer-wrapper">
-		<template v-if="diffToDisplay">
+		<template v-if="diffToShow">
 			<div class="diff-header">
-				<div class="diff-timestamp">{{ formatDate(diffToDisplay.timestamp) }}</div>
-				<h2>{{ diffToDisplay.reason }}</h2>
+				<div class="diff-timestamp">{{ formatDate(diffToShow.timestamp) }}</div>
+				<h2>{{ diffToShow.reason }}</h2>
 			</div>
 			<div class="diff-tabs">
 				<div
@@ -91,7 +114,7 @@ export default defineComponent({
 					State
 				</div>
 				<div
-					v-if="diffToDisplay.stackTrace"
+					v-if="diffToShow.stackTrace"
 					:class="{'diff-tab-selected': selectedTab === 'stackTrace'}"
 					@click="selectedTab = 'stackTrace'"
 				>
@@ -109,7 +132,7 @@ export default defineComponent({
 					v-if="selectedTab === 'stackTrace'"
 					style="white-space: pre"
 				>
-					{{ diffToDisplay.stackTrace }}
+					{{ diffToShow.stackTrace }}
 				</div>
 			</div>
 		</template>

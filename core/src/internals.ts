@@ -20,6 +20,7 @@ export interface DiffEntry {
 	async?: boolean;
 	asyncOrigin?: string;
 	subDiffEntries?: DiffEntry[];
+	triggeredByWatcher?: boolean;
 }
 
 let diffListenerId = 0;

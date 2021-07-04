@@ -1,4 +1,5 @@
 import { createState, diffxInternals, setDiffxOptions, setState, watchState } from '@diffx/core';
+import internal from 'stream';
 
 setDiffxOptions({
 	devtools: true,
@@ -34,43 +35,62 @@ const s1 = createState('test', {
 	counter: 0
 });
 
-// watchState(() => s1.names, {
-// 	onEachSetState: (newValue, oldValue) => {
-// 		console.log(newValue, oldValue);
-// 		if (!oldValue?.includes('2') && newValue.includes('2')) {
-// 			setState('when level 2', () => {
-// 				s1.names.push('when level 2');
-// 				setState('when inner', () => {});
+// setState('l1', () => {
+// 	s1.counter++;
+// 	setState('l2', () => {
+// 		s1.counter++;
+// 		setState('l3', () => {
+// 			s1.counter++;
+// 			setState('l4', () => {
+// 				s1.counter++;
 // 			});
-// 		}
+// 		});
+// 	});
+// })
+//
+// setState('hoho1', () => {
+// 	s1.counter++;
+// 	setState('hoho2', () => {
+// 		s1.counter++;
+// 		setState('hoho3', () => {
+// 			s1.counter++;
+// 		});
+// 	});
+// 	setState('hoho2', () => {
+// 		s1.counter++;
+// 		setState('hoho3', () => {
+// 			s1.counter++;
+// 		});
+// 	});
+// 	// s1.counter++;
+// })
+//
+// let interval = setInterval(() => {
+// 	if (s1.counter > 20) {
+// 		clearInterval(interval);
 // 	}
+// 	setState('timer', () => s1.counter++);
+// }, 1000)
+
+// setState('garblblblbl1', () => {
+// 	s1.counter++;
+// 	setState('garblblblbl2', () => {
+// 		s1.counter++;
+// 		setState('garblblblbl3', () => {
+// 			s1.counter++;
+// 		});
+// 	});
+// 	setState('garblblblbl2', () => {
+// 		s1.counter++;
+// 		setState('garblblblbl3', () => {
+// 			s1.counter++;
+// 		});
+// 	});
+// 	s1.counter++;
 // })
 
-watchState(() => s1.counter, {
-	// onSetStateDone: (newValue, oldvalue) => {
-	// 	console.log(newValue, oldvalue);
-	// 	if (s1.counter < 15) {
-	// 		setState('loopin onSetStateDone', () => s1.counter++);
-	// 	}
-	// },
-	onEachSetState: newValue => {
-		if (s1.counter < 10) {
-			setState('loopin onEachSetState', () => s1.names.push(s1.counter.toString()));
-		}
-	},
-	// onEachValueUpdate: newValue => {
-	// 	if (s1.counter < 5) {
-	// 		setState('loopin onEachValueUpdate', () => s1.counter++);
-	// 	}
-	// }
-})
-
-setState('starting the loop', () => {
-	s1.counter++;
-	setState('async test', () => Promise.resolve().then(() => setState('heh', () => s1.counter++)), () => s1.counter++);
-})
-
-// level 1
+// TESTING OTHER STUFF
+// // level 1
 // setState('level 1', () => {
 // 	s1.names.push('1');
 //
@@ -87,7 +107,7 @@ setState('starting the loop', () => {
 // 		s1.counter++;
 // 	});
 // })
-
+//
 // setState('lol', () => {
 // 	setState(
 // 		'heh',
@@ -110,3 +130,35 @@ setState('starting the loop', () => {
 // 			)
 // 		});
 // })
+
+// TEST NESTING AND WATCHING AND STUFF
+watchState(() => s1.counter, {
+	// onSetStateDone: (newValue, oldvalue) => {
+	// 	console.log(newValue, oldvalue);
+	// 	if (s1.counter < 15) {
+	// 		setState('loopin onSetStateDone', () => s1.counter++);
+	// 	}
+	// },
+	emitInitialValue: true,
+	onEachSetState: newValue => {
+		setState('loopin onEachSetState', () => s1.names.push('hei'));
+	},
+	// onEachValueUpdate: newValue => {
+	// 	if (s1.counter < 5) {
+	// 		setState('loopin onEachValueUpdate', () => s1.counter++);
+	// 	}
+	// }
+})
+
+watchState(() => s1.names, {
+	onEachSetState: newValue => {
+		if (newValue.length < 4) {
+			setState('other loop', () => Promise.resolve(), () => s1.names.push('hihi'));
+		}
+	}
+})
+
+setState('starting the loop', () => {
+	s1.counter++;
+	setState('async test', () => Promise.resolve().then(() => setState('heh', () => s1.counter++)), () => s1.counter++);
+})
