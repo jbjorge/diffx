@@ -5,7 +5,7 @@ const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] })
 const s2 = createState('hoho', ['hello']);
 
 watchState(() => state.lal, {
-	onChanged: (value) => console.log('On changed', value),
+	onSetStateDone: (value) => console.log('On changed', value),
 	// onEachChange: value => console.log('On each change', value)
 });
 

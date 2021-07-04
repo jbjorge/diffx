@@ -3,8 +3,9 @@ import internalState from './internal-state';
 import { createId } from './createId';
 import { diff } from 'jsondiffpatch';
 import { saveHistoryEntry } from './createHistoryEntry';
-import runDelayedEmitters from './runDelayedEmitters';
+import { runEachSetStateEmitters, runSetStateDoneEmitters } from './delayedEmitters';
 import {
+	maxDepthReached,
 	missingMutatorFunc,
 	missingOnDoneHandler, missingOnErrorHandler,
 	missingReason, pausedStateMessage,
@@ -89,6 +90,10 @@ function addChildElement(el: DiffEntry) {
 // ------------------------------
 
 export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
+	const level = ++setStateNestingLevel;
+	if (level > internalState.instanceOptions.maxNestingDepth) {
+		throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
+	}
 	if (typeof reason !== 'string') {
 		throw new Error(missingReason);
 	}
@@ -104,7 +109,6 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	// ---- handle recursive setState
 
 	const currentState = getStateSnapshot();
-	const level = ++setStateNestingLevel;
 	let didMoveDown = false;
 	const diffEntry: DiffEntry = {
 		id: createId(),
@@ -158,6 +162,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 			})
 	}
 
+	runEachSetStateEmitters();
 	const newState = getStateSnapshot();
 	thisLevelObject.diff = diff(currentState, newState);
 	setStateNestingLevel--;
@@ -168,7 +173,10 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	// ------------------------------
 
 	if (level === 0) {
-		runDelayedEmitters();
+		if (hist.length > internalState.instanceOptions.maxNestingDepth) {
+			throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
+		}
+		runSetStateDoneEmitters();
 		const h1 = hist[0];
 		if (h1) {
 			h1.subDiffEntries = h1.subDiffEntries.concat(hist.slice(1));

@@ -2,7 +2,7 @@ import { diff } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
-import runDelayedEmitters from './runDelayedEmitters';
+import { runEachSetStateEmitters, runSetStateDoneEmitters } from './delayedEmitters';
 import { createId } from './createId';
 
 export interface Delta {
@@ -100,7 +100,8 @@ export function replaceState(state: any): void {
 	// @ts-ignore
 	internalState.stateReplacementKey = null;
 	internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
-	runDelayedEmitters();
+	runEachSetStateEmitters();
+	runSetStateDoneEmitters();
 	internalState.stateAccessBuffer = [];
 }
 

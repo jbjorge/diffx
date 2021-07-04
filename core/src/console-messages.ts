@@ -12,3 +12,7 @@ export const missingReason = '[diffx] setState(reason, mutatorFunc) - reason mus
 export const missingMutatorFunc = '[diffx] setState(reason, mutatorFunc) - mutatorFunc must be a function.\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-17';
 export const pausedStateMessage = reason => `[diffx] State is paused, skipped processing of "${reason}".\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-18`;
 export const missingOnErrorHandler = '[diffx] asyncMutatorFunc in setState(_, asyncMutatorFunc) returned a Promise that threw an error, but no error handler was provided to setState().\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-19\nThe error was:';
+export const maxDepthReached = maxDepth => `[diffx] setState() was nested over ${maxDepth} times.` +
+	`\nThis might be due to a loop of a watchState that changes the state it watches.` +
+	`\nThis limit can be changed with setDiffxOptions({ maxNestingDepth: <integer> })` +
+	`\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-20`;

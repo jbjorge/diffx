@@ -4,15 +4,22 @@ export interface WatchOptions<T> {
 	 *
 	 * Default: `false`
 	 */
-	lazy?: boolean;
+	emitInitialValue?: boolean;
+	/**
+	 * Callback called with the current state after each `.setState` has finished running
+	 * (including each .setState wrapped in .setState)
+	 *
+	 * This is most likely the callback you want to use instead of `onSetStateDone` and `onEachValueUpdate`.
+	 */
+	onEachSetState?: (newValue: T, oldValue?: T | undefined) => void;
 	/**
 	 * Callback called with the final state after the `.setState` function has finished running.
 	 */
-	onChanged?: (newValue: T, oldValue?: T | undefined) => void;
+	onSetStateDone?: (newValue: T, oldValue?: T | undefined) => void;
 	/**
 	 * Callback for each change to the state during `.setState`.
 	 */
-	onEachChange?: (newValue: T, oldValue?: T | undefined) => void;
+	onEachValueUpdate?: (newValue: T, oldValue?: T | undefined) => void;
 	/**
 	 * Custom comparer function to decide if the state has changed.
 	 * Receives newValue and oldValue as arguments and should return `true` for changed

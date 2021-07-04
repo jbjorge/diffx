@@ -7,7 +7,7 @@ export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
  * of emitting intermittent state changes during
  * `.setState()`.
  */
-type DelayedEmitterMap = { [id: string]: () => void };
+export type DelayedEmitterMap = { [id: string]: () => void };
 
 export type PersistenceLocation = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -68,6 +68,15 @@ export interface DiffxOptions {
 	 * Default: null
 	 */
 	persistenceLocation?: PersistenceLocation
+	/**
+	 * Max nesting depth.
+	 *
+	 * If a loop of setState <--> watchState is accidentally created, it will run off and crash
+	 * (and potentially crash the main thread). To avoid this, a max nesting depth can be set.
+	 *
+	 * Default: 100
+	 */
+	maxNestingDepth?: number
 }
 
 interface InternalWatcher {
@@ -83,10 +92,12 @@ export default {
 	isCreatingState: false,
 	stateReplacementKey: 0,
 	stateAccessBuffer: [] as (() => void)[],
-	instanceOptions: {} as DiffxOptions,
+	instanceOptions: { maxNestingDepth: 100 } as DiffxOptions,
 	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners,
-	delayedEmitters: {} as DelayedEmitterMap,
-	delayedEmittersId: 1,
+	setStateDoneEmitters: {} as DelayedEmitterMap,
+	setStateDoneEmittersId: 1,
+	eachSetStateEmitters: {} as DelayedEmitterMap,
+	eachSetStateEmittersId: 1,
 	watchers: [] as InternalWatcher[]
 };

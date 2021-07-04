@@ -18,8 +18,8 @@ export * as diffxInternals from './internals';
  * @param options
  */
 export function setDiffxOptions(options: DiffxOptions) {
-	internalState.instanceOptions = options;
-	if (options?.devtools) {
+	internalState.instanceOptions = { ...internalState.instanceOptions, ...options };
+	if (internalState.instanceOptions?.devtools) {
 		const glob = (typeof process !== 'undefined' && process?.versions?.node) ? global : window;
 		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...internals };
 	}
@@ -54,8 +54,8 @@ export function createState<StateType extends object>(namespace: string, initial
 	if (isPersistent && persistenceLocation) {
 		// setup watcher to keep state up to date
 		const unwatchFunc = watchState(() => rootState[namespace], {
-			lazy: true,
-			onChanged: value => persistenceLocation.setItem('__diffx__' + namespace, JSON.stringify(value))
+			emitInitialValue: false,
+			onSetStateDone: value => persistenceLocation.setItem('__diffx__' + namespace, JSON.stringify(value))
 		});
 		internalState.watchers.push({ namespace, unwatchFunc });
 	}
@@ -97,27 +97,32 @@ export function setState(reason: string, mutatorFunc, onDone = undefined, onErro
  * @return Function for stopping the watcher
  */
 export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): () => void {
-	if (!options.onChanged && !options.onEachChange) {
+	if (!options.onSetStateDone && !options.onEachValueUpdate && !options.onEachSetState) {
 		throw new Error(missingWatchCallbacks)
 	}
-	const watchId = ++internalState.delayedEmittersId;
+	const setStateDoneWatcherId = ++internalState.setStateDoneEmittersId;
+	const eachSetStateWatcherId = ++internalState.eachSetStateEmittersId;
 	let oldValue;
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());
 	oldValue = clone(getter());
 
+	let stateBeforeSetState;
 	let initialValue;
-	if (options.onChanged) {
+	if (options.onSetStateDone) {
 		initialValue = clone(oldValue);
 	}
 
 	// If the watcher is not lazy, call the callbacks immediately with the current value
-	if (!options.lazy) {
-		if (options.onEachChange) {
-			options.onEachChange(oldValue);
+	if (options.emitInitialValue) {
+		if (options.onEachValueUpdate) {
+			options.onEachValueUpdate(oldValue);
 		}
-		if (options.onChanged) {
-			options.onChanged(oldValue);
+		if (options.onEachSetState) {
+			options.onEachSetState(oldValue);
+		}
+		if (options.onSetStateDone) {
+			options.onSetStateDone(oldValue);
 		}
 	}
 
@@ -143,13 +148,21 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			}
 
 			// notify watchers
-			if (options?.onEachChange) {
-				options.onEachChange(clone(newValue), clone(oldValue));
+			if (options?.onEachValueUpdate) {
+				options.onEachValueUpdate(clone(newValue), clone(oldValue));
 			}
-			if (options?.onChanged) {
-				internalState.delayedEmitters[watchId] = () => {
-					options.onChanged(clone(newValue), clone(initialValue));
-					initialValue = clone(newValue);
+			if (options?.onSetStateDone || options?.onEachSetState) {
+				if (options?.onEachSetState) {
+					const oldValueToEmit = clone(oldValue);
+					internalState.eachSetStateEmitters[eachSetStateWatcherId] = () => {
+						options.onEachSetState(clone(newValue), oldValueToEmit);
+					}
+				}
+				if (options?.onSetStateDone) {
+					internalState.setStateDoneEmitters[setStateDoneWatcherId] = () => {
+						options.onSetStateDone(clone(newValue), clone(initialValue));
+						initialValue = clone(newValue);
+					}
 				}
 			}
 
