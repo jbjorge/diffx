@@ -139,7 +139,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		assignmentResult = assignmentResult.then(
 			innerMutatorFunc => {
 				if (typeof innerMutatorFunc !== 'function') {
-					// console.warn(missingOnDoneHandler);
+					console.warn(missingOnDoneHandler);
 					return;
 				}
 				_setState({
@@ -168,8 +168,12 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	// ------------------------------
 
 	if (level === 0) {
-		saveHistoryEntry(hist[0]);
 		runDelayedEmitters();
+		const h1 = hist[0];
+		if (h1) {
+			h1.subDiffEntries = h1.subDiffEntries.concat(hist.slice(1));
+			saveHistoryEntry(h1);
+		}
 		internalState.isUsingSetFunction = false;
 
 		// reset recursive counters

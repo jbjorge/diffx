@@ -1,8 +1,11 @@
 import internalState from './internal-state';
 
 export default function runDelayedEmitters() {
-	for (const emitFunc in internalState.delayedEmitters) {
-		internalState.delayedEmitters[emitFunc]();
-	}
+	const emitters = { ...internalState.delayedEmitters };
+
 	internalState.delayedEmitters = {};
+
+	for (const emitFunc in emitters) {
+		emitters[emitFunc]();
+	}
 }

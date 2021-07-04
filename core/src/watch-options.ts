@@ -8,11 +8,11 @@ export interface WatchOptions<T> {
 	/**
 	 * Callback called with the final state after the `.setState` function has finished running.
 	 */
-	onChanged?: (newValue: T) => void;
+	onChanged?: (newValue: T, oldValue?: T | undefined) => void;
 	/**
 	 * Callback for each change to the state during `.setState`.
 	 */
-	onEachChange?: (newValue: T) => void;
+	onEachChange?: (newValue: T, oldValue?: T | undefined) => void;
 	/**
 	 * Custom comparer function to decide if the state has changed.
 	 * Receives newValue and oldValue as arguments and should return `true` for changed

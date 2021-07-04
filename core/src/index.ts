@@ -1,15 +1,12 @@
 import initializeValue from './initializeValue';
-import { createHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
+import { createHistoryEntry } from './createHistoryEntry';
 import internalState, { CreateStateOptions, DiffxOptions } from './internal-state';
 import { WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
-import { DiffEntry, getStateSnapshot, replaceState } from './internals';
-import runDelayedEmitters from './runDelayedEmitters';
+import { getStateSnapshot, replaceState } from './internals';
 import { effect } from '@vue/reactivity';
-import { diff } from 'jsondiffpatch';
-import { createId } from './createId';
 import { getInitialState } from './initial-state';
 import { _setState, _setStateAsync } from './setState';
 import { duplicateNamespace, missingWatchCallbacks, replacingStateForNamespace } from './console-messages';
@@ -108,6 +105,13 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());
 	oldValue = clone(getter());
+
+	let initialValue;
+	if (options.onChanged) {
+		initialValue = clone(oldValue);
+	}
+
+	// If the watcher is not lazy, call the callbacks immediately with the current value
 	if (!options.lazy) {
 		if (options.onEachChange) {
 			options.onEachChange(oldValue);
@@ -116,25 +120,40 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			options.onChanged(oldValue);
 		}
 	}
+
 	return effect<T>(stateGetter, {
 		lazy: false,
 		onTrigger: () => {
 			const newValue = getter();
 			const newValueString = JSON.stringify(newValue);
 			const newValueClone = newValueString === undefined ? undefined : JSON.parse(newValueString);
-			if (newValueString === JSON.stringify(oldValue)) {
+
+			// Default change comparison
+			if (!options?.hasChangedComparer && newValueString === JSON.stringify(oldValue)) {
+				// Don't update oldValue to be newValue since they're identical
 				return;
 			}
-			if (options?.hasChangedComparer && !options.hasChangedComparer(newValueClone, oldValue)) {
+
+			// User specified change comparison
+			if (options?.hasChangedComparer && !options.hasChangedComparer(clone(newValueClone), clone(oldValue))) {
+				// We don't know how the user decides if anything has changed or not,
+				// so we update the oldValue with whatever the newValue is.
 				oldValue = newValueClone === undefined ? undefined : clone(newValue);
 				return;
 			}
+
+			// notify watchers
 			if (options?.onEachChange) {
-				options.onEachChange(newValue);
+				options.onEachChange(clone(newValue), clone(oldValue));
 			}
 			if (options?.onChanged) {
-				internalState.delayedEmitters[watchId] = () => options.onChanged(newValue);
+				internalState.delayedEmitters[watchId] = () => {
+					options.onChanged(clone(newValue), clone(initialValue));
+					initialValue = clone(newValue);
+				}
 			}
+
+			// update oldValue to be the newValue
 			oldValue = clone(newValue);
 		}
 	});

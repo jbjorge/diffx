@@ -1,4 +1,4 @@
-import { createState, diffxInternals, setDiffxOptions, setState, setStateAsync } from '@diffx/core';
+import { createState, diffxInternals, setDiffxOptions, setState, watchState } from '@diffx/core';
 
 setDiffxOptions({
 	devtools: true,
@@ -28,40 +28,56 @@ window.addEventListener('message', evt => {
 });
 
 // spam
-const s1 = createState('test', { names: [] as string[] });
+const s1 = createState('test', {
+	names: ['hohoho'] as string[],
+	counter: 0
+});
+
+watchState(() => s1.names.find(x => x === 'loololol'), {
+	lazy: true,
+	onEachChange: (newValue, oldValue) => {
+		console.log(newValue, oldValue);
+		if (newValue && s1.counter < 5) {
+			setState('inside watcher', () => s1.counter++);
+		}
+	}
+})
+
+setState('hihiasdfasdf', () => s1.names.push('joda'));
 
 setState('lol', () => {
-	setStateAsync(
-		'heh',
-		() => {
-			return Promise.resolve();
-		},
-		value => {
-			s1.names.push('1');
-			console.log('before', Date.now());
-			return setStateAsync('mipmip',
-				() => {
-					return new Promise(resolve => {
-						setTimeout(resolve, 1000);
-					})
-				},
-				() => {
-					s1.names.push('mipmip');
-					console.log('mid', Date.now())
-				}
-			)
-		})
-		.then(() => {
-			console.log('end', Date.now());
-			return setState('trololol', () => {
-				return setStateAsync('aosidjfasdf',
-					() => new Promise(resolve => setTimeout(resolve, 500)),
-					() => {
-						s1.names.push('asdofiasdf');
-						console.log('wat');
-					}
-				)
-			})
-		})
-		.then(() => console.log('wohoo'))
+	s1.names.push('mipmip');
+	setState('hihi', () => {
+		s1.counter++;
+		s1.names.push('loololol');
+		setState('asdofijasdf', () => {
+			s1.names.push('hihihasdfihas');
+		});
+	});
+	setState('asdofijasdf', () => {
+		s1.counter++;
+	});
 })
+
+// setState('lol', () => {
+// 	setState(
+// 		'heh',
+// 		() => {
+// 			s1.names.push('hohoho');
+// 			return Promise.resolve();
+// 		},
+// 		value => {
+// 			s1.names.push('1');
+// 			setState(
+// 				'mipmip',
+// 				() => {
+// 					return new Promise(resolve => {
+// 						setTimeout(resolve, 1000);
+// 					})
+// 				},
+// 				() => {
+// 					s1.names.push('mipmip');
+// 				}
+// 			)
+// 		});
+// })

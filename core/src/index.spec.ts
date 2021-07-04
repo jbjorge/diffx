@@ -17,12 +17,10 @@ const ssAsync = () => {
 	}, 100)
 }
 
-setState('hah', async () => {
+setState('hah', () => {
 	state.lal.push('oaeijrfaerfij');
-	const value = await doAsync();
-	state.lal.push(value);
-	return value;
-}, val => state.lal.push(val), err => state.lal.push((err as any).message))
+	doAsync();
+})
 
 function maeri() {
 	setState('hah', async () => {
