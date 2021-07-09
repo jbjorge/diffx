@@ -7,11 +7,14 @@ import { runEachSetStateEmitters, runSetStateDoneEmitters } from './delayedEmitt
 import {
 	maxDepthReached,
 	missingMutatorFunc,
-	missingOnDoneHandler, missingOnErrorHandler,
-	missingReason, pausedStateMessage,
+	missingOnDoneHandler,
+	missingOnErrorHandler,
+	missingReason,
+	pausedStateMessage,
 	stateChangedInPromise,
 	stateChangedWithoutSetState
 } from './console-messages';
+import { trigger } from '@vue/reactivity';
 
 interface InternalSetStateArgs {
 	reason: string;
@@ -67,6 +70,9 @@ let paren = [hist];
 let current = hist;
 let children;
 let isTriggeringWatchers = false;
+let triggerLevel = [];
+let isTriggeringLevel: { [level: number]: boolean } = {};
+let runningWatchersLevel = -1;
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -91,6 +97,7 @@ function addChildElement(el: DiffEntry) {
 // ------------------------------
 
 export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
+	runningWatchersLevel = setStateNestingLevel + 1;
 	if (setStateNestingLevel > internalState.instanceOptions.maxNestingDepth) {
 		throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
 	}
@@ -108,7 +115,12 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 
 	// ---- handle recursive setState
 
-	const level = ++setStateNestingLevel;
+	let level = ++setStateNestingLevel;
+
+	// runningWatchersLevel = level + 1;
+	// runEachSetStateEmitters();
+	// runningWatchersLevel = level;
+
 	const currentState = getStateSnapshot();
 	let didMoveDown = false;
 	const diffEntry: DiffEntry = {
@@ -118,9 +130,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		diff: {},
 		subDiffEntries: []
 	};
-	if (isTriggeringWatchers) {
+	console.log(level, runningWatchersLevel, reason);
+	if (isTriggeringLevel[level - 1]) {
 		diffEntry.triggeredByWatcher = true;
-		isTriggeringWatchers = false;
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack;
@@ -143,6 +155,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	previousLevel = level;
 
 	let assignmentResult = mutatorFunc();
+	isTriggeringLevel[level] = true;
+	runEachSetStateEmitters();
+	delete isTriggeringLevel[level];
 	if (assignmentResult instanceof Promise) {
 		thisLevelObject.async = true;
 		assignmentResult = assignmentResult.then(
@@ -167,9 +182,12 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 			})
 	}
 
-	isTriggeringWatchers = true;
-	runEachSetStateEmitters();
-	isTriggeringWatchers = false;
+	// triggerLevel.push(level);
+	// runningWatchersLevel = level + 1;
+	// runEachSetStateEmitters();
+	// runningWatchersLevel = level;
+	// triggerLevel.pop();
+
 	const newState = getStateSnapshot();
 	thisLevelObject.diff = diff(currentState, newState);
 	setStateNestingLevel--;
@@ -177,13 +195,21 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		paren.pop();
 	}
 
+	// runEachSetStateEmitters();
+
+	// runningWatchersLevel = level;
+	// runEachSetStateEmitters();
+	// runningWatchersLevel = level - 1;
+
 	// ------------------------------
 
 	if (level === 0) {
 		if (hist.length > internalState.instanceOptions.maxNestingDepth) {
 			throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
 		}
+		// runningWatchersLevel = level + 1;
 		runSetStateDoneEmitters();
+		// runningWatchersLevel = level;
 		const h1 = hist[0];
 		if (h1) {
 			h1.subDiffEntries = h1.subDiffEntries.concat(hist.slice(1));
@@ -198,6 +224,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		paren = [hist];
 		current = hist;
 		children = undefined;
+		runningWatchersLevel = -1;
 		return (assignmentResult instanceof Promise) ? assignmentResult : Promise.resolve();
 	}
 }

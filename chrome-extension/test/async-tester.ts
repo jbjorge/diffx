@@ -132,33 +132,36 @@ const s1 = createState('test', {
 // })
 
 // TEST NESTING AND WATCHING AND STUFF
-watchState(() => s1.counter, {
-	// onSetStateDone: (newValue, oldvalue) => {
-	// 	console.log(newValue, oldvalue);
-	// 	if (s1.counter < 15) {
-	// 		setState('loopin onSetStateDone', () => s1.counter++);
-	// 	}
-	// },
-	emitInitialValue: true,
-	onEachSetState: newValue => {
-		setState('loopin onEachSetState', () => s1.names.push('hei'));
-	},
-	// onEachValueUpdate: newValue => {
-	// 	if (s1.counter < 5) {
-	// 		setState('loopin onEachValueUpdate', () => s1.counter++);
-	// 	}
-	// }
-})
-
 watchState(() => s1.names, {
 	onEachSetState: newValue => {
-		if (newValue.length < 4) {
-			setState('other loop', () => Promise.resolve(), () => s1.names.push('hihi'));
+		if (newValue.length < 3) {
+			setState('triggered by loopin onEachSetState', () => {
+				s1.names.push('hihi')
+			});
 		}
+	}
+})
+//
+watchState(() => s1.counter, {
+	onEachSetState: newValue => {
+		setState('triggered by starting the loop', () => s1.names.push('hei'));
+		if (s1.counter < 2) {
+			setState('same level loop', () => {
+				s1.counter++;
+				setState('awoisdjfoasdf', () => {})
+			})
+		}
+		setState('also me', () => {});
 	}
 })
 
 setState('starting the loop', () => {
+	// setState('same level as starting the loop', () => {});
+	// setState('same level as starting the loop', () => {});
+	setState('same level as starting the loop', () => {});
 	s1.counter++;
-	setState('async test', () => Promise.resolve().then(() => setState('heh', () => s1.counter++)), () => s1.counter++);
+	// setState('same level as starting the loop', () => {
+	// 	setState('lol', () => {})
+	// });
+	// setState('async test', () => Promise.resolve().then(() => setState('heh', () => s1.counter++)), () => s1.counter++);
 })

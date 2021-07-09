@@ -151,18 +151,16 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			if (options?.onEachValueUpdate) {
 				options.onEachValueUpdate(clone(newValue), clone(oldValue));
 			}
-			if (options?.onSetStateDone || options?.onEachSetState) {
-				if (options?.onEachSetState) {
-					const oldValueToEmit = clone(oldValue);
-					internalState.eachSetStateEmitters[eachSetStateWatcherId] = () => {
-						options.onEachSetState(clone(newValue), oldValueToEmit);
-					}
+			if (options?.onEachSetState) {
+				const oldValueToEmit = clone(oldValue);
+				internalState.eachSetStateEmitters[eachSetStateWatcherId] = () => {
+					options.onEachSetState(clone(newValue), oldValueToEmit);
 				}
-				if (options?.onSetStateDone) {
-					internalState.setStateDoneEmitters[setStateDoneWatcherId] = () => {
-						options.onSetStateDone(clone(newValue), clone(initialValue));
-						initialValue = clone(newValue);
-					}
+			}
+			if (options?.onSetStateDone) {
+				internalState.setStateDoneEmitters[setStateDoneWatcherId] = () => {
+					options.onSetStateDone(clone(newValue), clone(initialValue));
+					initialValue = clone(newValue);
 				}
 			}
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, PropType, reactive } from 'vue';
+import { computed, ComputedRef, defineComponent, PropType, reactive } from 'vue';
 import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { leftpad } from '../utils/leftpad';
@@ -9,6 +9,10 @@ export default defineComponent({
 	props: {
 		diffEntry: {
 			type: Object as PropType<DiffEntry>
+		},
+		parentDiffEntry: {
+			type: Object as PropType<DiffEntry | undefined>,
+			default: undefined
 		},
 		nestingLevel: {
 			type: Number,
@@ -52,6 +56,23 @@ export default defineComponent({
 			})
 		});
 
+		const triggerReason: ComputedRef<string> = computed(() => {
+			if (props.parentDiffEntry) {
+				const nestedSettersCount = props.parentDiffEntry?.subDiffEntries?.filter(sde => !sde.triggeredByWatcher)?.length || 0;
+				if (props.parentDiffEntry.triggeredByWatcher) {
+					return `Triggered by changes in "${props.parentDiffEntry.reason}"`;
+				}
+				if (nestedSettersCount === 0) {
+					return `Triggered by changes in "${props.parentDiffEntry.reason}" or any of its parents`;
+				}
+				if (nestedSettersCount > 1) {
+					return `Triggered by changes in "${props.parentDiffEntry.reason}", or changes in its path`;
+				}
+				return `Triggered by changes in "${props.parentDiffEntry.reason}"`;
+			}
+			return `Triggered by changes in watchState (unknown origin)`;
+		})
+
 		const hoverPosition = reactive({ top: '0', left: '0' });
 
 		function onColorHover(evt: MouseEvent) {
@@ -74,7 +95,8 @@ export default defineComponent({
 			stateNameEntries,
 			onColorHover,
 			hoverPosition,
-			getColorFromString
+			getColorFromString,
+			triggerReason
 		};
 	}
 });
@@ -105,7 +127,7 @@ export default defineComponent({
 							<div
 								v-if="diffEntry?.triggeredByWatcher"
 								class="tag watcher"
-								title="Triggered by watchState"
+								:title="triggerReason"
 							>
 								watchState
 							</div>
@@ -156,6 +178,7 @@ export default defineComponent({
 			v-for="(subEntry, subIndex) in diffEntry?.subDiffEntries"
 			:key="subEntry.id"
 			:diffEntry="subEntry"
+			:parent-diff-entry="diffEntry"
 			:nestingLevel="nestingLevel + 1"
 			:style="{borderLeft: `7px solid ${backgroundColor}`}"
 			:disabled="disabled"
