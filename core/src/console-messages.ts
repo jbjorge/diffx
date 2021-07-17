@@ -16,3 +16,4 @@ export const maxDepthReached = maxDepth => `[diffx] setState() was nested over $
 	`\nThis might be due to a loop of a watchState that changes the state it watches.` +
 	`\nThis limit can be changed with setDiffxOptions({ maxNestingDepth: <integer> })` +
 	`\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-20`;
+export const missingPersistenceLocation = '[diffx] persistence is set to true, but persistenceLocation is undefined.\nhttps://github.com/jbjorge/diffx/wiki/Errors-and-warnings-overview#core-21';

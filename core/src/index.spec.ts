@@ -1,146 +1,154 @@
 import { createState, setDiffxOptions, setState, watchState, diffxInternals } from './index';
 
-setDiffxOptions({ createDiffs: true });
-const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] });
-const s2 = createState('hoho', ['hello']);
-
-watchState(() => state.lal, {
-	onSetStateDone: (value) => console.log('On changed', value),
-	// onEachChange: value => console.log('On each change', value)
-});
-
-const ssAsync = () => {
-	setTimeout(() => {
-		setState('async', () => {
-			state.lol.meh = 15;
-		})
-	}, 100)
-}
-
-setState('hah', () => {
-	state.lal.push('oaeijrfaerfij');
-	doAsync();
+test('what', () => {
+	// const a = createState('hi', {a: 1});
+	// setState('hiii', () => {
+	// 	a.a++;
+	// });
+	// expect(a).toStrictEqual({a:2});
 })
 
-function maeri() {
-	setState('hah', async () => {
-		state.lal.push('oaeijrfaerfij');
-		await doAsync();
-	});
-}
-
-function doAsync(): Promise<string> {
-	return new Promise(resolve => {
-		setTimeout(() => resolve('hey'), 10);
-	})
-}
-
-// setState('lol', () => Promise.resolve().then(() => state.lal.push('hihi')));
-
-const x = () => setState('bcos', () => {
-	state.lal.push('hihihi')
-	state.lal.push('oijasdojasd');
-	state.lal[0] = 'oiaja';
-	state.lal[0] = 'YES!'
-	state.lol.meh = 2;
-	ssAsync();
-})
-
-setState('reson', () => {
-	state.lal = [];
-	state.lal.push('hehehehoasdjfaosij')
-	x();
-});
-
-// console.log(JSON.stringify(diffxInternals.getDiffs(), null, 2));
-
-
-
-// /// recursive tests
-// const state: any = {};
+// setDiffxOptions({ createDiffs: true });
+// const state = createState('hihi', { lol: { meh: 0 }, lal: ['hhi'] as string[] });
+// const s2 = createState('hoho', ['hello']);
 //
-// interface HistoryEntry {
-// 	s: object,
-// 	level: number;
-// 	children: HistoryEntry[]
-// }
+// watchState(() => state.lal, {
+// 	onSetStateDone: (value) => console.log('On changed', value),
+// 	// onEachChange: value => console.log('On each change', value)
+// });
 //
-// let setStateNestingLevel = -1;
-// let previousLevel = 0;
-// let hist: HistoryEntry[] = [];
-// let paren = [hist];
-// let current = hist;
-// let children;
-// function setState(reason, cb) {
-// 	const level = ++setStateNestingLevel;
-// 	let didMoveDown = false;
-// 	if (level < previousLevel) {
-// 		// moved up a level
-// 		addParentLevelElement({
-// 			level,
-// 			s: null,
-// 			children: []
+// const ssAsync = () => {
+// 	setTimeout(() => {
+// 		setState('async', () => {
+// 			state.lol.meh = 15;
 // 		})
-// 	} else if (level === previousLevel) {
-// 		// back to same level
-// 		addSameLevelElement({
-// 			level,
-// 			s: null,
-// 			children: []
-// 		});
-// 	} else {
-// 		// moved down a level
-// 		addChildElement({
-// 			level,
-// 			s: null,
-// 			children: []
-// 		});
-// 		didMoveDown = true;
-// 	}
-// 	let thisLevelObject = current[current.length - 1];
-// 	previousLevel = level;
-// 	cb();
-// 	thisLevelObject.s = JSON.parse(JSON.stringify(state));
-// 	setStateNestingLevel--;
-// 	if (didMoveDown) {
-// 		paren.pop();
-// 	}
+// 	}, 100)
 // }
 //
-// function addParentLevelElement(el) {
-// 	const parentEl = paren[paren.length - 1];
-// 	const parentChildren = parentEl[parentEl.length - 1].children;
-// 	parentChildren.push(el);
-// 	current = parentChildren;
-// 	children = current[current.length - 1].children;
-// }
-//
-// function addSameLevelElement(el) {
-// 	current.push(el);
-// 	children = current[current.length - 1].children;
-// }
-//
-// function addChildElement(el) {
-// 	children.push(el);
-// 	current = children;
-// 	paren.push(children);
-// 	children = current[current.length - 1].children;
-// }
-//
-// setState('0', () => {
-// 	state.x = 'hei';
-// 	state.y = 'hehe';
-//
-// 	setState('1', () => {
-// 		state.y = 'hhi'
-// 		setState('2', () => {
-// 			state.x = 'yes';
-// 		})
-//
-// 		state.x = 'hallo';
-// 	})
+// setState('hah', () => {
+// 	state.lal.push('oaeijrfaerfij');
+// 	doAsync();
 // })
 //
-// console.log(JSON.stringify(hist, null, 2));
+// function maeri() {
+// 	setState('hah', async () => {
+// 		state.lal.push('oaeijrfaerfij');
+// 		await doAsync();
+// 	});
+// }
 //
-// /// recursive tests end
+// function doAsync(): Promise<string> {
+// 	return new Promise(resolve => {
+// 		setTimeout(() => resolve('hey'), 10);
+// 	})
+// }
+//
+// // setState('lol', () => Promise.resolve().then(() => state.lal.push('hihi')));
+//
+// const x = () => setState('bcos', () => {
+// 	state.lal.push('hihihi')
+// 	state.lal.push('oijasdojasd');
+// 	state.lal[0] = 'oiaja';
+// 	state.lal[0] = 'YES!'
+// 	state.lol.meh = 2;
+// 	ssAsync();
+// })
+//
+// setState('reson', () => {
+// 	state.lal = [];
+// 	state.lal.push('hehehehoasdjfaosij')
+// 	x();
+// });
+//
+// // console.log(JSON.stringify(diffxInternals.getDiffs(), null, 2));
+//
+//
+//
+// // /// recursive tests
+// // const state: any = {};
+// //
+// // interface HistoryEntry {
+// // 	s: object,
+// // 	level: number;
+// // 	children: HistoryEntry[]
+// // }
+// //
+// // let setStateNestingLevel = -1;
+// // let previousLevel = 0;
+// // let hist: HistoryEntry[] = [];
+// // let paren = [hist];
+// // let current = hist;
+// // let children;
+// // function setState(reason, cb) {
+// // 	const level = ++setStateNestingLevel;
+// // 	let didMoveDown = false;
+// // 	if (level < previousLevel) {
+// // 		// moved up a level
+// // 		addParentLevelElement({
+// // 			level,
+// // 			s: null,
+// // 			children: []
+// // 		})
+// // 	} else if (level === previousLevel) {
+// // 		// back to same level
+// // 		addSameLevelElement({
+// // 			level,
+// // 			s: null,
+// // 			children: []
+// // 		});
+// // 	} else {
+// // 		// moved down a level
+// // 		addChildElement({
+// // 			level,
+// // 			s: null,
+// // 			children: []
+// // 		});
+// // 		didMoveDown = true;
+// // 	}
+// // 	let thisLevelObject = current[current.length - 1];
+// // 	previousLevel = level;
+// // 	cb();
+// // 	thisLevelObject.s = JSON.parse(JSON.stringify(state));
+// // 	setStateNestingLevel--;
+// // 	if (didMoveDown) {
+// // 		paren.pop();
+// // 	}
+// // }
+// //
+// // function addParentLevelElement(el) {
+// // 	const parentEl = paren[paren.length - 1];
+// // 	const parentChildren = parentEl[parentEl.length - 1].children;
+// // 	parentChildren.push(el);
+// // 	current = parentChildren;
+// // 	children = current[current.length - 1].children;
+// // }
+// //
+// // function addSameLevelElement(el) {
+// // 	current.push(el);
+// // 	children = current[current.length - 1].children;
+// // }
+// //
+// // function addChildElement(el) {
+// // 	children.push(el);
+// // 	current = children;
+// // 	paren.push(children);
+// // 	children = current[current.length - 1].children;
+// // }
+// //
+// // setState('0', () => {
+// // 	state.x = 'hei';
+// // 	state.y = 'hehe';
+// //
+// // 	setState('1', () => {
+// // 		state.y = 'hhi'
+// // 		setState('2', () => {
+// // 			state.x = 'yes';
+// // 		})
+// //
+// // 		state.x = 'hallo';
+// // 	})
+// // })
+// //
+// // console.log(JSON.stringify(hist, null, 2));
+// //
+// // /// recursive tests end

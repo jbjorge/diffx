@@ -130,7 +130,6 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		diff: {},
 		subDiffEntries: []
 	};
-	console.log(level, runningWatchersLevel, reason);
 	if (isTriggeringLevel[level - 1]) {
 		diffEntry.triggeredByWatcher = true;
 	}

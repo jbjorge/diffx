@@ -10,6 +10,7 @@ import { effect } from '@vue/reactivity';
 import { getInitialState } from './initial-state';
 import { _setState, _setStateAsync } from './setState';
 import { duplicateNamespace, missingWatchCallbacks, replacingStateForNamespace } from './console-messages';
+import getPersistenceKey from './get-persistence-key';
 
 export * as diffxInternals from './internals';
 
@@ -54,8 +55,8 @@ export function createState<StateType extends object>(namespace: string, initial
 	if (isPersistent && persistenceLocation) {
 		// setup watcher to keep state up to date
 		const unwatchFunc = watchState(() => rootState[namespace], {
-			emitInitialValue: false,
-			onSetStateDone: value => persistenceLocation.setItem('__diffx__' + namespace, JSON.stringify(value))
+			emitInitialValue: true,
+			onSetStateDone: value => persistenceLocation.setItem(getPersistenceKey(namespace), JSON.stringify(value))
 		});
 		internalState.watchers.push({ namespace, unwatchFunc });
 	}

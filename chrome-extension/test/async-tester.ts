@@ -147,8 +147,8 @@ watchState(() => s1.counter, {
 		setState('triggered by starting the loop', () => s1.names.push('hei'));
 		if (s1.counter < 2) {
 			setState('same level loop', () => {
-				s1.counter++;
 				setState('awoisdjfoasdf', () => {})
+				s1.counter++;
 			})
 		}
 		setState('also me', () => {});

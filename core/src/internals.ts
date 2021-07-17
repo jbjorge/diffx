@@ -147,5 +147,12 @@ export function getStateSnapshot() {
  * Gets all diffs that have been recorded this far
  */
 export function getDiffs() {
-	return internalState.diffs;
+	return clone(internalState.diffs);
+}
+
+/**
+ * Delete all diffs (used for testing)
+ */
+export function _deleteAllDiffs() {
+	internalState.diffs = [];
 }
