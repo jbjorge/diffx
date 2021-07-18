@@ -15,6 +15,9 @@ let previousState = clone(rootState);
  * @param subHistoryEntries Entries to record as sub-history of
  */
 export function createHistoryEntry(reason = '', isInitialState = false, subHistoryEntries: DiffEntry[] = []) {
+	if (!shouldSaveDiff()) {
+		return;
+	}
 	const currentState = getStateSnapshot();
 	const historyEntry = getHistoryEntry(currentState, reason);
 	if (!historyEntry) {
@@ -30,6 +33,9 @@ export function createHistoryEntry(reason = '', isInitialState = false, subHisto
 }
 
 export function saveHistoryEntry(historyEntry: DiffEntry, currentState?: object) {
+	if (!shouldSaveDiff()) {
+		return;
+	}
 	internalState.diffs.push(historyEntry);
 	for (let cbId in internalState.diffListeners) {
 		internalState.diffListeners[cbId](historyEntry);
@@ -37,8 +43,8 @@ export function saveHistoryEntry(historyEntry: DiffEntry, currentState?: object)
 	previousState = currentState ?? getStateSnapshot();
 }
 
-export function getHistoryEntry(currentState: object, reason = '') {
-	if (!internalState.instanceOptions.createDiffs && !internalState.instanceOptions.devtools) {
+function getHistoryEntry(currentState: object, reason = '') {
+	if (!shouldSaveDiff()) {
 		return;
 	}
 	const historyEntry: DiffEntry = {
@@ -51,4 +57,8 @@ export function getHistoryEntry(currentState: object, reason = '') {
 		historyEntry.stackTrace = new Error().stack.split('\n').slice(3).join('\n');
 	}
 	return historyEntry;
+}
+
+function shouldSaveDiff() {
+	return internalState.instanceOptions.createDiffs || internalState.instanceOptions.devtools;
 }

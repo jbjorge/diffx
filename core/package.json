@@ -8,7 +8,7 @@
     "generate-readme": "npm run generate-readme ./core/readme-template.md --prefix ../",
     "prepublishOnly": "npm run build",
     "ci-build": "rollup -c rollup.config.js --watch",
-    "ci-test": "jest --verbose --watch",
+    "ci-test": "jest --verbose --watch --maxWorkers=1 --bail",
     "test": "jest"
   },
   "files": [

@@ -178,5 +178,8 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
  * @param namespace
  */
 export function destroyState(namespace: string) {
+	// internalState.isDestroyingState = true;
+	// rootState[namespace] = undefined;
 	delete rootState[namespace];
+	// internalState.isDestroyingState = false;
 }

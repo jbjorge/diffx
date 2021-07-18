@@ -1,7 +1,21 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
+import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../src';
 import getPersistenceKey from '../src/get-persistence-key';
 // @ts-ignore
 import { mockStorage } from './mock-storage';
+import { maxDepthReached } from '../src/console-messages';
+import {
+	_deleteAllDiffs,
+	addDiffListener,
+	commit,
+	getDiffs,
+	getStateSnapshot,
+	lockState,
+	pauseState,
+	removeDiffListener,
+	replaceState,
+	unlockState,
+	unpauseState
+} from '../src/internals';
 
 const _namespace = 'state1';
 
@@ -17,6 +31,7 @@ beforeEach(() => {
 	destroyState(_namespace);
 	diffxInternals._deleteAllDiffs();
 	mockStorage.clear();
+	delete global['__DIFFX__'];
 })
 
 describe('createDiffs', () => {
@@ -105,5 +120,83 @@ describe('persistence', () => {
 		const initialState = { a: 1 };
 		createState(_namespace, initialState, { persistent: true });
 		expect(JSON.parse(mockStorage.getItem(getPersistenceKey(_namespace)))).toStrictEqual(initialState);
+	})
+})
+
+describe('maxNestingDepth', () => {
+	test('it should throw if setState is nested more than the default max depth', () => {
+		const state = createState(_namespace, { a: 0 });
+
+		function createNestedState(depth = 0) {
+			if (depth > 102) {
+				return;
+			}
+			setState('looping the setState', () => {
+				state.a++;
+				createNestedState(depth + 1);
+			});
+		}
+
+		expect(createNestedState).toThrowError(maxDepthReached(100));
+	})
+
+	test('it should throw if setState is nested more than the specified max depth', () => {
+		setDiffxOptions({ maxNestingDepth: 10 });
+		const state = createState(_namespace, { a: 0 });
+
+		function createNestedState(depth = 0) {
+			if (depth > 10) {
+				return;
+			}
+			setState('looping the setState', () => {
+				state.a++;
+				createNestedState(depth + 1);
+			});
+		}
+
+		expect(createNestedState).toThrowError(maxDepthReached(10));
+	})
+})
+
+describe('devtools', () => {
+	test('it should create diffs when devtools is true', () => {
+		setDiffxOptions({ devtools: true });
+		const noDiffs = diffxInternals.getDiffs();
+		const state = createState(_namespace, { a: 1 });
+		const diffs = diffxInternals.getDiffs();
+		expect(noDiffs.length).toBeFalsy();
+		expect(diffs.length).toBe(1);
+	})
+
+	test('it should expose diffx on global/window.__DIFFX__ when devtools is true', () => {
+		// before interacting with diffx
+		expect(global['__DIFFX__']).toBeUndefined();
+
+		// after interacting with diffx
+		setDiffxOptions({});
+		expect(global['__DIFFX__']).toBeUndefined();
+
+		// after devtools set to true
+		setDiffxOptions({ devtools: true });
+		expect(global['__DIFFX__']).toBeDefined();
+		const exposedAPI = Object.keys(global['__DIFFX__']);
+		expect(exposedAPI).toEqual([
+			'createState',
+			'setState',
+			'watchState',
+			'destroyState',
+			'setDiffxOptions',
+			'addDiffListener',
+			'removeDiffListener',
+			'commit',
+			'replaceState',
+			'lockState',
+			'unlockState',
+			'pauseState',
+			'unpauseState',
+			'getStateSnapshot',
+			'getDiffs',
+			'_deleteAllDiffs',
+		])
 	})
 })
