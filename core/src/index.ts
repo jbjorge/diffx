@@ -6,7 +6,7 @@ import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
 import { getStateSnapshot, replaceState } from './internals';
-import { effect } from '@vue/reactivity';
+import { effect, stop } from '@vue/reactivity';
 import { getInitialState } from './initial-state';
 import { _setState, _setStateAsync } from './setState';
 import { duplicateNamespace, missingWatchCallbacks, replacingStateForNamespace } from './console-messages';
@@ -127,9 +127,12 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 		}
 	}
 
-	return effect<T>(stateGetter, {
+	const effectInstance = effect<T>(stateGetter, {
 		lazy: false,
 		onTrigger: () => {
+			if (options.once) {
+				stop(effectInstance);
+			}
 			const newValue = getter();
 			const newValueString = JSON.stringify(newValue);
 			const newValueClone = newValueString === undefined ? undefined : JSON.parse(newValueString);
@@ -169,6 +172,13 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			oldValue = clone(newValue);
 		}
 	});
+
+	const unwatch = () => stop(effectInstance);
+	Object.keys(effectInstance).forEach(key => {
+		unwatch[key] = effectInstance[key];
+	});
+
+	return unwatch;
 }
 
 /**

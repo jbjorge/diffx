@@ -26,4 +26,9 @@ export interface WatchOptions<T> {
 	 * and `false` for no change.
 	 */
 	hasChangedComparer?: ((newValue: T, oldValue: T) => boolean);
+	/**
+	 * Whether the watcher should automatically stop watching after the first changed value has
+	 * been emitted.
+	 */
+	once?: boolean;
 }
