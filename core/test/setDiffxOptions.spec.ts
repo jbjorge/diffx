@@ -1,6 +1,5 @@
 import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../src';
 import getPersistenceKey from '../src/get-persistence-key';
-// @ts-ignore
 import { mockStorage } from './mock-storage';
 import { maxDepthReached } from '../src/console-messages';
 import {

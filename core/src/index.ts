@@ -178,8 +178,8 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
  * @param namespace
  */
 export function destroyState(namespace: string) {
-	// internalState.isDestroyingState = true;
-	// rootState[namespace] = undefined;
+	internalState.isDestroyingState = true;
 	delete rootState[namespace];
-	// internalState.isDestroyingState = false;
+	createHistoryEntry(`@destroy ${namespace}`, true);
+	internalState.isDestroyingState = false;
 }

@@ -48,8 +48,8 @@ describe('createDiffs == true', () => {
 		setState('setting state 2', () => state2.b++);
 		const diffs = diffxInternals.getDiffs();
 		expect(diffs.length).toEqual(2);
-		expect(diffs[0].isInitialState).toBeTruthy();
-		expect(diffs[1].isInitialState).toBeUndefined();
+		expect(diffs[0].isGeneratedByDiffx).toBeTruthy();
+		expect(diffs[1].isGeneratedByDiffx).toBeUndefined();
 	})
 
 	test('it should not store a diff if there are no changes', () => {

@@ -85,6 +85,7 @@ interface InternalWatcher {
 }
 
 export default {
+	isDestroyingState: false,
 	isReplacingState: false,
 	stateModificationsPaused: false,
 	stateModificationsLocked: false,

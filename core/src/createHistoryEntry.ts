@@ -11,10 +11,10 @@ let previousState = clone(rootState);
  * Creates a diff of the previous and current state and stores it in the
  * diff entries.
  * @param reason The reason for the change
- * @param isInitialState Should be true when the entry is the first one for the state
+ * @param isGeneratedByDiffx Should be true when the entry is the first one for the state
  * @param subHistoryEntries Entries to record as sub-history of
  */
-export function createHistoryEntry(reason = '', isInitialState = false, subHistoryEntries: DiffEntry[] = []) {
+export function createHistoryEntry(reason = '', isGeneratedByDiffx = false, subHistoryEntries: DiffEntry[] = []) {
 	if (!shouldSaveDiff()) {
 		return;
 	}
@@ -23,8 +23,8 @@ export function createHistoryEntry(reason = '', isInitialState = false, subHisto
 	if (!historyEntry) {
 		return;
 	}
-	if (isInitialState) {
-		historyEntry.isInitialState = true;
+	if (isGeneratedByDiffx) {
+		historyEntry.isGeneratedByDiffx = true;
 	}
 	if (subHistoryEntries?.length) {
 		historyEntry.subDiffEntries = subHistoryEntries;
@@ -44,9 +44,6 @@ export function saveHistoryEntry(historyEntry: DiffEntry, currentState?: object)
 }
 
 function getHistoryEntry(currentState: object, reason = '') {
-	if (!shouldSaveDiff()) {
-		return;
-	}
 	const historyEntry: DiffEntry = {
 		id: createId(),
 		timestamp: Date.now(),

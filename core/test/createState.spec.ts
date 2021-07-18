@@ -1,7 +1,6 @@
 import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
-// @ts-ignore
-import { mockStorage } from './mock-storage';
 import { duplicateNamespace, replacingStateForNamespace } from '../src/console-messages';
+import { mockStorage } from './mock-storage';
 
 const _namespace = 'state1';
 

@@ -16,7 +16,7 @@ export interface DiffEntry {
 	reason: string;
 	diff: Delta;
 	stackTrace?: string;
-	isInitialState?: boolean;
+	isGeneratedByDiffx?: boolean;
 	async?: boolean;
 	asyncOrigin?: string;
 	subDiffEntries?: DiffEntry[];
