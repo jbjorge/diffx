@@ -153,7 +153,9 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 
 			// notify watchers
 			if (options?.onEachValueUpdate) {
+				internalState.isTriggeringValueWatchers = true;
 				options.onEachValueUpdate(clone(newValue), clone(oldValue));
+				internalState.isTriggeringValueWatchers = false;
 			}
 			if (options?.onEachSetState) {
 				const oldValueToEmit = clone(oldValue);

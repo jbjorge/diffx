@@ -73,6 +73,7 @@ let isTriggeringWatchers = false;
 let triggerLevel = [];
 let isTriggeringLevel: { [level: number]: boolean } = {};
 let runningWatchersLevel = -1;
+let setStateDoneTriggerId;
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -117,10 +118,6 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 
 	let level = ++setStateNestingLevel;
 
-	// runningWatchersLevel = level + 1;
-	// runEachSetStateEmitters();
-	// runningWatchersLevel = level;
-
 	const currentState = getStateSnapshot();
 	let didMoveDown = false;
 	const diffEntry: DiffEntry = {
@@ -132,6 +129,18 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	};
 	if (isTriggeringLevel[level - 1]) {
 		diffEntry.triggeredByWatcher = true;
+		if (current[0]) {
+			diffEntry.triggeredByDiffId = current[0].id;
+		}
+	}
+	if (setStateDoneTriggerId) {
+		diffEntry.triggeredByDiffId = setStateDoneTriggerId;
+	}
+	if (internalState.isTriggeringValueWatchers) {
+		diffEntry.triggeredByWatcher = true;
+		if (current[0]) {
+			diffEntry.triggeredByDiffId = current[0].id;
+		}
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack;
@@ -181,12 +190,6 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 			})
 	}
 
-	// triggerLevel.push(level);
-	// runningWatchersLevel = level + 1;
-	// runEachSetStateEmitters();
-	// runningWatchersLevel = level;
-	// triggerLevel.pop();
-
 	const newState = getStateSnapshot();
 	thisLevelObject.diff = diff(currentState, newState);
 	setStateNestingLevel--;
@@ -194,21 +197,12 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		paren.pop();
 	}
 
-	// runEachSetStateEmitters();
-
-	// runningWatchersLevel = level;
-	// runEachSetStateEmitters();
-	// runningWatchersLevel = level - 1;
-
 	// ------------------------------
 
 	if (level === 0) {
 		if (hist.length > internalState.instanceOptions.maxNestingDepth) {
 			throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
 		}
-		// runningWatchersLevel = level + 1;
-		runSetStateDoneEmitters();
-		// runningWatchersLevel = level;
 		const h1 = hist[0];
 		if (h1) {
 			h1.subDiffEntries = h1.subDiffEntries.concat(hist.slice(1));
@@ -224,6 +218,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		current = hist;
 		children = undefined;
 		runningWatchersLevel = -1;
+		setStateDoneTriggerId = h1.id;
+		runSetStateDoneEmitters();
+		setStateDoneTriggerId = '';
 		return (assignmentResult instanceof Promise) ? assignmentResult : Promise.resolve();
 	}
 }

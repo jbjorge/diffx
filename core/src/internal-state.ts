@@ -7,7 +7,8 @@ export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
  * of emitting intermittent state changes during
  * `.setState()`.
  */
-export type DelayedEmitterMap = { [id: string]: () => void };
+export type DelayedEmitter = () => void;
+export type DelayedEmitterMap = { [id: string]: DelayedEmitter };
 
 export type PersistenceLocation = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -100,5 +101,6 @@ export default {
 	setStateDoneEmittersId: 1,
 	eachSetStateEmitters: {} as DelayedEmitterMap,
 	eachSetStateEmittersId: 1,
+	isTriggeringValueWatchers: false,
 	watchers: [] as InternalWatcher[]
 };
