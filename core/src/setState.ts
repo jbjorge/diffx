@@ -15,6 +15,7 @@ import {
 	stateChangedWithoutSetState
 } from './console-messages';
 import { trigger } from '@vue/reactivity';
+import { lastArrayItem } from './array-utils';
 
 interface InternalSetStateArgs {
 	reason: string;
@@ -129,8 +130,8 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	};
 	if (isTriggeringLevel[level - 1]) {
 		diffEntry.triggeredByWatcher = true;
-		if (current[0]) {
-			diffEntry.triggeredByDiffId = current[0].id;
+		if (lastArrayItem(current)) {
+			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
 		}
 	}
 	if (setStateDoneTriggerId) {
@@ -138,8 +139,8 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	}
 	if (internalState.isTriggeringValueWatchers) {
 		diffEntry.triggeredByWatcher = true;
-		if (current[0]) {
-			diffEntry.triggeredByDiffId = current[0].id;
+		if (lastArrayItem(lastArrayItem(paren))) {
+			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
 		}
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {
