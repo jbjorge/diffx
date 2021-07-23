@@ -139,8 +139,10 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	}
 	if (internalState.isTriggeringValueWatchers) {
 		diffEntry.triggeredByWatcher = true;
-		if (lastArrayItem(lastArrayItem(paren))) {
+		if (level === previousLevel) {
 			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
+		} else {
+			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
 		}
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {

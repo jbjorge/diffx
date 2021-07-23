@@ -358,6 +358,7 @@ describe('onSetStateDone', () => {
 					onSetStateDone: newValue => {
 						if (newValue === 'y') {
 							setState('watcher 2', () => _state.b += 'es');
+							setState('watcher 2 increment', () => _state.a++);
 							unwatch1();
 						}
 					}
@@ -384,7 +385,9 @@ describe('onSetStateDone', () => {
 			})
 				.then(() => {
 					const diffs = diffxInternals.getDiffs();
-					expect(diffs.length).toEqual(6);
+					expect(diffs.length).toEqual(7);
+
+					console.log(JSON.stringify(diffs, null, 2))
 
 					diffs.forEach((diff, i) => {
 						if (i === 0) {
@@ -597,7 +600,6 @@ describe('onEachValueUpdate', () => {
 					expect(sub1.triggeredByDiffId).toEqual(diffTree.id);
 
 					expect(sub1.subDiffEntries.length).toEqual(2);
-					console.log(JSON.stringify(sub1, null, 2))
 					const sub2_1 = sub1.subDiffEntries[0];
 					expect(sub2_1.triggeredByDiffId).toEqual(sub1.id);
 					expect(sub2_1.reason).toEqual('watcher 2 incrementing');
@@ -609,6 +611,8 @@ describe('onEachValueUpdate', () => {
 
 					const sub2_2_1 = singleArrayItem(sub2_2.subDiffEntries);
 					expect(sub2_2_1.triggeredByDiffId).toEqual(sub2_2.id);
+
+					expect(sub2_2_1.subDiffEntries.length).toStrictEqual(0);
 
 					expect(_state.b).toEqual('done');
 				})
