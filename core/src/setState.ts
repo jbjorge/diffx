@@ -74,7 +74,7 @@ let isTriggeringWatchers = false;
 let triggerLevel = [];
 let isTriggeringLevel: { [level: number]: boolean } = {};
 let runningWatchersLevel = -1;
-let setStateDoneTriggerId;
+let setStateDoneTriggerIds: string[] = [];
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -130,12 +130,14 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	};
 	if (isTriggeringLevel[level - 1]) {
 		diffEntry.triggeredByWatcher = true;
-		if (lastArrayItem(current)) {
+		if (level === previousLevel) {
+			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
+		} else {
 			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
 		}
 	}
-	if (setStateDoneTriggerId) {
-		diffEntry.triggeredByDiffId = setStateDoneTriggerId;
+	if (setStateDoneTriggerIds.length) {
+		diffEntry.triggeredByDiffId = lastArrayItem(setStateDoneTriggerIds);
 	}
 	if (internalState.isTriggeringValueWatchers) {
 		diffEntry.triggeredByWatcher = true;
@@ -221,9 +223,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		current = hist;
 		children = undefined;
 		runningWatchersLevel = -1;
-		setStateDoneTriggerId = h1.id;
+		setStateDoneTriggerIds.push(h1.id);
 		runSetStateDoneEmitters();
-		setStateDoneTriggerId = '';
+		setStateDoneTriggerIds.pop();
 		return (assignmentResult instanceof Promise) ? assignmentResult : Promise.resolve();
 	}
 }

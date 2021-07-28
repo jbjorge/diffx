@@ -387,24 +387,29 @@ describe('onSetStateDone', () => {
 					const diffs = diffxInternals.getDiffs();
 					expect(diffs.length).toEqual(7);
 
-					console.log(JSON.stringify(diffs, null, 2))
+					expect(diffs[0].isGeneratedByDiffx).toBeTruthy();
 
-					diffs.forEach((diff, i) => {
-						if (i === 0) {
-							expect(diff.isGeneratedByDiffx).toBeTruthy();
-							return;
-						}
-						expect(diff.subDiffEntries.length).toStrictEqual(0);
-						if (!diff.asyncOrigin && i !== 1) {
-							expect(diff.triggeredByDiffId).toEqual(diffs[i - 1].id)
-						}
-						if (i === 4) {
-							expect(diff.async).toBeTruthy();
-						}
-						if (i === 5) {
-							expect(diff.asyncOrigin).toEqual(diffs[4].id);
-						}
-					})
+					expect(diffs[1].reason).toEqual('trigger time');
+					expect(diffs[1].triggeredByDiffId).toBeUndefined();
+
+					expect(diffs[2].reason).toEqual('watcher 1');
+					expect(diffs[2].triggeredByDiffId).toEqual(diffs[1].id);
+
+					expect(diffs[3].reason).toEqual('watcher 2');
+					expect(diffs[3].triggeredByDiffId).toEqual(diffs[2].id);
+
+					expect(diffs[4].reason).toEqual('watcher 3');
+					expect(diffs[4].triggeredByDiffId).toEqual(diffs[3].id);
+					expect(diffs[4].async).toBeTruthy();
+
+					expect(diffs[5].reason).toEqual('watcher 2 increment');
+					expect(diffs[5].triggeredByDiffId).toEqual(diffs[2].id);
+
+					expect(diffs[6].reason).toEqual('watcher 3');
+					expect(diffs[6].triggeredByDiffId).toBeUndefined();
+					expect(diffs[6].asyncOrigin).toEqual(diffs[4].id);
+
+					diffs.forEach(diff => expect((diff?.subDiffEntries || []).length).toStrictEqual(0));
 
 					expect(_state.b).toEqual('done');
 				})
