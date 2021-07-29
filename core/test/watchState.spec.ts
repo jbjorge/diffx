@@ -146,7 +146,6 @@ describe('onEachSetState', () => {
 					});
 					const subDiff = singleArrayItem(last.subDiffEntries);
 					expect(subDiff.reason).toEqual('triggered');
-					expect(subDiff.triggeredByWatcher).toBeTruthy();
 					expect(subDiff.triggeredByDiffId).toEqual(last.id);
 					expect(subDiff.diff).toStrictEqual({
 						"watchState-test-namespace": {
@@ -540,7 +539,6 @@ describe('onEachValueUpdate', () => {
 					});
 					const subDiff = singleArrayItem(last.subDiffEntries);
 					expect(subDiff.reason).toEqual('triggered');
-					expect(subDiff.triggeredByWatcher).toBeTruthy();
 					expect(subDiff.triggeredByDiffId).toEqual(last.id);
 					expect(subDiff.diff).toStrictEqual({
 						"watchState-test-namespace": {
@@ -596,7 +594,6 @@ describe('onEachValueUpdate', () => {
 				.then(() => {
 					const diffs = diffxInternals.getDiffs();
 					expect(diffs.length).toEqual(3);
-					// console.log(JSON.stringify(diffs, null, 2));
 
 					const diffTree = diffs[1];
 					expect(diffTree.reason).toEqual('trigger time');
@@ -625,9 +622,9 @@ describe('onEachValueUpdate', () => {
 	})
 })
 
-test.only('try to break trigger tracing', () => {
+test('try to break trigger tracing', () => {
 	return new Promise<void>(resolve => {
-		let x, xx, y, z;
+		let x, xx, y, yy, z;
 		watchState(() => _state.a, {
 			once: true,
 			onEachValueUpdate: val => {
@@ -661,17 +658,25 @@ test.only('try to break trigger tracing', () => {
 				if (val !== 'x' && val !== 'xx') {
 					return;
 				}
-				console.log(_state.b)
 				setState('onEachValueUpdate 3', () => _state.b = 'xxx');
 				xx = true;
-				// unwatch1();
+				unwatch1();
 				negotiateResolve();
 			}
 		})
 
+		const unwatch2 = watchState(() => _state.b, {
+			onEachSetState: val => {
+				if (val === 'yy') {
+					setState('onEachSetState 3', () => _state.b = 'yyy');
+					yy = true;
+					unwatch2();
+				}
+			}
+		})
+
 		function negotiateResolve() {
-			// if (x && xx && y && z) {
-			if (x && xx) {
+			if (x && xx && y && yy && z) {
 				resolve();
 			}
 		}
@@ -681,7 +686,6 @@ test.only('try to break trigger tracing', () => {
 	})
 		.then(() => {
 			const diffs = diffxInternals.getDiffs();
-			console.log(JSON.stringify(diffs, null, 2));
 
 			diffs.forEach(diff => {
 				expect(diff.reason.length).toBeGreaterThanOrEqual(1);
@@ -690,29 +694,37 @@ test.only('try to break trigger tracing', () => {
 				expect(diff.timestamp).toBeDefined();
 			})
 
+			expect(diffs.length).toEqual(4);
+
+			/********************************************/
+			/****** INIT ********************************/
+			/********************************************/
 			expect(diffs[0].isGeneratedByDiffx).toBeTruthy();
 			expect(diffs[0].subDiffEntries).toBeUndefined();
 			expect(diffs[0].reason).toEqual('@init watchState-test-namespace');
 			expect(diffs[0].asyncOrigin).toBeUndefined();
 			expect(diffs[0].async).toBeUndefined();
 			expect(diffs[0].triggeredByDiffId).toBeUndefined();
-			expect(diffs[0].triggeredByWatcher).toBeUndefined();
 
+			/********************************************/
+			/****** TRIGGER *****************************/
+			/********************************************/
 			expect(diffs[1].reason).toEqual('trigger time');
 			expect(diffs[1].isGeneratedByDiffx).toBeUndefined();
 			expect(diffs[1].asyncOrigin).toBeUndefined();
 			expect(diffs[1].async).toBeUndefined();
 			expect(diffs[1].triggeredByDiffId).toBeUndefined();
-			expect(diffs[1].triggeredByWatcher).toBeUndefined();
 
-			expect(diffs[1].subDiffEntries.length).toEqual(2);
+			/********************************************/
+			/****** ON EACH VALUE UPDATE ****************/
+			/********************************************/
+			expect(diffs[1].subDiffEntries.length).toEqual(3);
 			const d1sub1 = diffs[1].subDiffEntries[0];
 			expect(d1sub1.reason).toEqual('onEachValueUpdate 1');
 			expect(d1sub1.isGeneratedByDiffx).toBeUndefined();
 			expect(d1sub1.asyncOrigin).toBeUndefined();
 			expect(d1sub1.async).toBeUndefined();
 			expect(d1sub1.triggeredByDiffId).toEqual(diffs[1].id);
-			expect(d1sub1.triggeredByWatcher).toBeTruthy();
 
 			const d1sub1sub1 = singleArrayItem(d1sub1.subDiffEntries);
 			expect(d1sub1sub1.reason).toEqual('onEachValueUpdate 2');
@@ -720,7 +732,6 @@ test.only('try to break trigger tracing', () => {
 			expect(d1sub1sub1.asyncOrigin).toBeUndefined();
 			expect(d1sub1sub1.async).toBeUndefined();
 			expect(d1sub1sub1.triggeredByDiffId).toBeUndefined();
-			expect(d1sub1sub1.triggeredByWatcher).toBeUndefined();
 
 			const d1sub1sub1sub1 = singleArrayItem(d1sub1sub1.subDiffEntries);
 			expect(d1sub1sub1sub1.reason).toEqual('onEachValueUpdate 3');
@@ -728,24 +739,57 @@ test.only('try to break trigger tracing', () => {
 			expect(d1sub1sub1sub1.asyncOrigin).toBeUndefined();
 			expect(d1sub1sub1sub1.async).toBeUndefined();
 			expect(d1sub1sub1sub1.triggeredByDiffId).toEqual(d1sub1sub1.id);
-			expect(d1sub1sub1sub1.triggeredByWatcher).toBeTruthy();
 			expect(d1sub1sub1sub1.subDiffEntries.length).toStrictEqual(0);
 
 			const d1sub2 = diffs[1].subDiffEntries[1];
-			expect(d1sub2.reason).toEqual('onEachSetState 1');
+			expect(d1sub2.reason).toEqual('onEachValueUpdate 4');
 			expect(d1sub2.isGeneratedByDiffx).toBeUndefined();
 			expect(d1sub2.asyncOrigin).toBeUndefined();
 			expect(d1sub2.async).toBeUndefined();
 			expect(d1sub2.triggeredByDiffId).toEqual(diffs[1].id);
-			expect(d1sub2.triggeredByWatcher).toBeTruthy();
+			expect(d1sub2.subDiffEntries.length).toStrictEqual(0);
 
-			const d1sub2sub1 = singleArrayItem(d1sub2.subDiffEntries);
-			expect(d1sub2sub1.reason).toEqual('onEachSetState 2');
-			expect(d1sub2sub1.isGeneratedByDiffx).toBeUndefined();
-			expect(d1sub2sub1.asyncOrigin).toBeUndefined();
-			expect(d1sub2sub1.async).toBeUndefined();
-			expect(d1sub2sub1.triggeredByDiffId).toEqual(d1sub2.id);
-			expect(d1sub2sub1.triggeredByWatcher).toBeTruthy();
-			expect(d1sub2sub1.subDiffEntries.length).toStrictEqual(0);
+			/********************************************/
+			/****** ON EACH SETSTATE ********************/
+			/********************************************/
+			const d1sub3 = diffs[1].subDiffEntries[2];
+			expect(d1sub3.reason).toEqual('onEachSetState 1');
+			expect(d1sub3.isGeneratedByDiffx).toBeUndefined();
+			expect(d1sub3.asyncOrigin).toBeUndefined();
+			expect(d1sub3.async).toBeUndefined();
+			expect(d1sub3.triggeredByDiffId).toEqual(diffs[1].id);
+
+			const d1sub3sub1 = singleArrayItem(d1sub3.subDiffEntries);
+			expect(d1sub3sub1.reason).toEqual('onEachSetState 2');
+			expect(d1sub3sub1.isGeneratedByDiffx).toBeUndefined();
+			expect(d1sub3sub1.asyncOrigin).toBeUndefined();
+			expect(d1sub3sub1.async).toBeUndefined();
+			expect(d1sub3sub1.triggeredByDiffId).toBeUndefined();
+			expect(d1sub3sub1.subDiffEntries.length).toStrictEqual(1);
+
+			const d1sub3sub1sub1 = singleArrayItem(d1sub3sub1.subDiffEntries);
+			expect(d1sub3sub1sub1.reason).toEqual('onEachSetState 3');
+			expect(d1sub3sub1sub1.isGeneratedByDiffx).toBeUndefined();
+			expect(d1sub3sub1sub1.asyncOrigin).toBeUndefined();
+			expect(d1sub3sub1sub1.async).toBeUndefined();
+			expect(d1sub3sub1sub1.triggeredByDiffId).toEqual(d1sub3sub1.id);
+			expect(d1sub3sub1sub1.subDiffEntries.length).toStrictEqual(0);
+
+			/********************************************/
+			/****** ON SETSTATE DONE ********************/
+			/********************************************/
+			expect(diffs[2].reason).toEqual('onSetStateDone');
+			expect(diffs[2].isGeneratedByDiffx).toBeUndefined();
+			expect(diffs[2].asyncOrigin).toBeUndefined();
+			expect(diffs[2].async).toBeUndefined();
+			expect(diffs[2].triggeredByDiffId).toEqual(diffs[1].id);
+			expect(diffs[2].subDiffEntries.length).toStrictEqual(0);
+
+			expect(diffs[3].reason).toEqual('after trigger');
+			expect(diffs[3].isGeneratedByDiffx).toBeUndefined();
+			expect(diffs[3].asyncOrigin).toBeUndefined();
+			expect(diffs[3].async).toBeUndefined();
+			expect(diffs[3].triggeredByDiffId).toBeUndefined();
+			expect(diffs[3].subDiffEntries.length).toStrictEqual(0);
 		})
 })

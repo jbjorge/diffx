@@ -73,7 +73,8 @@ let children;
 let runningWatchersLevel = -1;
 let setStateDoneTriggerIds: string[] = [];
 let eachSetStateTriggerIds: string[] = [];
-let watcherLevel: number[] = [];
+let eachValueUpdateTriggerLevels: number[] = [];
+let triggerLevel = -1;
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -99,7 +100,7 @@ function addChildElement(el: DiffEntry) {
 
 export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
 	if (internalState.isTriggeringValueWatchers) {
-		watcherLevel.push(setStateNestingLevel + 1);
+		eachValueUpdateTriggerLevels.push(setStateNestingLevel + 1);
 		internalState.isTriggeringValueWatchers = false;
 	}
 	runningWatchersLevel = setStateNestingLevel + 1;
@@ -131,17 +132,18 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		diff: {},
 		subDiffEntries: []
 	};
-	if (eachSetStateTriggerIds.length) {
-		diffEntry.triggeredByWatcher = true;
+	if (eachSetStateTriggerIds.length && triggerLevel === level) {
 		diffEntry.triggeredByDiffId = eachSetStateTriggerIds[eachSetStateTriggerIds.length - 1];
 	}
 	if (setStateDoneTriggerIds.length) {
 		diffEntry.triggeredByDiffId = lastArrayItem(setStateDoneTriggerIds);
 	}
-	if (watcherLevel.includes(level)) {
-		diffEntry.triggeredByWatcher = true;
-		console.log(lastArrayItem(lastArrayItem(paren)).id);
-		diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
+	if (eachValueUpdateTriggerLevels.includes(level)) {
+		if (level > previousLevel) {
+			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
+		} else {
+			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
+		}
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack;
@@ -166,7 +168,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 
 	let assignmentResult = mutatorFunc();
 	eachSetStateTriggerIds.push(diffEntry.id);
+	triggerLevel = level + 1;
 	runEachSetStateEmitters();
+	triggerLevel--;
 	eachSetStateTriggerIds.pop();
 	if (assignmentResult instanceof Promise) {
 		thisLevelObject.async = true;
@@ -220,7 +224,8 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		current = hist;
 		children = undefined;
 		runningWatchersLevel = -1;
-		watcherLevel = [];
+		triggerLevel = -1;
+		eachValueUpdateTriggerLevels = [];
 		setStateDoneTriggerIds.push(h1.id);
 		runSetStateDoneEmitters();
 		setStateDoneTriggerIds.pop();
