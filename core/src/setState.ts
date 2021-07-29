@@ -70,11 +70,10 @@ let hist: DiffEntry[] = [];
 let paren = [hist];
 let current = hist;
 let children;
-let isTriggeringWatchers = false;
-let triggerLevel = [];
-let isTriggeringLevel: { [level: number]: boolean } = {};
 let runningWatchersLevel = -1;
 let setStateDoneTriggerIds: string[] = [];
+let eachSetStateTriggerIds: string[] = [];
+let watcherLevel: number[] = [];
 
 function addParentLevelElement(el: DiffEntry) {
 	const parentEl = paren[paren.length - 1];
@@ -99,6 +98,10 @@ function addChildElement(el: DiffEntry) {
 // ------------------------------
 
 export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
+	if (internalState.isTriggeringValueWatchers) {
+		watcherLevel.push(setStateNestingLevel + 1);
+		internalState.isTriggeringValueWatchers = false;
+	}
 	runningWatchersLevel = setStateNestingLevel + 1;
 	if (setStateNestingLevel > internalState.instanceOptions.maxNestingDepth) {
 		throw new Error(maxDepthReached(internalState.instanceOptions.maxNestingDepth));
@@ -128,24 +131,17 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		diff: {},
 		subDiffEntries: []
 	};
-	if (isTriggeringLevel[level - 1]) {
+	if (eachSetStateTriggerIds.length) {
 		diffEntry.triggeredByWatcher = true;
-		if (level === previousLevel) {
-			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
-		} else {
-			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
-		}
+		diffEntry.triggeredByDiffId = eachSetStateTriggerIds[eachSetStateTriggerIds.length - 1];
 	}
 	if (setStateDoneTriggerIds.length) {
 		diffEntry.triggeredByDiffId = lastArrayItem(setStateDoneTriggerIds);
 	}
-	if (internalState.isTriggeringValueWatchers) {
+	if (watcherLevel.includes(level)) {
 		diffEntry.triggeredByWatcher = true;
-		if (level === previousLevel) {
-			diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
-		} else {
-			diffEntry.triggeredByDiffId = lastArrayItem(current).id;
-		}
+		console.log(lastArrayItem(lastArrayItem(paren)).id);
+		diffEntry.triggeredByDiffId = lastArrayItem(lastArrayItem(paren)).id;
 	}
 	if (internalState.instanceOptions?.includeStackTrace) {
 		diffEntry.stackTrace = new Error().stack;
@@ -153,6 +149,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	if (extraProps?.asyncDiffOrigin) {
 		diffEntry.asyncOrigin = extraProps.asyncDiffOrigin;
 	}
+
 	if (level < previousLevel) {
 		// moved up a level
 		addParentLevelElement(diffEntry)
@@ -168,9 +165,9 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	previousLevel = level;
 
 	let assignmentResult = mutatorFunc();
-	isTriggeringLevel[level] = true;
+	eachSetStateTriggerIds.push(diffEntry.id);
 	runEachSetStateEmitters();
-	delete isTriggeringLevel[level];
+	eachSetStateTriggerIds.pop();
 	if (assignmentResult instanceof Promise) {
 		thisLevelObject.async = true;
 		assignmentResult = assignmentResult.then(
@@ -223,6 +220,7 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 		current = hist;
 		children = undefined;
 		runningWatchersLevel = -1;
+		watcherLevel = [];
 		setStateDoneTriggerIds.push(h1.id);
 		runSetStateDoneEmitters();
 		setStateDoneTriggerIds.pop();
