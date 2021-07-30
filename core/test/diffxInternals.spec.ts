@@ -1,6 +1,6 @@
 import { createState, destroyState, diffxInternals, setDiffxOptions, setState } from '../src';
-import { addDiffListener, DiffEntry, removeDiffListener } from '../src/internals';
-import { pausedStateMessage, replacingStateForNamespace } from '../src/console-messages';
+import { addDiffListener, DiffEntry, removeDiffListener, unlockState } from '../src/internals';
+import { pausedStateMessage } from '../src/console-messages';
 
 const _namespace = 'diffxInternals-test-namespace';
 let _state: { a: number, b: string };
@@ -103,10 +103,21 @@ test('.lockState() should disable changing the state with a message', () => {
 	consoleSpy.mockRestore();
 })
 
-test.todo('unlockState');
-// test('.unlockState() should enable changes to the state after paused', () => {
-//
-// })
+test('.unlockState() should enable changes to the state after .lockState()', () => {
+	expect(() => unlockState()).not.toThrow();
+	// lock and set some state
+	const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
+	diffxInternals.lockState();
+	setState('1', () => _state.a = 10);
+	expect(_state.a).not.toEqual(10);
+
+	diffxInternals.unlockState();
+	setState('2', () => _state.a = 5);
+	expect(_state.a).toEqual(5);
+	expect(consoleSpy.mock.calls).toEqual([[pausedStateMessage('1')]]);
+	consoleSpy.mockRestore();
+})
+
 test.todo('pauseState');
 test.todo('unpauseState');
 test.todo('getStateSnapshot');
