@@ -56,7 +56,7 @@ export function commit() {
 	const diffEntry: DiffEntry = {
 		id: createId(),
 		timestamp: Date.now(),
-		reason: 'Commit',
+		reason: '@commit',
 		diff: diff({}, clone(rootState)) || {} as Delta
 	};
 	internalState.diffs = [diffEntry];

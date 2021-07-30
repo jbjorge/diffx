@@ -1,5 +1,6 @@
 import { createState, destroyState, diffxInternals, setDiffxOptions, setState } from '../src';
 import { addDiffListener, DiffEntry, removeDiffListener } from '../src/internals';
+import { pausedStateMessage, replacingStateForNamespace } from '../src/console-messages';
 
 const _namespace = 'diffxInternals-test-namespace';
 let _state: { a: number, b: string };
@@ -58,17 +59,54 @@ describe('diffListener', () => {
 	test('it should be possible to remove a diff listener', () => {
 		let callCount = 0;
 		let listenerId = addDiffListener(diff => callCount++, true)
-		setState('1', () => {});
-		setState('2', () => {});
+		setState('1', () => {
+		});
+		setState('2', () => {
+		});
 		removeDiffListener(listenerId);
-		setState('3', () => {});
+		setState('3', () => {
+		});
 		expect(callCount).toEqual(2);
 	})
 });
-test.todo('commit');
-test.todo('replaceState');
-test.todo('lockState');
+
+test('.commit() should combine all diffs', () => {
+	setState('1', () => _state.a++);
+	setState('2', () => _state.a++);
+	setState('3', () => _state.a++);
+	const diffs = diffxInternals.getDiffs();
+	expect(diffs.length).toEqual(4);
+	diffxInternals.commit();
+	const combinedDiffs = diffxInternals.getDiffs();
+	expect(combinedDiffs.length).toEqual(1);
+	expect(combinedDiffs[0].reason).toEqual('@commit');
+	expect(combinedDiffs[0].diff).toStrictEqual({ [_namespace]: [{ a: 3, b: 'hi' }] });
+})
+
+describe('.replaceState()', () => {
+	test('it should replace state', () => {
+		const newState = { [_namespace]: { a: 1, b: 'hehe', c: 'lol' } };
+		diffxInternals.replaceState(newState);
+		const snapshot = diffxInternals.getStateSnapshot();
+		expect(snapshot).toStrictEqual(newState);
+	});
+
+	test.todo('test watcher triggering');
+})
+
+test('.lockState() should disable changing the state with a message', () => {
+	const consoleSpy = jest.spyOn(console, 'info').mockImplementation();
+	diffxInternals.lockState();
+	setState('1', () => _state.a = 10);
+	expect(consoleSpy.mock.calls).toEqual([[pausedStateMessage('1')]]);
+	expect(_state.a).not.toEqual(10);
+	consoleSpy.mockRestore();
+})
+
 test.todo('unlockState');
+// test('.unlockState() should enable changes to the state after paused', () => {
+//
+// })
 test.todo('pauseState');
 test.todo('unpauseState');
 test.todo('getStateSnapshot');
