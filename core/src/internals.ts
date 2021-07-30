@@ -30,7 +30,7 @@ let diffListenerId = 0;
  * @param cb		Callback
  * @param lazy	If true, will only call the callback from this point on. Setting it to false/omitted it will call the
  * 							callback with all previous diffs as well.
- * @returns Function that will unsubscribe upon being called
+ * @returns listener id that can be passed to `removeDiffListener` to unsubscribe
  */
 export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
 	const listenerId = diffListenerId++;
