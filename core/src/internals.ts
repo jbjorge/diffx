@@ -158,6 +158,8 @@ export function getDiffs() {
 
 /**
  * Delete all diffs (used for testing)
+ *
+ * @access private
  */
 export function _deleteAllDiffs() {
 	internalState.diffs = [];
