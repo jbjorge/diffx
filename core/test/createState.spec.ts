@@ -1,5 +1,5 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
 import { duplicateNamespace, replacingStateForNamespace } from '../src/console-messages';
+import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
 import { mockStorage } from './mock-storage';
 
 const _namespace = 'state1';

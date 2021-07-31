@@ -3,8 +3,8 @@ import internalState from './internal-state';
 import { stateChangedWithoutSetState } from './console-messages';
 
 // workaround because jest is buggy and gets them as undefined from time to time
-const trackOpGetType = TrackOpTypes?.GET || ('get' as TrackOpTypes);
-const triggerOpSetType = TriggerOpTypes?.SET || ('set' as TriggerOpTypes);
+const trackOpGetType: TrackOpTypes = 'get' as TrackOpTypes;
+const triggerOpSetType: TriggerOpTypes = 'set' as TriggerOpTypes;
 
 /**
  * Creates a reactive object.
