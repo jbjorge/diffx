@@ -121,19 +121,25 @@ export function unlockState() {
 }
 
 /**
+ * @deprecated
+ * Deprecated and does nothing until implementation is properly tested.
  * Pauses changes to the state and buffers the changes
  */
 export function pauseState() {
-	internalState.stateModificationsPaused = true;
+	console.info('diffxInternals.pauseState() not implemented');
+	// internalState.stateModificationsPaused = true;
 }
 
 /**
- * Unpauses changes to the state and applies all the changes
+ * @deprecated
+ * Deprecated and does nothing until implementation is properly tested.
+ * (Unpauses changes to the state and applies all the changes.)
  */
 export function unpauseState() {
-	internalState.stateModificationsPaused = false;
-	internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
-	internalState.stateAccessBuffer = [];
+	console.info('diffxInternals.unpauseState() not implemented');
+	// internalState.stateModificationsPaused = false;
+	// internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
+	// internalState.stateAccessBuffer = [];
 }
 
 /**
