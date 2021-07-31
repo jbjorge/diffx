@@ -1,5 +1,5 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions, setState } from '../src';
-import { addDiffListener, DiffEntry, removeDiffListener, unlockState } from '../src/internals';
+import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../src';
+import { addDiffListener, DiffEntry, getDiffs, removeDiffListener, replaceState, unlockState } from '../src/internals';
 import { pausedStateMessage } from '../src/console-messages';
 
 const _namespace = 'diffxInternals-test-namespace';
@@ -91,7 +91,19 @@ describe('.replaceState()', () => {
 		expect(snapshot).toStrictEqual(newState);
 	});
 
-	test.todo('test watcher triggering');
+	test('it should notify watchers after state replacement', () => {
+		const p = new Promise<void>(resolve => {
+			watchState(() => _state.b, {
+				onEachValueUpdate: newValue => {
+					if (newValue === 'replaced state') {
+						resolve();
+					}
+				}
+			})
+		})
+		replaceState({ [_namespace]: { ..._state, b: 'replaced state' } });
+		return p;
+	});
 })
 
 test('.lockState() should disable changing the state with a message', () => {
@@ -118,7 +130,46 @@ test('.unlockState() should enable changes to the state after .lockState()', () 
 	consoleSpy.mockRestore();
 })
 
+test('.getStateSnapshot() should return the current state', () => {
+	const snapshot1 = diffxInternals.getStateSnapshot();
+	expect(snapshot1).toStrictEqual({ 'diffxInternals-test-namespace': { a: 0, b: 'hi' } });
+
+	// change the state
+	createState('state2 for snapshot', { c: 'hello' });
+	setState('s1', () => _state.b = 'howdy');
+
+	const snapshot2 = diffxInternals.getStateSnapshot();
+
+	// check that the snapshot doesn't get mutated
+	expect(snapshot1).toStrictEqual({ 'diffxInternals-test-namespace': { a: 0, b: 'hi' } });
+
+	expect(snapshot2).toStrictEqual({
+			'diffxInternals-test-namespace': { a: 0, b: 'howdy' },
+			'state2 for snapshot': { c: 'hello' }
+		}
+	);
+})
+
+test('.getDiffs() should return all diffs', () => {
+	createState('state2 for getDiffs', { c: 'hello' });
+	const diffs1 = getDiffs();
+
+	expect(diffs1.map(d => d.reason)).toStrictEqual([
+		'@init diffxInternals-test-namespace',
+		'@init state2 for getDiffs'
+	]);
+
+	setState('getDiffs-test', () => _state.b);
+	const diffs2 = getDiffs();
+	expect(diffs2.map(d => d.reason)).toStrictEqual([
+		'@init diffxInternals-test-namespace',
+		'@init state2 for getDiffs',
+		'getDiffs-test'
+	])
+
+	// check that the diffs doesn't get mutated
+	expect(diffs1.map(d => d.reason)).toStrictEqual(['@init diffxInternals-test-namespace', '@init state2 for getDiffs']);
+})
+
 test.todo('pauseState');
 test.todo('unpauseState');
-test.todo('getStateSnapshot');
-test.todo('getDiffs');
