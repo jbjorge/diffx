@@ -1,7 +1,7 @@
 <script lang="ts">
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
-import { computed, nextTick, onMounted, onUnmounted, Ref, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, Ref, ref, watch, watchEffect } from "vue";
 import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
 import { Delta, DiffEntry } from '@diffx/core/dist/internals';
@@ -10,6 +10,8 @@ import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
+import { getIdToPathMap } from './utils/get-id-to-path-map';
+import { diffs, diffIdToPathMap } from './utils/diff-indexer';
 
 const {
 	addDiffListener,
@@ -25,9 +27,8 @@ export default {
 	components: { FilterInput, Sidebar, DiffViewer },
 	setup() {
 		const diffListRef = ref();
-		const diffs: Ref<DiffEntry[]> = ref([]);
 		const selectedDiffIndex: Ref<number> = ref(-1);
-		const selectedDiffPath: Ref<number[]> = ref([]);
+		const selectedDiffPath = ref('');
 		const stateLocked = ref(false);
 
 		const filterText = ref('');
@@ -92,42 +93,23 @@ export default {
 		})
 
 		let latestStateSnapshot: any = null;
-		async function onDiffSelected(index: number) {
-			// if (selectedDiffIndex.value === index || index === diffs.value.length - 1) {
-			// 	selectedDiffIndex.value = -1;
-			// 	if (latestStateSnapshot) {
-			// 		await replaceState(latestStateSnapshot);
-			// 		latestStateSnapshot = null;
-			// 	}
-			// 	await unpauseState();
-			// } else {
-			// 	selectedDiffIndex.value = index;
-			// 	await pauseState();
-			// 	const currentStateSnapshot = await getStateSnapshot();
-			// 	if (!latestStateSnapshot) {
-			// 		latestStateSnapshot = jsonClone(currentStateSnapshot);
-			// 	}
-			// 	const stateAtIndex = getStateAtIndex(currentStateSnapshot, index);
-			// 	await replaceState(stateAtIndex);
-			// }
-		}
 
-		async function onDiffSelected2(path: number[]) {
-			if (selectedDiffPath.value.join('.') === path.join('.')) {
-				selectedDiffPath.value = [];
+		async function onDiffSelected(diff: DiffEntry | undefined) {
+			// set the diff path or clear it
+			selectedDiffPath.value = diff ? diffIdToPathMap[diff.id] : '';
+			if (!selectedDiffPath.value) {
 				if (latestStateSnapshot) {
 					await replaceState(latestStateSnapshot);
 					latestStateSnapshot = null;
 				}
 				await unpauseState();
 			} else {
-				selectedDiffPath.value = path;
 				await pauseState();
 				const currentStateSnapshot = await getStateSnapshot();
 				if (!latestStateSnapshot) {
 					latestStateSnapshot = jsonClone(currentStateSnapshot);
 				}
-				const stateAtIndex = getStateAtPath(diffs.value, currentStateSnapshot, path);
+				const stateAtIndex = getStateAtPath(currentStateSnapshot, selectedDiffPath.value);
 				await replaceState(stateAtIndex);
 			}
 		}
@@ -160,23 +142,21 @@ export default {
 			await commit();
 		}
 
-		function onNewDiff({ data }: { data: any }) {
-			if (!data || data.type !== 'diffx_diff') {
-				return;
+		watch(
+			() => diffs,
+			() => {
+				const diffListElement = diffListRef.value?.$el;
+				const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
+				if (isScrolledToBottom) {
+					nextTick(() => {
+						diffListElement.scrollTo({ top: diffListElement.scrollHeight, behavior: 'smooth' });
+					});
+				}
 			}
-			const { diff, commit } = data;
-			const diffListElement = diffListRef.value?.$el;
-			const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
-			if (commit) {
-				diffs.value = [diff];
-			} else {
-				diffs.value.push(diff);
-			}
-			if (isScrolledToBottom) {
-				nextTick(() => {
-					diffListElement.scrollTo({ top: diffListElement.scrollHeight, behavior: 'smooth' });
-				});
-			}
+		)
+
+		function updateIdToPathMap(diff: DiffEntry) {
+			Object.assign(diffIdToPathMap, getIdToPathMap(diffs.value.length - 1, diff));
 		}
 
 		const resizeBarElement = ref();
@@ -186,15 +166,12 @@ export default {
 			document.addEventListener('mousedown', onResizeMouseDown);
 			document.addEventListener('mousemove', onResizeMouseMove);
 			document.addEventListener('mouseup', onResizeMouseUp);
-			window.addEventListener('message', onNewDiff);
 		})
 
 		onUnmounted(() => {
 			document.removeEventListener('mousedown', onResizeMouseDown);
 			document.removeEventListener('mousemove', onResizeMouseMove);
 			document.removeEventListener('mouseup', onResizeMouseUp);
-
-			window.removeEventListener('message', onNewDiff);
 		})
 
 		function onResizeMouseDown(evt: MouseEvent) {
@@ -217,7 +194,6 @@ export default {
 			diffListRef,
 			diffs,
 			stateLocked,
-			onDiffSelected,
 			filteredDiffs,
 			selectedDiffIndex,
 			onCommit,
@@ -226,7 +202,7 @@ export default {
 			filterText,
 			pauseState,
 			unpauseState,
-			onDiffSelected2,
+			onDiffSelected,
 			selectedDiffPath
 		}
 	}
@@ -263,12 +239,11 @@ export default {
 			</div>
 			<Sidebar
 				ref="diffListRef"
-				:diffList="filteredDiffs"
+				:filteredDiffs="filteredDiffs"
 				:selected-diff-index="selectedDiffIndex"
 				:selected-diff-path="selectedDiffPath"
 				class="left-sidebar"
-				@selectDiff="onDiffSelected"
-				@onDiffSelected="onDiffSelected2"
+				@onDiffSelected="onDiffSelected"
 				@setFilter="filterText = $event"
 				:style="{ width: sidebarWidth + 'px' }"
 			/>

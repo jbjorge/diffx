@@ -1,4 +1,4 @@
-import { setStateAsync, createState, diffxInternals, setDiffxOptions, setState } from '@diffx/core';
+import { createState, diffxInternals, setDiffxOptions, setState } from '@diffx/core';
 
 setDiffxOptions({
 	devtools: true,
@@ -104,7 +104,7 @@ const addPerson = function (name: string) {
 }
 
 const addPersonAsync = function (name: string) {
-	setStateAsync(
+	setState(
 		name,
 		() => Promise.resolve(),
 		() => s1.names.push(name)

@@ -3,30 +3,64 @@ import { computed, ComputedRef, defineComponent, PropType, reactive } from 'vue'
 import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { leftpad } from '../utils/leftpad';
+import { diffIdToPathMap, diffs, getDiffByPath, getDiffById } from '../utils/diff-indexer';
 
 export default defineComponent({
 	name: 'SidebarEntry',
 	props: {
 		diffEntry: {
-			type: Object as PropType<DiffEntry>
-		},
-		parentDiffEntry: {
-			type: Object as PropType<DiffEntry | undefined>,
-			default: undefined
+			type: Object as PropType<DiffEntry>,
+			required: true
 		},
 		nestingLevel: {
 			type: Number,
 			default: 0
 		},
-		path: {
-			type: Array as PropType<number[]>,
-			default: []
-		},
-		selected: Boolean,
-		inactive: Boolean,
-		disabled: Boolean
+		selectedDiffPath: {
+			type: String,
+			default: ''
+		}
 	},
 	setup(props) {
+		const isSelected = computed(() => {
+			if (!props.selectedDiffPath) {
+				return false;
+			}
+			return getDiffByPath(props.selectedDiffPath).id === props.diffEntry.id;
+		})
+		const isInactive = computed(() => {
+			if (!props.selectedDiffPath) {
+				return false;
+			}
+			const dp = diffIdToPathMap[props.diffEntry.id];
+			if (dp === props.selectedDiffPath) {
+				return false;
+			}
+			const diffPath = dp
+				.split('.')
+				.map(fragment => parseInt(fragment));
+			const selectedPathFragments = props.selectedDiffPath
+				.split('.')
+				.map(fragment => parseInt(fragment));
+			for (let i = 0; i < diffPath.length; i++) {
+				const currentDiffIndex = diffPath[i];
+				const selectedIndex = selectedPathFragments[i];
+				if (currentDiffIndex === selectedIndex) {
+					continue;
+				}
+				if (currentDiffIndex == null && selectedIndex != null) {
+					return false;
+				}
+				if (currentDiffIndex != null && selectedIndex == null) {
+					return true;
+				}
+				if (currentDiffIndex > selectedIndex) {
+					return true;
+				}
+			}
+		})
+		const isDisabled = computed(() => props.diffEntry.isGeneratedByDiffx);
+
 		const formattedDate = computed(() => {
 			const d = new Date(props?.diffEntry?.timestamp || 0);
 			const hours = leftpad(d.getHours().toString(), 2);
@@ -57,20 +91,7 @@ export default defineComponent({
 		});
 
 		const triggerReason: ComputedRef<string> = computed(() => {
-			if (props.parentDiffEntry) {
-				const nestedSettersCount = props.parentDiffEntry?.subDiffEntries?.filter(sde => !sde.triggeredByWatcher)?.length || 0;
-				if (props.parentDiffEntry.triggeredByWatcher) {
-					return `Triggered by changes in "${props.parentDiffEntry.reason}"`;
-				}
-				if (nestedSettersCount === 0) {
-					return `Triggered by changes in "${props.parentDiffEntry.reason}" or any of its parents`;
-				}
-				if (nestedSettersCount > 1) {
-					return `Triggered by changes in "${props.parentDiffEntry.reason}", or changes in its path`;
-				}
-				return `Triggered by changes in "${props.parentDiffEntry.reason}"`;
-			}
-			return `Triggered by changes in watchState (unknown origin)`;
+			return props.diffEntry.triggeredByDiffId ? `Triggered by changes in "${getDiffById(props.diffEntry.triggeredByDiffId).reason}"` : '';
 		})
 
 		const hoverPosition = reactive({ top: '0', left: '0' });
@@ -96,7 +117,10 @@ export default defineComponent({
 			onColorHover,
 			hoverPosition,
 			getColorFromString,
-			triggerReason
+			triggerReason,
+			isDisabled,
+			isInactive,
+			isSelected
 		};
 	}
 });
@@ -105,12 +129,12 @@ export default defineComponent({
 <template>
 	<div>
 		<div
-			@click.stop="$emit('stateSelected', diffEntry);$emit('stateClicked', path)"
+			@click.stop="$emit('stateClicked', diffEntry)"
 			class="diff-entry"
-			:class="{ selected, inactive, disabled, nested: nestingLevel > 0 }"
+			:class="{ selected: isSelected, inactive: isInactive, disabled: isDisabled, nested: nestingLevel > 0 }"
 			:style="{
-				boxShadow: nestingLevel > 0 && selected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
-				animation: nestingLevel > 0 && selected ? 'none' : ''
+				boxShadow: nestingLevel > 0 && isSelected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
+				animation: nestingLevel > 0 && isSelected ? 'none' : ''
 			}"
 		>
 			<div class="flex row i-align-center">
@@ -125,7 +149,7 @@ export default defineComponent({
 						<div class="flex row gutter-5">
 							<div class="diff-list-timestamp">{{ formattedDate }}</div>
 							<div
-								v-if="diffEntry?.triggeredByWatcher"
+								v-if="triggerReason"
 								class="tag watcher"
 								:title="triggerReason"
 							>
@@ -178,15 +202,9 @@ export default defineComponent({
 			v-for="(subEntry, subIndex) in diffEntry?.subDiffEntries"
 			:key="subEntry.id"
 			:diffEntry="subEntry"
-			:parent-diff-entry="diffEntry"
 			:nestingLevel="nestingLevel + 1"
 			:style="{borderLeft: `7px solid ${backgroundColor}`}"
-			:disabled="disabled"
-			:selected="selected"
-			:inactive="inactive"
-			:path="path.concat(subIndex)"
 			@setFilter="$emit('setFilter', $event)"
-			@stateSelected="$emit('stateSelected', $event);"
 			@stateClicked="$emit('stateClicked', $event)"
 		/>
 	</div>

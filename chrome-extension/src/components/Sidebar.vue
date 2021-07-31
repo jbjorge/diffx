@@ -2,11 +2,12 @@
 import { defineComponent, PropType } from 'vue';
 import SidebarEntry from './Sidebar-Entry.vue';
 import { DiffEntry } from '@diffx/core/dist/internals';
+import { getDiffByPath } from '../utils/diff-indexer';
 
 export default defineComponent({
 	components: { SidebarEntry },
 	props: {
-		diffList: {
+		filteredDiffs: {
 			type: Array as PropType<DiffEntry[]>,
 			default: () => []
 		},
@@ -14,22 +15,12 @@ export default defineComponent({
 			type: Number,
 			default: null
 		},
-		selectedDiffPath: {
-			type: Array as PropType<number[]>,
-			default: []
-		}
+		selectedDiffPath: String
 	},
 	setup(props, { emit }) {
-		function onClickedDiff(diff: DiffEntry, index: number) {
-			if (!diff.isInitialState) {
-				emit("selectDiff", (diff as any).realIndex || index);
-			}
-		}
-
-		function onClickedDiff2(path: number[], diff: DiffEntry, index: number) {
-			if (!diff.isInitialState) {
-				const realIndex = (diff as any).realIndex || index;
-				emit('onDiffSelected', [realIndex].concat(path.slice(1)));
+		function onClickedDiff(diff: DiffEntry) {
+			if (!diff.isGeneratedByDiffx) {
+				emit('onDiffSelected', diff);
 			}
 		}
 
@@ -37,27 +28,7 @@ export default defineComponent({
 			emit('setFilter', stateName);
 		}
 
-		function isSelected(diff: DiffEntry, index: number) {
-			const i = (diff as any).realIndex || index;
-			if (i === props.selectedDiffPath[0]) {
-				return true;
-			}
-			if (!props.selectedDiffPath.length && i === props.diffList.length - 1) {
-				return true;
-			}
-			return false;
-		}
-
-		function isInactive(diff: DiffEntry, index: number) {
-			const i = (diff as any).realIndex || index;
-			return !!(props.selectedDiffPath.length && i > props.selectedDiffPath[0]);
-		}
-
-		function isDisabled(diff: DiffEntry) {
-			return diff.isInitialState;
-		}
-
-		return { onClickedDiff, onClickedDiff2, setFilter, isSelected, isInactive, isDisabled };
+		return { onClickedDiff, setFilter };
 	}
 });
 </script>
@@ -65,16 +36,12 @@ export default defineComponent({
 <template>
 	<div class="diff-list">
 		<SidebarEntry
-			v-for="(diff, index) in diffList"
+			v-for="(diff, index) in filteredDiffs"
 			class="diff-entry-list-item"
-			:selected="isSelected(diff, index)"
-			:inactive="isInactive(diff, index)"
-			:disabled="isDisabled(diff)"
 			:diffEntry="diff"
 			:path="[index]"
-			@stateSelected="onClickedDiff($event, index)"
 			@setFilter="setFilter"
-			@stateClicked="onClickedDiff2($event, diff, index)"
+			@stateClicked="onClickedDiff($event)"
 		/>
 	</div>
 </template>
