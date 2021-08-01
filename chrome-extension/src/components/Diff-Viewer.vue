@@ -41,7 +41,6 @@ export default defineComponent({
 				: diffEntries.value.length - 1;
 			const stateSnapshot = await getStateSnapshot();
 			previousObjectState.value = getStateAtPath(stateSnapshot, previousDiffIndex.toString());
-			console.log(stateSnapshot, previousDiffIndex, previousObjectState.value);
 		})
 
 		const formattedOutput = computed(() => {

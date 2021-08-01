@@ -36,10 +36,11 @@ export default defineComponent({
 <template>
 	<div class="diff-list">
 		<SidebarEntry
-			v-for="(diff, index) in filteredDiffs"
+			v-for="diff in filteredDiffs"
+			:key="diff.id"
 			class="diff-entry-list-item"
 			:diffEntry="diff"
-			:path="[index]"
+			:selected-diff-path="selectedDiffPath"
 			@setFilter="setFilter"
 			@stateClicked="onClickedDiff($event)"
 		/>

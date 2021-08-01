@@ -29,6 +29,9 @@ export default defineComponent({
 			return getDiffByPath(props.selectedDiffPath).id === props.diffEntry.id;
 		})
 		const isInactive = computed(() => {
+			// if (props.diffEntry.reason == 'level 2 again') {
+			// 	debugger;
+			// }
 			if (!props.selectedDiffPath) {
 				return false;
 			}
@@ -44,22 +47,25 @@ export default defineComponent({
 				.map(fragment => parseInt(fragment));
 			for (let i = 0; i < diffPath.length; i++) {
 				const currentDiffIndex = diffPath[i];
-				const selectedIndex = selectedPathFragments[i];
-				if (currentDiffIndex === selectedIndex) {
+				const selectedPathIndex = selectedPathFragments[i];
+				if (currentDiffIndex === selectedPathIndex) {
 					continue;
 				}
-				if (currentDiffIndex == null && selectedIndex != null) {
+				if (currentDiffIndex == null && selectedPathIndex != null) {
 					return false;
 				}
-				if (currentDiffIndex != null && selectedIndex == null) {
-					return true;
+				if (currentDiffIndex != null && selectedPathIndex == null) {
+					return false;
 				}
-				if (currentDiffIndex > selectedIndex) {
+				if (currentDiffIndex < selectedPathIndex) {
+					return false;
+				}
+				if (currentDiffIndex > selectedPathIndex) {
 					return true;
 				}
 			}
 		})
-		const isDisabled = computed(() => props.diffEntry.isGeneratedByDiffx);
+		const isDisabled = computed(() => !!props.diffEntry.isGeneratedByDiffx);
 
 		const formattedDate = computed(() => {
 			const d = new Date(props?.diffEntry?.timestamp || 0);
@@ -199,10 +205,11 @@ export default defineComponent({
 		</div>
 
 		<SidebarEntry
-			v-for="(subEntry, subIndex) in diffEntry?.subDiffEntries"
+			v-for="subEntry in diffEntry?.subDiffEntries"
 			:key="subEntry.id"
 			:diffEntry="subEntry"
 			:nestingLevel="nestingLevel + 1"
+			:selected-diff-path="selectedDiffPath"
 			:style="{borderLeft: `7px solid ${backgroundColor}`}"
 			@setFilter="$emit('setFilter', $event)"
 			@stateClicked="$emit('stateClicked', $event)"
