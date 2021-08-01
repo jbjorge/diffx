@@ -81,6 +81,7 @@ test('.commit() should combine all diffs', () => {
 	expect(combinedDiffs.length).toEqual(1);
 	expect(combinedDiffs[0].reason).toEqual('@commit');
 	expect(combinedDiffs[0].diff).toStrictEqual({ [_namespace]: [{ a: 3, b: 'hi' }] });
+	expect(combinedDiffs[0].isGeneratedByDiffx).toBeTruthy();
 })
 
 describe('.replaceState()', () => {

@@ -57,7 +57,8 @@ export function commit() {
 		id: createId(),
 		timestamp: Date.now(),
 		reason: '@commit',
-		diff: diff({}, clone(rootState)) || {} as Delta
+		diff: diff({}, clone(rootState)) || {} as Delta,
+		isGeneratedByDiffx: true
 	};
 	internalState.diffs = [diffEntry];
 	for (let cbId in internalState.diffListeners) {
