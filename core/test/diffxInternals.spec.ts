@@ -84,6 +84,20 @@ test('.commit() should combine all diffs', () => {
 	expect(combinedDiffs[0].isGeneratedByDiffx).toBeTruthy();
 })
 
+test('.commit(index) should combine all diffs up to index + 1', () => {
+	setState('1', () => _state.a++);
+	setState('2', () => _state.a++);
+	setState('3', () => _state.a++);
+	const diffs = diffxInternals.getDiffs();
+	expect(diffs.length).toEqual(4);
+	diffxInternals.commit(2);
+	const combinedDiffs = diffxInternals.getDiffs();
+	expect(combinedDiffs.length).toEqual(3);
+	expect(combinedDiffs[0].reason).toEqual('@commit');
+	expect(combinedDiffs[0].diff).toStrictEqual({ [_namespace]: [{ a: 1, b: 'hi' }] });
+	expect(combinedDiffs[0].isGeneratedByDiffx).toBeTruthy();
+})
+
 describe('.replaceState()', () => {
 	test('it should replace state', () => {
 		const newState = { [_namespace]: { a: 1, b: 'hehe', c: 'lol' } };
