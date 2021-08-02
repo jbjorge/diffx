@@ -112,9 +112,11 @@ describe('createDiffs == true', () => {
 				const first = diffs[0];
 				expect(first.async).toBeTruthy();
 				expect(first.diff).toStrictEqual({ state1: { a: [1, 2] } });
+				expect(first.asyncRejected).toBeFalsy();
 
 				const last = diffs[1];
 				expect(last.asyncOrigin).toEqual(first.id);
+				expect(last.asyncRejected).toBeFalsy();
 				expect(last.diff).toStrictEqual({ state1: { a: [2, 3] } });
 			})
 	})
@@ -143,13 +145,50 @@ describe('createDiffs == true', () => {
 				const diffs = diffxInternals.getDiffs();
 				expect(diffs.length).toEqual(2);
 				const first = firstArrayItem(diffs);
+				expect(first.asyncRejected).toBeFalsy();
 				const firstSubDiff = singleArrayItem(first.subDiffEntries);
 				expect(firstSubDiff.async).toBeTruthy();
 				expect(firstSubDiff.diff).toStrictEqual({ state1: { a: [2, 3] } });
+				expect(firstSubDiff.asyncRejected).toBeFalsy();
 
 				const last = lastArrayItem(diffs);
 				expect(last.asyncOrigin).toEqual(firstSubDiff.id);
+				expect(last.asyncRejected).toBeFalsy();
 				expect(last.diff).toStrictEqual({ state1: { a: [4, 9] } });
+			})
+	})
+
+	test('it should tag async resolution diffs as rejected if their promise rejects', () => {
+		const reason = 'my-reason';
+		const rejectionMsg = 'Rejection reason';
+		return new Promise<string>((resolve, reject) => {
+			setState(
+				reason,
+				() => Promise.reject(new Error(rejectionMsg)),
+				() => reject(),
+				(err: Error) => {
+					state.a++;
+					setState('subDiff', () => {});
+					resolve(err.message);
+				}
+			);
+		})
+			.then(rejectionReason => {
+				expect(rejectionReason).toEqual(rejectionMsg);
+
+				const diffs = diffxInternals
+					.getDiffs()
+					.filter(diff => diff.reason === reason);
+
+				expect(diffs.length).toEqual(2);
+				const first = diffs[0];
+				expect(first.async).toBeTruthy();
+
+				const last = diffs[1];
+				expect(last.asyncOrigin).toEqual(first.id);
+				expect(last.asyncRejected).toStrictEqual(true);
+				// subDiffs should not be tagged as rejected
+				expect(last.subDiffEntries[0].asyncRejected).toBeFalsy();
 			})
 	})
 })

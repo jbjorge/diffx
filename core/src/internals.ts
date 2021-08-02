@@ -20,6 +20,7 @@ export interface DiffEntry {
 	isGeneratedByDiffx?: boolean;
 	async?: boolean;
 	asyncOrigin?: string;
+	asyncRejected?: boolean;
 	subDiffEntries?: DiffEntry[];
 	triggeredByDiffId?: string;
 }

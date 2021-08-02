@@ -25,6 +25,8 @@ interface InternalSetStateArgs {
 	}
 }
 
+let asyncMutatorFuncRejected = false;
+
 export function _setStateAsync<ResolvedType, ErrorType = unknown>(
 	reason: string,
 	asyncMutatorFunc: () => Promise<ResolvedType>,
@@ -38,6 +40,7 @@ export function _setStateAsync<ResolvedType, ErrorType = unknown>(
 				return asyncMutatorFunc()
 					.then(
 						value => () => {
+							asyncMutatorFuncRejected = false;
 							const res = onDone(value);
 							if (res instanceof Promise) {
 								res.then(resolve);
@@ -46,6 +49,7 @@ export function _setStateAsync<ResolvedType, ErrorType = unknown>(
 							}
 						},
 						err => () => {
+							asyncMutatorFuncRejected = true;
 							const errorFunc = onError || (() => {
 								console.warn(missingOnErrorHandler);
 								console.error(err);
@@ -167,6 +171,10 @@ export function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateA
 	previousLevel = level;
 
 	let assignmentResult = mutatorFunc();
+	if (asyncMutatorFuncRejected && thisLevelObject.asyncOrigin) {
+		thisLevelObject.asyncRejected = true;
+		asyncMutatorFuncRejected = false;
+	}
 	eachSetStateTriggerIds.push(diffEntry.id);
 	triggerLevel = level + 1;
 	runEachSetStateEmitters();
