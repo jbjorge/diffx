@@ -33,7 +33,7 @@ export function _setStateAsync<ResolvedType, ErrorType = unknown>(
 	onDone: (result: ResolvedType) => void | Promise<any>,
 	onError?: (error: ErrorType) => void | Promise<any>
 ): Promise<void> {
-	return new Promise((resolve, reject) => {
+	return new Promise(resolve => {
 		_setState({
 			reason,
 			mutatorFunc: () => {
@@ -56,9 +56,9 @@ export function _setStateAsync<ResolvedType, ErrorType = unknown>(
 							})
 							const errRes = errorFunc(err);
 							if (errRes instanceof Promise) {
-								errRes.then((val) => reject(val || err));
+								errRes.then(resolve);
 							} else {
-								reject(err);
+								resolve();
 							}
 						}
 					)

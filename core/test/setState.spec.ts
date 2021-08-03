@@ -24,6 +24,20 @@ describe('general', () => {
 	test('it should throw when state is changed outside of setState', () => {
 		expect(() => state.a++).toThrowError(stateChangedWithoutSetState);
 	})
+
+	test('it should throw when state is changed outside of async setState', () => {
+		return new Promise<void>(resolve => {
+			setState('I change state after the scope of setState has finished', () => {
+				return Promise.resolve()
+					.then(() => {
+						expect(() => state.a++).toThrowError(stateChangedWithoutSetState);
+						resolve();
+					});
+			},
+				() => {}
+			)
+		});
+	})
 })
 
 describe('createDiffs == false', () => {
