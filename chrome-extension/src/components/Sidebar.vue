@@ -11,17 +11,11 @@ export default defineComponent({
 			type: Array as PropType<DiffEntry[]>,
 			default: () => []
 		},
-		selectedDiffIndex: {
-			type: Number,
-			default: null
-		},
 		selectedDiffPath: String
 	},
 	setup(props, { emit }) {
 		function onClickedDiff(diff: DiffEntry) {
-			if (!diff.isGeneratedByDiffx) {
-				emit('onDiffSelected', diff);
-			}
+			emit('onDiffSelected', diff);
 		}
 
 		function setFilter(stateName: string) {

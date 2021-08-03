@@ -27,7 +27,6 @@ export default {
 	components: { FilterInput, Sidebar, DiffViewer },
 	setup() {
 		const diffListRef = ref();
-		const selectedDiffIndex: Ref<number> = ref(-1);
 		const selectedDiffPath = ref('');
 		const stateLocked = ref(false);
 
@@ -94,10 +93,11 @@ export default {
 
 		let latestStateSnapshot: any = null;
 
-		async function onDiffSelected(diff: DiffEntry | undefined) {
+		async function onDiffSelected(diff: DiffEntry) {
 			// set the diff path or clear it
-			selectedDiffPath.value = diff ? diffIdToPathMap[diff.id] : '';
-			if (!selectedDiffPath.value) {
+			const isSameAsPrevious = !!(selectedDiffPath.value && selectedDiffPath.value === diffIdToPathMap[diff?.id || '']);
+			if (isSameAsPrevious) {
+				selectedDiffPath.value = '';
 				if (latestStateSnapshot) {
 					await replaceState(latestStateSnapshot);
 					latestStateSnapshot = null;
@@ -105,6 +105,7 @@ export default {
 				await unpauseState();
 			} else {
 				await pauseState();
+				selectedDiffPath.value = diffIdToPathMap[diff.id];
 				const currentStateSnapshot = await getStateSnapshot();
 				if (!latestStateSnapshot) {
 					latestStateSnapshot = jsonClone(currentStateSnapshot);
@@ -135,11 +136,18 @@ export default {
 		async function unpauseState() {
 			await unlockState();
 			stateLocked.value = false;
-			selectedDiffIndex.value = -1;
+			selectedDiffPath.value = '';
 		}
 
 		async function onCommit() {
-			await commit();
+			let count = selectedDiffPath.value.split('.')[0];
+			if (count && parseInt(count)) {
+				await unpauseState();
+				await commit(parseInt(count) + 1);
+			} else {
+				await unpauseState();
+				await commit();
+			}
 		}
 
 		watch(
@@ -154,10 +162,6 @@ export default {
 				}
 			}
 		)
-
-		function updateIdToPathMap(diff: DiffEntry) {
-			Object.assign(diffIdToPathMap, getIdToPathMap(diffs.value.length - 1, diff));
-		}
 
 		const resizeBarElement = ref();
 		const sidebarWidth = ref(400);
@@ -195,7 +199,6 @@ export default {
 			diffs,
 			stateLocked,
 			filteredDiffs,
-			selectedDiffIndex,
 			onCommit,
 			sidebarWidth,
 			resizeBarElement,
@@ -240,7 +243,6 @@ export default {
 			<Sidebar
 				ref="diffListRef"
 				:filteredDiffs="filteredDiffs"
-				:selected-diff-index="selectedDiffIndex"
 				:selected-diff-path="selectedDiffPath"
 				class="left-sidebar"
 				@onDiffSelected="onDiffSelected"
@@ -253,7 +255,6 @@ export default {
 		</div>
 		<DiffViewer
 			:diffList="diffs"
-			:selected-diff-index="selectedDiffIndex"
 			:selected-diff-path="selectedDiffPath"
 		/>
 	</div>

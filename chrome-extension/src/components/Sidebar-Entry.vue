@@ -3,7 +3,7 @@ import { computed, ComputedRef, defineComponent, PropType, reactive } from 'vue'
 import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { leftpad } from '../utils/leftpad';
-import { diffIdToPathMap, diffs, getDiffByPath, getDiffById } from '../utils/diff-indexer';
+import { diffIdToPathMap, getDiffById, getDiffByPath } from '../utils/diff-indexer';
 
 export default defineComponent({
 	name: 'SidebarEntry',
@@ -29,9 +29,6 @@ export default defineComponent({
 			return getDiffByPath(props.selectedDiffPath).id === props.diffEntry.id;
 		})
 		const isInactive = computed(() => {
-			// if (props.diffEntry.reason == 'level 2 again') {
-			// 	debugger;
-			// }
 			if (!props.selectedDiffPath) {
 				return false;
 			}
@@ -97,7 +94,7 @@ export default defineComponent({
 		});
 
 		const triggerReason: ComputedRef<string> = computed(() => {
-			return props.diffEntry.triggeredByDiffId ? `Triggered by changes in "${getDiffById(props.diffEntry.triggeredByDiffId).reason}"` : '';
+			return props.diffEntry.triggeredByDiffId ? `A change in "${getDiffById(props.diffEntry.triggeredByDiffId).reason}" triggered a watchState that made this change.` : '';
 		})
 
 		const hoverPosition = reactive({ top: '0', left: '0' });
@@ -111,7 +108,7 @@ export default defineComponent({
 			return randomColor({
 				seed,
 				luminosity: 'dark',
-				alpha: 0.5,
+				alpha: 0.4,
 				format: 'rgba'
 			})
 		}
@@ -152,23 +149,33 @@ export default defineComponent({
 				</div>
 				<div class="grow">
 					<div class="flex row c-justify-space-between i-align-center wrap">
-						<div class="flex row gutter-5">
+						<div class="flex row gutter-10">
 							<div class="diff-list-timestamp">{{ formattedDate }}</div>
 							<div
 								v-if="triggerReason"
 								class="tag watcher"
 								:title="triggerReason"
 							>
-								watchState
+								watcher
 							</div>
 							<div
 								v-if="diffEntry?.asyncOrigin"
-								class="tag async-end"
-								:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
-								title="View async origin"
+								title="View async result"
+								class="flex row"
 								@click.stop="$emit('setFilter', diffEntry?.asyncOrigin)"
 							>
-								resolve
+								<div
+									class="async-result tag-start"
+									:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
+								>
+									async
+								</div>
+								<div
+									class="async-result tag-end"
+									:class="[diffEntry.asyncRejected ? 'async-rejected' : 'async-resolved']"
+								>
+									{{ diffEntry.asyncRejected ? 'reject' : 'resolve' }}
+								</div>
 							</div>
 							<div
 								v-if="diffEntry?.async"
@@ -256,7 +263,32 @@ export default defineComponent({
 
 	&.disabled {
 		opacity: 0.5;
-		pointer-events: none;
+	}
+
+	& .async-result {
+		border-radius: 10px;
+		padding: 1px 7px 0 7px;
+		font-size: 0.8rem;
+		border: 1px solid rgba(255,255,255,0.09);
+
+		&.tag-start {
+			border-bottom-right-radius: 0;
+			border-top-right-radius: 0;
+			padding-right: 5px;
+		}
+		&.tag-end {
+			border-bottom-left-radius: 0;
+			border-top-left-radius: 0;
+			padding-left: 5px;
+			border-left: 1px solid rgba(255,255,255,0.55);
+
+			&.async-rejected {
+				background-color: rgba(255, 0, 0, 0.4);
+			}
+			&.async-resolved {
+				background-color: rgba(0, 255, 0, 0.3);
+			}
+		}
 	}
 
 	& .tag {
@@ -270,7 +302,7 @@ export default defineComponent({
 		}
 
 		&.watcher {
-			background-color: rgba(0,0,0,0.3);
+			background-color: rgb(64 64 64 / 60%);
 			cursor: default;
 		}
 	}
