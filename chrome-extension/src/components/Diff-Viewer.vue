@@ -163,7 +163,7 @@ export default defineComponent({
 }
 
 .diff-tabs {
-	width: calc(100% - 10px);
+	width: 100%;
 	background-color: #1c2634;
 	color: whitesmoke;
 	display: flex;
