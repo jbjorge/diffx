@@ -51,7 +51,7 @@ export default defineComponent({
 			return jsondiffpatch.formatters.html.format(diffToShow?.value?.diff || {}, prevCopy);
 		});
 
-		return { diffToShow, formatDate, formattedOutput, selectedTab };
+		return { diffs, diffToShow, formatDate, formattedOutput, selectedTab };
 	}
 });
 </script>
@@ -103,7 +103,14 @@ export default defineComponent({
 			v-else
 			class="no-diff-selected"
 		>
-			<div>No state selected</div>
+			<div v-if="diffs.length">No state selected</div>
+			<div v-else>
+				<div style="text-align: center">
+					<div>No state recorded.</div>
+					<div>To enable state tracking:</div>
+				</div>
+				<pre class="code">setDiffxOptions({ devtools: true });</pre>
+			</div>
 		</div>
 	</div>
 </template>
@@ -140,6 +147,11 @@ export default defineComponent({
 	& .jsondiffpatch-unchanged {
 		color: white;
 	}
+}
+
+pre.code {
+	padding: 10px;
+	background-color: black;
 }
 
 .diff-header {
