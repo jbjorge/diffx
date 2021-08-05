@@ -24,7 +24,7 @@ export function removeDiffListener(listenerId: number) {
 
 export function commit(count?: number) {
 	if (count != null) {
-		return runFunc('commit');
+		return runFunc('commit', count);
 	}
 	return runFunc('commit');
 }
