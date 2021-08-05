@@ -1,17 +1,16 @@
 <script lang="ts">
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
-import { computed, nextTick, onMounted, onUnmounted, Ref, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
-import { Delta, DiffEntry } from '@diffx/core/dist/internals';
-import IFuseOptions = Fuse.IFuseOptions;
-import diffxBridge, { removeDiffListener } from './utils/diffx-bridge';
+import { DiffEntry } from '@diffx/core/dist/internals';
+import diffxBridge from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
-import { getIdToPathMap } from './utils/get-id-to-path-map';
-import { diffs, diffIdToPathMap } from './utils/diff-indexer';
+import { diffIdToPathMap, diffs } from './utils/diff-indexer';
+import IFuseOptions = Fuse.IFuseOptions;
 
 const {
 	addDiffListener,
@@ -185,7 +184,7 @@ export default {
 		}
 
 		function onResizeMouseMove(evt: MouseEvent) {
-			if (resizeMouseDown.value) {
+			if (resizeMouseDown.value && evt.clientX > 180 && evt.clientX < window.innerWidth - 20) {
 				sidebarWidth.value = evt.clientX;
 			}
 		}
@@ -221,6 +220,7 @@ export default {
 						v-if="stateLocked"
 						class="action-button paused"
 						@click="unpauseState"
+						title="Resume changes to the state"
 					>
 						<span>Resume</span>
 					</button>
@@ -228,14 +228,16 @@ export default {
 						v-else
 						class="action-button"
 						@click="pauseState"
+						title="Pause changes to the state"
 					>
 						<span>Pause</span>
 					</button>
 					<button
 						class="action-button"
 						@click="onCommit"
+						title="Merge all changes into one single diff. If a diff has been selected, it will merge the selected diff with previous ones"
 					>
-						<span>Commit</span>
+						<span>Merge</span>
 					</button>
 				</div>
 				<FilterInput v-model="filterText"/>
