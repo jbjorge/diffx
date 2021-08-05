@@ -201,7 +201,7 @@ Since Diffx is proxy-based, it will keep track of both mutations and reassignmen
 import { setState } from '@diffx/core';
 import { clickCounter, users } from './createState-in-depth-docs';
 
-setState('mess with the counter and add a user', () => {
+setState('Change the counter and add a user', () => {
     clickCounter.count++;
     if (clickCounter.count > 2) {
         clickCounter.count = 200;
@@ -237,7 +237,7 @@ import { clickCounter, users } from './createState-in-depth-docs';
 const addUser = (name) => setState('add user', () => users.names.push('John'));
 const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
 
-setState('mess with the counter and add a user', () => {
+setState('Change the counter and add a user', () => {
     incrementCounter();
     if (clickCounter.count > 2) {
         clickCounter.count = 200;
@@ -262,7 +262,7 @@ tracking of async state in Diffx devtools).
 import { createState, setState } from '@diffx/core';
 import { fetchUsersFromServer } from './some-file';
 
-export const users = createState('users', {
+export const users = createState('users-status', {
     isFetching: false,
     names: [],
     fetchErrorMessage: ''
@@ -368,17 +368,21 @@ unwatchFunc();
 The `watchState()` function can also watch projections of state or multiple states
 
 Projection of state:
+
 ```javascript
+import { watchState } from '@diffx/core';
 import { clickCounter } from './createState-example-above';
 
 watchState(
-    () => clickCounter > 5,
+    () => clickCounter.count > 5,
     isAboveFive => console.log(isAboveFive)
 );
 ```
 
 Multiple states (which is actually just a projection of state):
+
 ```javascript
+import { watchState } from '@diffx/core';
 import { clickCounter, users } from './createState-in-depth-docs';
 
 watchState(
@@ -386,6 +390,24 @@ watchState(
     ([clickCount, names]) => console.log(clickCount, names)
 );
 ```
+
+If a watcher changes state, this will also be tracked in the devtools:
+
+```javascript
+import { watchState, setState } from '@diffx/core';
+import { clickCounter, users } from './createState-in-depth-docs';
+
+watchState(
+    () => clickCounter.count === 5,
+    countIsFive => {
+        if (!countIsFive) return;
+        setState('counter has the value 5, so I added another user', () => {
+            users.names.push('Jenny');
+        });
+    }
+);
+```
+
 </details>
 
 ### destroyState()
@@ -414,7 +436,7 @@ Diffx devtools is made to give insights into
 * What caused the change
 
 The extension will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
-devtools flag is set to true [(see setDiffxOptions)](#setdiffxoptions).
+devtools option is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](./assets/devtools-7.png)
 
@@ -451,10 +473,24 @@ used for displaying nesting depth.
 ### Tracing async setState
 
 For operations done with `setState()`, the left pane will display an `async` tag where the operation starts, and
-a `resolved` tag where the async operation finished.  
+a `resolve`/`reject`  tag where the async operation finished.  
 These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
 
 ![setState preview](./assets/devtools-3.png)
+
+### Tracing state changed in watchState
+
+If a `watchState()` runs `setState()`, the left pane will display a `watcher` tag to indicate that the change was
+triggered.
+
+![watchState tracing preview 1](./assets/devtools-8.png)
+
+The `watcher` tag can be hovered to see which state change triggered it.
+
+![watchState tracing preview 2](./assets/devtools-9.png)
+
+To see where in the code the watcher was run, enable `includeStackTrace` in [setDiffxOptions](#setdiffxoptions) and open
+the Stacktrace tab for the entry tagged with the `watcher`.
 
 ## Diffx compared to other state management libraries
 
