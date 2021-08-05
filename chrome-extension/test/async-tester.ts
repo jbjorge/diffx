@@ -1,5 +1,4 @@
 import { createState, diffxInternals, setDiffxOptions, setState, watchState } from '@diffx/core';
-import internal from 'stream';
 
 setDiffxOptions({
 	devtools: true,
@@ -9,7 +8,7 @@ setDiffxOptions({
 
 // setup communication bridge
 diffxInternals.addDiffListener((diff, commit) => {
-	window.postMessage({ type: 'diffx_diff', diff, commit }, window.location.origin);
+	window.postMessage({ type: 'diffx_diff', diff: JSON.parse(JSON.stringify(diff)), commit }, window.location.origin);
 });
 
 window.addEventListener('message', evt => {
@@ -35,101 +34,122 @@ const s1 = createState('test', {
 	counter: 0
 });
 
-// setState('l1', () => {
-// 	s1.counter++;
-// 	setState('l2', () => {
-// 		s1.counter++;
-// 		setState('l3', () => {
-// 			s1.counter++;
-// 			setState('l4', () => {
-// 				s1.counter++;
-// 			});
-// 		});
-// 	});
-// })
-//
-// setState('hoho1', () => {
-// 	s1.counter++;
-// 	setState('hoho2', () => {
-// 		s1.counter++;
-// 		setState('hoho3', () => {
-// 			s1.counter++;
-// 		});
-// 	});
-// 	setState('hoho2', () => {
-// 		s1.counter++;
-// 		setState('hoho3', () => {
-// 			s1.counter++;
-// 		});
-// 	});
-// 	// s1.counter++;
-// })
-//
-// let interval = setInterval(() => {
-// 	if (s1.counter > 20) {
-// 		clearInterval(interval);
-// 	}
-// 	setState('timer', () => s1.counter++);
-// }, 1000)
+const s2 = createState('brukerinfo', {
+	navn: '',
+	alder: 0
+});
 
-// setState('garblblblbl1', () => {
-// 	s1.counter++;
-// 	setState('garblblblbl2', () => {
-// 		s1.counter++;
-// 		setState('garblblblbl3', () => {
-// 			s1.counter++;
-// 		});
-// 	});
-// 	setState('garblblblbl2', () => {
-// 		s1.counter++;
-// 		setState('garblblblbl3', () => {
-// 			s1.counter++;
-// 		});
-// 	});
-// 	s1.counter++;
-// })
+setState('l1', () => {
+	s1.counter++;
+	setState('l2', () => {
+		s1.counter++;
+		setState('l3', () => {
+			s1.counter++;
+			setState('l4', () => {
+				s1.counter++;
+			});
+		});
+	});
+})
+
+setState('hoho1', () => {
+	s1.counter++;
+	setState('hoho2', () => {
+		s1.counter++;
+		setState('hoho3', () => {
+			s1.counter++;
+		});
+	});
+	setState('hoho2', () => {
+		s1.counter++;
+		setState('hoho3', () => {
+			s1.counter++;
+		});
+	});
+	// s1.counter++;
+})
+
+let interval = setInterval(() => {
+	if (s1.counter > 20) {
+		clearInterval(interval);
+	}
+	setState('timer', () => s1.counter++);
+}, 1000)
+
+setState('garblblblbl1', () => {
+	s1.counter++;
+	setState('garblblblbl2', () => {
+		s1.counter++;
+		setState('garblblblbl3', () => {
+			s1.counter++;
+		});
+	});
+	setState('garblblblbl2', () => {
+		s1.counter++;
+		setState('garblblblbl3', () => {
+			s1.counter++;
+		});
+	});
+	s1.counter++;
+})
+
+setState('brukeren skreiv navnet sitt', () => {
+	s2.navn = 'Joachim';
+	setState(`${s2.navn} oppga alderen sin`, () => {
+		s2.alder = 34;
+	})
+	s1.counter++;
+})
 
 // TESTING OTHER STUFF
-// // level 1
-// setState('level 1', () => {
-// 	s1.names.push('1');
-//
-// 	// level 2
-// 	setState('level 2', () => {
-// 		s1.names.push('2');
-//
-// 		// level 3
-// 		setState('level 3', () => {
-// 			s1.names.push('3');
-// 		});
-// 	});
-// 	setState('level 2', () => {
-// 		s1.counter++;
-// 	});
-// })
-//
-// setState('lol', () => {
-// 	setState(
-// 		'heh',
-// 		() => {
-// 			s1.names.push('hohoho');
-// 			return Promise.resolve();
-// 		},
-// 		value => {
-// 			s1.names.push('1');
-// 			setState(
-// 				'mipmip',
-// 				() => {
-// 					return new Promise(resolve => {
-// 						setTimeout(resolve, 1000);
-// 					})
-// 				},
-// 				() => {
-// 					s1.names.push('mipmip');
-// 				}
-// 			)
-// 		});
-// })
+// level 1
+setState('level 1', () => {
+	s1.names.push('1');
+
+	// level 2
+	setState('level 2', () => {
+		s1.names.push('2');
+
+		// level 3
+		setState('level 3', () => {
+			s1.names.push('3');
+		});
+	});
+	setState('level 2 again', () => {
+		s1.counter++;
+	});
+})
+
+setState('lol', () => {
+	s1.names.push('eoiraerao');
+	setState(
+		'heh',
+		() => {
+			s1.names.push('hohoho');
+			return Promise.resolve();
+		},
+		value => {
+			s1.names.push('1');
+			setState(
+				'this will reject',
+				() => Promise.reject(),
+				() => {},
+				() => {s1.names.push('i rejected! :)')}
+			)
+			setState(
+				'mipmip',
+				() => {
+					return new Promise(resolve => {
+						setTimeout(resolve, 1000);
+					})
+				},
+				() => {
+					s1.names.push('mipmip');
+				}
+			)
+		});
+})
+setState('hoh', () => s1.names.push('asodifjasdofijasdfij'))
 
 // TEST NESTING AND WATCHING AND STUFF
 watchState(() => s1.names, {
@@ -158,7 +178,7 @@ watchState(() => s1.counter, {
 setState('starting the loop', () => {
 	// setState('same level as starting the loop', () => {});
 	// setState('same level as starting the loop', () => {});
-	setState('same level as starting the loop', () => {});
+	setState('child of "starting the loop"', () => {});
 	s1.counter++;
 	// setState('same level as starting the loop', () => {
 	// 	setState('lol', () => {})
