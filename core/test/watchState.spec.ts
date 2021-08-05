@@ -23,6 +23,18 @@ beforeEach(() => {
 	_state = createState(_namespace, { a: 0, b: 'hi' });
 })
 
+test('it should be possible to provide a callback instead of options', () => {
+	return new Promise(resolve => {
+		watchState(() => _state.a, (newValue, oldValue) => {
+			resolve({newValue, oldValue});
+		});
+		setState('triggering callback', () => _state.a = 100);
+	})
+		.then(result => {
+			expect(result).toStrictEqual({newValue: 100, oldValue: 0});
+		})
+})
+
 test('try to break trigger tracing', () => {
 	return new Promise<void>(resolve => {
 		let x, xx, y, yy, z;

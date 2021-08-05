@@ -1,7 +1,7 @@
 import initializeValue from './initializeValue';
 import { createHistoryEntry } from './createHistoryEntry';
 import internalState, { CreateStateOptions, DiffxOptions } from './internal-state';
-import { WatchOptions } from './watch-options';
+import { WatcherCallback, WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
@@ -94,11 +94,21 @@ export function setState(reason: string, mutatorFunc, onDone = undefined, onErro
 /**
  * Watch state for changes
  * @param stateGetter A callback which should return the state to watch or an array of states to watch.
- * @param options Options for how to watch the state
+ * @param options Callback for changes or options for how to watch the state
  * @return Function for stopping the watcher
  */
-export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): () => void {
-	if (!options.onSetStateDone && !options.onEachValueUpdate && !options.onEachSetState) {
+export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): () => void;
+export function watchState<T>(stateGetter: () => T, callback: WatcherCallback<T>): () => void;
+export function watchState<T>(stateGetter: () => T, options: WatchOptions<T> | WatcherCallback<T>): () => void {
+	// guard for allowing use of callback
+	let _options = options as WatchOptions<T>;
+	if (typeof options === 'function') {
+		_options = {
+			emitInitialValue: false,
+			onSetStateDone: options
+		} as WatchOptions<T>;
+	}
+	if (!_options.onSetStateDone && !_options.onEachValueUpdate && !_options.onEachSetState) {
 		throw new Error(missingWatchCallbacks)
 	}
 	const setStateDoneWatcherId = ++internalState.setStateDoneEmittersId;
@@ -110,27 +120,27 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 
 	let stateBeforeSetState;
 	let initialValue;
-	if (options.onSetStateDone) {
+	if (_options.onSetStateDone) {
 		initialValue = clone(oldValue);
 	}
 
 	// If the watcher is not lazy, call the callbacks immediately with the current value
-	if (options.emitInitialValue) {
-		if (options.onEachValueUpdate) {
-			options.onEachValueUpdate(oldValue);
+	if (_options.emitInitialValue) {
+		if (_options.onEachValueUpdate) {
+			_options.onEachValueUpdate(oldValue);
 		}
-		if (options.onEachSetState) {
-			options.onEachSetState(oldValue);
+		if (_options.onEachSetState) {
+			_options.onEachSetState(oldValue);
 		}
-		if (options.onSetStateDone) {
-			options.onSetStateDone(oldValue);
+		if (_options.onSetStateDone) {
+			_options.onSetStateDone(oldValue);
 		}
 	}
 
 	const effectInstance = effect<T>(stateGetter, {
 		lazy: false,
 		onTrigger: () => {
-			if (options.once) {
+			if (_options.once) {
 				stop(effectInstance);
 			}
 			const newValue = getter();
@@ -138,13 +148,13 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			const newValueClone = newValueString === undefined ? undefined : JSON.parse(newValueString);
 
 			// Default change comparison
-			if (!options?.hasChangedComparer && newValueString === JSON.stringify(oldValue)) {
+			if (!_options?.hasChangedComparer && newValueString === JSON.stringify(oldValue)) {
 				// Don't update oldValue to be newValue since they're identical
 				return;
 			}
 
 			// User specified change comparison
-			if (options?.hasChangedComparer && !options.hasChangedComparer(clone(newValueClone), clone(oldValue))) {
+			if (_options?.hasChangedComparer && !_options.hasChangedComparer(clone(newValueClone), clone(oldValue))) {
 				// We don't know how the user decides if anything has changed or not,
 				// so we update the oldValue with whatever the newValue is.
 				oldValue = newValueClone === undefined ? undefined : clone(newValue);
@@ -152,20 +162,20 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
 			}
 
 			// notify watchers
-			if (options?.onEachValueUpdate) {
+			if (_options?.onEachValueUpdate) {
 				internalState.isTriggeringValueWatchers = true;
-				options.onEachValueUpdate(clone(newValue), clone(oldValue));
+				_options.onEachValueUpdate(clone(newValue), clone(oldValue));
 				internalState.isTriggeringValueWatchers = false;
 			}
-			if (options?.onEachSetState) {
+			if (_options?.onEachSetState) {
 				const oldValueToEmit = clone(oldValue);
 				internalState.eachSetStateEmitters[eachSetStateWatcherId] = () => {
-					options.onEachSetState(clone(newValue), oldValueToEmit);
+					_options.onEachSetState(clone(newValue), oldValueToEmit);
 				}
 			}
-			if (options?.onSetStateDone) {
+			if (_options?.onSetStateDone) {
 				internalState.setStateDoneEmitters[setStateDoneWatcherId] = () => {
-					options.onSetStateDone(clone(newValue), clone(initialValue));
+					_options.onSetStateDone(clone(newValue), clone(initialValue));
 					initialValue = clone(newValue);
 				}
 			}
