@@ -233,6 +233,7 @@ export default defineComponent({
 
 	&.nested {
 		padding-left: 10px;
+		padding-right: 15px;
 	}
 
 	&:hover {
