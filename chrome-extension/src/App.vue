@@ -9,7 +9,7 @@ import diffxBridge from './utils/diffx-bridge';
 import jsonClone from './utils/jsonClone';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
-import { diffIdToPathMap, diffs } from './utils/diff-indexer';
+import { currentState, diffIdToPathMap, diffs, latestState } from './utils/diff-indexer';
 import IFuseOptions = Fuse.IFuseOptions;
 
 const {
@@ -90,28 +90,22 @@ export default {
 				.map(item => item.item);
 		})
 
-		let latestStateSnapshot: any = null;
-
 		async function onDiffSelected(diff: DiffEntry) {
 			// set the diff path or clear it
-			const isSameAsPrevious = !!(selectedDiffPath.value && selectedDiffPath.value === diffIdToPathMap[diff?.id || '']);
+			const newDiffPath = diffIdToPathMap[diff.id];
+			const isSameAsPrevious = !!(selectedDiffPath.value && selectedDiffPath.value === newDiffPath);
+			// const isLastEntry = (parseInt(newDiffPath.split('.')[0]) === diffs.value.length - 1);
 			if (isSameAsPrevious) {
 				selectedDiffPath.value = '';
-				if (latestStateSnapshot) {
-					await replaceState(latestStateSnapshot);
-					latestStateSnapshot = null;
-				}
+				await replaceState(latestState.value);
 				await unpauseState();
 			} else {
 				await pauseState();
 				selectedDiffPath.value = diffIdToPathMap[diff.id];
-				const currentStateSnapshot = await getStateSnapshot();
-				if (!latestStateSnapshot) {
-					latestStateSnapshot = jsonClone(currentStateSnapshot);
-				}
-				const stateAtIndex = getStateAtPath(currentStateSnapshot, selectedDiffPath.value);
+				const stateAtIndex = getStateAtPath(selectedDiffPath.value);
 				await replaceState(stateAtIndex);
 			}
+			currentState.value = await getStateSnapshot();
 		}
 
 		function getStateAtIndex(currentState: any, index: number) {

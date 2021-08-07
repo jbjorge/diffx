@@ -2,7 +2,6 @@
 import { defineComponent, PropType } from 'vue';
 import SidebarEntry from './Sidebar-Entry.vue';
 import { DiffEntry } from '@diffx/core/dist/internals';
-import { getDiffByPath } from '../utils/diff-indexer';
 
 export default defineComponent({
 	components: { SidebarEntry },
@@ -15,6 +14,9 @@ export default defineComponent({
 	},
 	setup(props, { emit }) {
 		function onClickedDiff(diff: DiffEntry) {
+			if (diff.isGeneratedByDiffx) {
+				return;
+			}
 			emit('onDiffSelected', diff);
 		}
 

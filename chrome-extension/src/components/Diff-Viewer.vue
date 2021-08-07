@@ -4,11 +4,13 @@ import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
 import { DiffEntry } from '@diffx/core/dist/internals';
-import { getStateSnapshot } from '../utils/diffx-bridge';
 import { getStateAtPath } from '../utils/get-state-at-path';
-import { diffs, getDiffByPath } from '../utils/diff-indexer';
+import { currentState, diffs, getDiffByPath } from '../utils/diff-indexer';
+import ObjectExplorer from './Object-Explorer.vue';
+import { getObjectMap } from '../utils/get-object-map';
 
 export default defineComponent({
+	components: { ObjectExplorer },
 	props: {
 		selectedDiffPath: {
 			type: String,
@@ -39,9 +41,10 @@ export default defineComponent({
 			const previousDiffIndex = props.selectedDiffPath
 				? parseInt(props.selectedDiffPath.split('.')[0]) - 1
 				: diffEntries.value.length - 1;
-			const stateSnapshot = await getStateSnapshot();
-			previousObjectState.value = getStateAtPath(stateSnapshot, previousDiffIndex.toString());
-		})
+			previousObjectState.value = getStateAtPath(previousDiffIndex.toString());
+		});
+
+		const currentStateMap = computed(() => getObjectMap(currentState.value));
 
 		const formattedOutput = computed(() => {
 			if (!diffToShow?.value?.diff && selectedTab.value === 'diff') {
@@ -51,7 +54,7 @@ export default defineComponent({
 			return jsondiffpatch.formatters.html.format(diffToShow?.value?.diff || {}, prevCopy);
 		});
 
-		return { diffs, diffToShow, formatDate, formattedOutput, selectedTab };
+		return { diffs, diffToShow, formatDate, formattedOutput, selectedTab, currentStateMap };
 	}
 });
 </script>
@@ -86,11 +89,14 @@ export default defineComponent({
 			</div>
 			<div class="diff-body">
 				<div
-					v-if="selectedTab === 'diff' || selectedTab === 'state'"
+					v-if="selectedTab === 'diff'"
 					:class="{'diff-view': selectedTab === 'diff'}"
 					v-html="formattedOutput"
 					class="diff-viewer"
 				></div>
+				<div v-if="selectedTab === 'state'">
+					<object-explorer :object-map="currentStateMap" />
+				</div>
 				<div
 					v-if="selectedTab === 'stackTrace'"
 					style="white-space: pre"

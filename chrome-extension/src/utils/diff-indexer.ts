@@ -1,11 +1,14 @@
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { reactive, readonly, ref, Ref } from 'vue';
+import { getStateSnapshot } from './diffx-bridge';
 
 type IdToPathMap = { [id: string]: string };
 
 export const diffIdToPathMap: IdToPathMap = reactive({});
 const _diffs: Ref<DiffEntry[]> = ref([]);
 export const diffs = readonly(_diffs) as unknown as Ref<DiffEntry[]>;
+export const currentState = ref({});
+export const latestState = ref({});
 
 function onNewDiff({ data }: { data: any }) {
 	if (!data || data.type !== 'diffx_diff') {
@@ -22,6 +25,18 @@ function onNewDiff({ data }: { data: any }) {
 		_diffs.value.push(diff);
 		updateIdToPathMap(diff);
 	}
+	updateCurrentState();
+}
+
+let snapshotCounter = 0;
+function updateCurrentState() {
+	const counter = ++snapshotCounter;
+	getStateSnapshot().then(snapshot => {
+		if (counter === snapshotCounter) {
+			currentState.value = snapshot;
+			latestState.value = snapshot;
+		}
+	});
 }
 
 function updateIdToPathMap(diff: DiffEntry) {

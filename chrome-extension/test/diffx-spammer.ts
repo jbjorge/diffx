@@ -1,4 +1,4 @@
-import { createState, diffxInternals, setDiffxOptions, setState } from '@diffx/core';
+import { createState, diffxInternals, setDiffxOptions, setState, watchState } from '@diffx/core';
 
 setDiffxOptions({
 	devtools: true,
@@ -36,6 +36,35 @@ const orderState = createState('upload info', {
 	errorMessage: ''
 })
 
+const s3 = createState('lol', {
+	level1: {
+		level2: {
+			level3: [
+				{
+					level4: {
+						level5: [
+							'hello'
+						]
+					}
+				},{
+					level4: {
+						level5: [
+							'there'
+						]
+					}
+				},
+				{
+					level4: {
+						level5: [
+							'good'
+						]
+					}
+				}
+			]
+		}
+	}
+})
+
 setState('Add "Hanna" to dinnerGuests', () => {
 	s1.names.push('Hanna');
 });
@@ -65,36 +94,44 @@ setState('Add "Joachim" to dinnerGuests and add serving', () => {
 // 	})
 // })
 
-// setState('setStateAsync (nested)', () => {
-// 	setStateAsync(
-// 		'Fetch existing table reservations',
-// 		() => {
-// 			orderState.errorMessage = '';
-// 			orderState.successfulOrders = 0;
-// 			orderState.isOrdering = true;
-// 			return Promise.resolve(5);
-// 		},
-// 		orderedCount => {
-// 			orderState.isOrdering = false;
-// 			setStateAsync(
-// 				'Upload food order',
-// 				() => {
-// 					orderState.isOrdering = true;
-// 					orderState.successfulOrders = 0;
-// 					return Promise.resolve()
-// 				},
-// 				() => {
-// 					orderState.isOrdering = false;
-// 					orderState.successfulOrders = 5;
-// 				}
-// 				)
-// 		}
-// 	)
-// })
-//
-// setState('Other state changes while async is running', () => {});
-// setState('Other state changes while async is running', () => {});
-// setState('Other state changes while async is running', () => {});
+watchState(
+	() => orderState.successfulOrders === 5,
+	isOrdering => {
+		if (!isOrdering) return;
+		setState('Display success message to user', () => orderState.errorMessage = 'hei')
+	}
+)
+
+setState('setStateAsync (nested)', () => {
+	setState(
+		'Fetch existing table reservations',
+		() => {
+			orderState.errorMessage = '';
+			orderState.successfulOrders = 0;
+			orderState.isOrdering = true;
+			return Promise.resolve(5);
+		},
+		orderedCount => {
+			orderState.isOrdering = false;
+			setState(
+				'Upload food order',
+				() => {
+					orderState.isOrdering = true;
+					orderState.successfulOrders = 0;
+					return Promise.resolve()
+				},
+				() => {
+					orderState.isOrdering = false;
+					orderState.successfulOrders = 5;
+				}
+				)
+		}
+	)
+})
+
+setState('Other state changes while async is running', () => {});
+setState('Other state changes while async is running', () => {});
+setState('Other state changes while async is running', () => {});
 
 //
 const addPerson = function (name: string) {
@@ -110,7 +147,7 @@ const addPersonAsync = function (name: string) {
 		() => s1.names.push(name)
 	);
 }
-
+//
 // setState('Async test', () => {
 // 	setState('Level 1', () => {
 // 		setState('Level 2', () => {
@@ -125,7 +162,7 @@ const addPersonAsync = function (name: string) {
 // 		s2.time = Date.now();
 // 	})
 // }
-
+//
 // for (let i = 0; i < 10; i++) {
 // 	setState('upd', () => {
 // 		s1.time = i;
