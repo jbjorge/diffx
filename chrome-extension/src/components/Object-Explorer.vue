@@ -1,9 +1,9 @@
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from 'vue';
+import { computed, defineComponent, PropType, Ref, ref } from 'vue';
 import { ObjectMap } from '../utils/get-object-map';
 import randomColor from 'randomcolor';
 
-const expandedIds = ref([]);
+const expandedIds: Ref<string[]> = ref([]);
 
 export default defineComponent({
 	name: 'object-explorer',
@@ -74,7 +74,7 @@ export default defineComponent({
 		>
 			<div
 				:style="{ marginLeft: levelMargin }"
-				class="flex row obj-info gutter-5 is-hoverable"
+				class="flex row gutter-5 obj-info is-hoverable"
 			>
 				<div
 					v-if="isExpandable(entry)"
@@ -83,23 +83,19 @@ export default defineComponent({
 				>
 					▼
 				</div>
-				<div
-					:style="{ marginLeft: !isExpandable(entry) ? '20px' : ''}"
-				>
-					<span :style="{color: levelColor}">
-						{{ entry.key }}
-					</span>:
-					<span
-						v-if="isExpanded(entry)"
-					>
-						{{ entry.type === 'array' ? '[' : '{' }}
-					</span>
+				<div :style="{ marginLeft: !isExpandable(entry) ? '20px' : ''}">
+				<span :style="{color: levelColor}">
+					{{ entry.key }}
+				</span>:
+					<span v-if="isExpanded(entry)">
+					{{ entry.type === 'array' ? '[' : '{' }}
+				</span>
 					<span
 						v-else
 						:class="{ 'is-string': isString(entry), 'is-value': isValue(entry) }"
 					>
-						{{ isString(entry) ? `"${entry.value}"` : entry.value }}
-					</span>
+					{{ isString(entry) ? `"${entry.value}"` : entry.value }}
+				</span>
 				</div>
 			</div>
 			<object-explorer
@@ -122,6 +118,7 @@ export default defineComponent({
 .not-selectable {
 	user-select: none;
 }
+
 .key-list {
 	cursor: pointer;
 
@@ -143,7 +140,7 @@ export default defineComponent({
 	}
 }
 
-.is-hoverable:hover{
+.is-hoverable:hover {
 	background-color: rgb(73 73 73 / 53%);
 }
 
