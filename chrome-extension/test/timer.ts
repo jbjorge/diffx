@@ -33,33 +33,9 @@ const s1 = createState('test', {
 	counter: 0
 });
 
-// setInterval(() => {
-// 	setState(`set counter to ${s1.counter + 1}`, () => {
-// 		s1.counter++;
-// 		setState(`set counter to ${s1.counter + 1}`, () => s1.counter++);
-// 	});
-// }, 1000)
-
-for (let i = 0; i < 3; i++) {
+setInterval(() => {
 	setState(`set counter to ${s1.counter + 1}`, () => {
 		s1.counter++;
 		setState(`set counter to ${s1.counter + 1}`, () => s1.counter++);
-	})
-}
-
-const s2 = createState('hoho', {
-	meh: 1
-})
-
-
-for (let i = 0; i < 3; i++) {
-	setState(`set counter to ${s1.counter + 1}`, () => {
-		s1.counter++;
-		setState(`set counter to ${s1.counter + 1}`, () => {
-			s1.counter++;
-			if (s1.counter === 10) {
-				s2.meh++;
-			}
-		});
-	})
-}
+	});
+}, 1000)

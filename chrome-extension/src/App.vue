@@ -2,11 +2,9 @@
 import Sidebar from './components/Sidebar.vue'
 import DiffViewer from './components/Diff-Viewer.vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { patch, unpatch } from "jsondiffpatch";
 import Fuse, { default as FuzzySearch } from 'fuse.js';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import diffxBridge from './utils/diffx-bridge';
-import jsonClone from './utils/jsonClone';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
 import { currentState, diffIdToPathMap, diffs, latestState } from './utils/diff-indexer';
@@ -108,19 +106,6 @@ export default {
 			currentState.value = await getStateSnapshot();
 		}
 
-		function getStateAtIndex(currentState: any, index: number) {
-			const operation = index <= (diffs.value.length / 2) ? 'patch' : 'unpatch';
-			if (operation === 'patch') {
-				const startValue = {};
-				diffs.value.slice(0, index + 1).forEach(diffEntry => patch(startValue, diffEntry.diff));
-				return startValue;
-			}
-			const startValue = jsonClone(currentState);
-			const diffList = diffs.value.slice(index + 1).reverse();
-			diffList.forEach(diffEntry => unpatch(startValue, diffEntry.diff));
-			return startValue;
-		}
-
 		async function pauseState() {
 			await lockState();
 			stateLocked.value = true;
@@ -144,7 +129,7 @@ export default {
 		}
 
 		watch(
-			() => diffs,
+			() => diffs.value.length,
 			() => {
 				const diffListElement = diffListRef.value?.$el;
 				const isScrolledToBottom = diffListElement && diffListElement.scrollHeight - diffListElement.scrollTop - diffListElement.clientHeight < 100;
