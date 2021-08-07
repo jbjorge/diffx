@@ -1,5 +1,3 @@
-import { createId } from './create-id';
-
 export interface ObjectMap {
 	id: string,
 	key: string,
@@ -8,16 +6,16 @@ export interface ObjectMap {
 	children: ObjectMap[]
 }
 
-export function getObjectMap(obj: any): ObjectMap[] {
+export function getObjectMap(obj: any, id = ''): ObjectMap[] {
 	return Object.keys(obj)
 		.map(key => {
 			const value = obj[key];
 			return {
-				id: createId(),
+				id: id + key,
 				key,
 				value: getValueString(value),
 				type: getType(value),
-				children: hasChildren(value) ? getObjectMap(value) : []
+				children: hasChildren(value) ? getObjectMap(value, id + key) : []
 			} as ObjectMap;
 		});
 }
