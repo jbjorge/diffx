@@ -101,6 +101,14 @@ export function replaceState(state: any): void {
 		}
 	}
 	for (let namespace in state) {
+		if (!rootState[namespace]) {
+			rootState[namespace] = {
+				__diffx_stateReplacementKey: internalState.stateReplacementKey,
+				__diffx_stateReplacementValue: state[namespace]
+			};
+		}
+	}
+	for (let namespace in state) {
 		for (let propName in state[namespace]) {
 			// @ts-ignore
 			rootState[namespace][propName] = {

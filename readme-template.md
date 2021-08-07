@@ -7,7 +7,7 @@ Diffx is a state management library that focuses on three things:
 * Make great devtools
 
 <details>
-  <summary>Show all features</summary>
+  <summary><strong>Show all features</strong></summary>
 
 ## Features
 
@@ -61,7 +61,7 @@ setDiffxOptions({ devtools: true });
 ```
 
 <details>
-    <summary>setDiffxOptions in-depth documentation</summary>
+    <summary><strong>setDiffxOptions in-depth documentation</strong></summary>
 
 ```javascript
 import { setDiffxOptions } from '@diffx/core';
@@ -134,7 +134,7 @@ console.log(clickCounter.count); // --> 0
 ```
 
 <details>
-    <summary>createState in-depth documentation</summary>
+    <summary><strong>createState in-depth documentation</strong></summary>
 
 `createState(namespace, state, options)`
 
@@ -185,7 +185,7 @@ setState('increment the counter', () => clickCounter.count++);
 ```
 
 <details>
-    <summary>setState in-depth documentation</summary>
+    <summary><strong>setState in-depth documentation</strong></summary>
 
 ### Synchronous setState()
 
@@ -318,7 +318,7 @@ unwatchFunc();
 ```
 
 <details>
-    <summary>watchState in-depth documentation</summary>
+    <summary><strong>watchState in-depth documentation</strong></summary>
 
 ```javascript
 import { watchState } from '@diffx/core';
@@ -332,7 +332,7 @@ const unwatchFunc = watchState(() => clickCounter, {
      */
     emitInitialValue: true / false,
     /**
-     * Callback called with the final state after the outmost `.setState` function has finished running.
+     * Callback called with the final state after the outermost `.setState` function has finished running.
      */
     onSetStateDone: (newValue, oldValue) => '...',
     /**
