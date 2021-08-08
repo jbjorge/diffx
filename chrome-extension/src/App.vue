@@ -65,6 +65,20 @@ export default {
 			return value.concat(subAsyncIds);
 		}
 
+		function flattenWatcherIds(diff: DiffEntry): string[] {
+			const value = [diff.id];
+			if (diff.triggeredByDiffId) {
+				value.push(diff.triggeredByDiffId);
+			}
+			if (!diff.subDiffEntries?.length) {
+				return value;
+			}
+			const subWatcherIds = diff.subDiffEntries.reduce((subR, subDiff) => {
+				return subR.concat(flattenWatcherIds(subDiff))
+			}, [] as string[]);
+			return value.concat(subWatcherIds);
+		}
+
 		const filteredDiffs = computed(() => {
 			if (!filterText?.value?.trim()) {
 				return diffs.value;
@@ -90,11 +104,12 @@ export default {
 				diffReasons: flattenReasons(diff),
 				diffKeys: flattenDiffKeys(diff),
 				asyncIds: flattenAsyncIds(diff),
+				watcherIds: flattenWatcherIds(diff),
 				realIndex: i
 			}));
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
-				keys: ['diffReasons', 'diffKeys', 'asyncIds'],
+				keys: ['diffReasons', 'diffKeys', 'asyncIds', 'watcherIds'],
 				shouldSort: false,
 				threshold: 0.1
 			};
