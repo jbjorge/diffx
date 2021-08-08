@@ -65,10 +65,18 @@ export default defineComponent({
 			if (child) {
 				path += '.' + child;
 			}
-			emit('trace', path);
+			emit('traceValue', path);
 		}
 
-		return { hoveredEntryId, onTrace, isExpanded, toggleExpand, levelColor, isString, isValue, isExpandable, levelMargin };
+		function onHighlight(entry: string, child = '') {
+			let path = entry;
+			if (child) {
+				path += '.' + child;
+			}
+			emit('highlightValue', path);
+		}
+
+		return { onHighlight, hoveredEntryId, onTrace, isExpanded, toggleExpand, levelColor, isString, isValue, isExpandable, levelMargin };
 	}
 });
 </script>
@@ -84,10 +92,13 @@ export default defineComponent({
 			<div
 				:style="{ marginLeft: levelMargin }"
 				class="flex row gutter-20 obj-info is-hoverable"
-				@mouseenter="hoveredEntryId = entry.id"
-				@mouseleave="hoveredEntryId = ''"
+				@mouseenter="hoveredEntryId = entry.id;"
+				@mouseleave="hoveredEntryId = '';"
 			>
-				<div class="flex row gutter-5">
+				<div
+					class="flex row gutter-5"
+					:class="{ pointer: !isValue(entry) && !isString(entry)}"
+				>
 					<div
 						v-if="isExpandable(entry)"
 						class="not-selectable"
@@ -110,21 +121,32 @@ export default defineComponent({
 						</span>
 					</div>
 				</div>
-				<button
-					v-show="hoveredEntryId === entry.id"
-					@click.stop="onTrace(entry.key)"
-					class="trace-button not-selectable"
-					title="Filter the diffs that made changes to this value in the left sidebar"
-				>
-					trace
-				</button>
+				<div class="flex row gutter-10">
+					<button
+						v-show="hoveredEntryId === entry.id"
+						@click.stop="onHighlight(entry.key)"
+						class="traceValue-button not-selectable"
+						title="Highlight diffs in the left sidebar that affected this value"
+					>
+						Highlight
+					</button>
+					<button
+						v-show="hoveredEntryId === entry.id"
+						@click.stop="onTrace(entry.key)"
+						class="traceValue-button not-selectable"
+						title="Filter diffs in the left sidebar that affected this value"
+					>
+						Filter
+					</button>
+				</div>
 			</div>
 			<object-explorer
 				v-if="isExpanded(entry)"
 				style="margin-left: 10px"
 				:object-map="entry.children"
 				:level="level + 1"
-				@trace="onTrace(entry.key, $event)"
+				@traceValue="onTrace(entry.key, $event)"
+				@highlightValue="onHighlight(entry.key, $event)"
 			/>
 			<span
 				v-if="isExpanded(entry)"
@@ -137,7 +159,7 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
-.trace-button {
+.traceValue-button {
 	color: whitesmoke;
 	background-color: transparent;
 	border: none;
@@ -153,9 +175,11 @@ export default defineComponent({
 	user-select: none;
 }
 
-.key-list {
+.pointer {
 	cursor: pointer;
+}
 
+.key-list {
 	& > .obj-info {
 		padding-bottom: 5px;
 		padding-top: 5px;

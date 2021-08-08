@@ -7,14 +7,8 @@ import { DiffEntry } from '@diffx/core/dist/internals';
 import diffxBridge from './utils/diffx-bridge';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
-import {
-	currentState,
-	diffIdToPathMap,
-	diffs,
-	getDiffById,
-	getDiffsByValuePath,
-	latestState
-} from './utils/diff-indexer';
+import { currentState, diffIdToPathMap, diffs, getDiffsByValuePath, latestState } from './utils/diff-indexer';
+import { negotiateHighlightDiffs } from './utils/negotiate-highlight-diffs';
 import IFuseOptions = Fuse.IFuseOptions;
 
 const {
@@ -33,7 +27,6 @@ export default {
 		const diffListRef = ref();
 		const selectedDiffPath = ref('');
 		const stateLocked = ref(false);
-
 		const filterText = ref('');
 
 		function flattenDiffKeys(diff: DiffEntry): string[] {
@@ -77,10 +70,14 @@ export default {
 				return diffs.value;
 			}
 
+			if (filterText.value.startsWith('@highlight:')) {
+				const highlightedDiffIds = getDiffsByValuePath(filterText.value.substr('@highlight:'.length));
+				return negotiateHighlightDiffs(diffs.value, highlightedDiffIds);
+			}
+
 			if (filterText.value.startsWith('@trace:')) {
-				return getDiffsByValuePath(filterText.value.substr('@trace:'.length))
-					.map(id => getDiffById(id))
-					.sort((a, b) => a.timestamp - b.timestamp)
+				const tracedDiffIds = getDiffsByValuePath(filterText.value.substr('@trace:'.length))
+					return diffs.value.filter(diff => tracedDiffIds.includes(diff.id));
 			}
 
 			const decoratedDiffs = diffs.value.map((diff, i) => ({
@@ -189,6 +186,10 @@ export default {
 			filterText.value = '@trace:' + tracePath;
 		}
 
+		function onHighlightValuePath(tracePath: string) {
+			filterText.value = '@highlight:' + tracePath;
+		}
+
 		return {
 			diffListRef,
 			diffs,
@@ -202,7 +203,8 @@ export default {
 			unpauseState,
 			onDiffSelected,
 			selectedDiffPath,
-			onTrace
+			onTrace,
+			onHighlightValuePath,
 		}
 	}
 }
@@ -255,7 +257,8 @@ export default {
 		<DiffViewer
 			:diffList="diffs"
 			:selected-diff-path="selectedDiffPath"
-			@tracePath="onTrace"
+			@traceValue="onTrace"
+			@highlightValue="onHighlightValuePath"
 		/>
 	</div>
 </template>

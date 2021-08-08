@@ -20,7 +20,6 @@ function onNewDiff({ data }: { data: any }) {
 		return;
 	}
 	const { diff, commit }: { diff: DiffEntry, commit?: boolean } = data;
-	console.log(diff.reason)
 	if (commit) {
 		_diffs.value = [diff];
 		Object.keys(diffIdToPathMap).map(key => {
@@ -75,9 +74,6 @@ export function getDiffsByValuePath(path: string): string[] {
 			const hasCorrectStart = key.startsWith(path);
 			// next characters after path is either . or nothing
 			const hasCorrectEnding = (key[path.length] === '.' || !key[path.length]);
-			if (hasCorrectStart && !hasCorrectEnding) {
-				console.log(key);
-			}
 			return hasCorrectStart && hasCorrectEnding;
 		})
 		.reduce((ids, key) => {
@@ -96,6 +92,9 @@ function updateValuePathsToDiffIds(diff: DiffEntry) {
 		const ids = valueToDiffPaths.value[p] || [] as string[];
 		valueToDiffPaths.value[p] = ids.concat(diff.id);
 	})
+	if (diff.subDiffEntries) {
+		diff.subDiffEntries.forEach(updateValuePathsToDiffIds);
+	}
 }
 
 /**

@@ -55,7 +55,7 @@ export default defineComponent({
 		});
 
 		function onTrace(tracePath: string) {
-			emit('tracePath', tracePath);
+			emit('traceValue', tracePath);
 		}
 
 		return { onTrace, diffs, diffToShow, formatDate, formattedOutput, selectedTab, currentStateMap };
@@ -101,7 +101,8 @@ export default defineComponent({
 				<div v-if="selectedTab === 'state'">
 					<object-explorer
 						:object-map="currentStateMap"
-						@trace="onTrace"
+						@traceValue="onTrace"
+						@highlightValue="$emit('highlightValue', $event)"
 					/>
 				</div>
 				<div

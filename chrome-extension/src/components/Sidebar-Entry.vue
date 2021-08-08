@@ -63,6 +63,7 @@ export default defineComponent({
 			}
 		})
 		const isDisabled = computed(() => !!props.diffEntry.isGeneratedByDiffx);
+		const isHighlightedByTrace = computed(() => props.diffEntry.isHighlightedByTrace);
 
 		const formattedDate = computed(() => {
 			const d = new Date(props?.diffEntry?.timestamp || 0);
@@ -108,7 +109,7 @@ export default defineComponent({
 			return randomColor({
 				seed,
 				luminosity: 'dark',
-				alpha: 0.4,
+				alpha: 0.5,
 				format: 'rgba'
 			})
 		}
@@ -123,7 +124,8 @@ export default defineComponent({
 			triggerReason,
 			isDisabled,
 			isInactive,
-			isSelected
+			isSelected,
+			isHighlightedByTrace
 		};
 	}
 });
@@ -134,7 +136,7 @@ export default defineComponent({
 		<div
 			@click.stop="$emit('stateClicked', diffEntry)"
 			class="diff-entry"
-			:class="{ selected: isSelected, inactive: isInactive, disabled: isDisabled, nested: nestingLevel > 0 }"
+			:class="{ isHighlightedByTrace, selected: isSelected, inactive: isInactive, disabled: isDisabled, nested: nestingLevel > 0 }"
 			:style="{
 				boxShadow: nestingLevel > 0 && isSelected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
 				animation: nestingLevel > 0 && isSelected ? 'none' : ''
@@ -155,6 +157,7 @@ export default defineComponent({
 								v-if="triggerReason"
 								class="tag watcher"
 								:title="triggerReason"
+								@click.stop="$emit('setFilter', diffEntry.triggeredByDiffId)"
 							>
 								watcher
 							</div>
@@ -231,6 +234,11 @@ export default defineComponent({
 	color: rgba(255, 255, 255, 0.9);
 	cursor: pointer;
 
+	&.isHighlightedByTrace {
+		box-shadow: inset 0 0 3px 0px rgb(249 255 0 / 48%);
+		background-color: rgb(255 255 0 / 10%);
+	}
+
 	&.nested {
 		padding-left: 10px;
 		padding-right: 15px;
@@ -303,8 +311,7 @@ export default defineComponent({
 		}
 
 		&.watcher {
-			background-color: rgb(64 64 64 / 60%);
-			cursor: default;
+			border: 1px solid rgb(255 255 255 / 25%);
 		}
 	}
 }
