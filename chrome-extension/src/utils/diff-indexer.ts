@@ -1,29 +1,37 @@
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { reactive, readonly, ref, Ref } from 'vue';
 import { getStateSnapshot } from './diffx-bridge';
+import { getObjectPaths } from './get-object-paths';
 
 type IdToPathMap = { [id: string]: string };
+type ValuePathToIdMap = { [valuePath: string]: string[] }
+
+let valueToDiffPaths: Ref<ValuePathToIdMap> = ref({});
 
 export const diffIdToPathMap: IdToPathMap = reactive({});
 const _diffs: Ref<DiffEntry[]> = ref([]);
 export const diffs = readonly(_diffs) as unknown as Ref<DiffEntry[]>;
 export const currentState = ref({});
 export const latestState = ref({});
+export const valuePathToDiffIdsMap = readonly(valueToDiffPaths);
 
 function onNewDiff({ data }: { data: any }) {
 	if (!data || data.type !== 'diffx_diff') {
 		return;
 	}
 	const { diff, commit }: { diff: DiffEntry, commit?: boolean } = data;
+	console.log(diff.reason)
 	if (commit) {
 		_diffs.value = [diff];
 		Object.keys(diffIdToPathMap).map(key => {
 			delete diffIdToPathMap[key];
 		})
 		updateIdToPathMap(diff);
+		valueToDiffPaths.value = {};
 	} else {
 		_diffs.value.push(diff);
 		updateIdToPathMap(diff);
+		updateValuePathsToDiffIds(diff);
 	}
 	updateCurrentState();
 }
@@ -61,34 +69,33 @@ export function getDiffByPath(path: string) {
 }
 
 export function getDiffsByValuePath(path: string): string[] {
-	const diffValueMap = createDiffValueMap();
-	return Object.keys(diffValueMap)
-		.filter(key => key.startsWith(path))
+	return Object.keys(valueToDiffPaths.value)
+		.filter(key => {
+			// starts with the same path
+			const hasCorrectStart = key.startsWith(path);
+			// next characters after path is either . or nothing
+			const hasCorrectEnding = (key[path.length] === '.' || !key[path.length]);
+			if (hasCorrectStart && !hasCorrectEnding) {
+				console.log(key);
+			}
+			return hasCorrectStart && hasCorrectEnding;
+		})
 		.reduce((ids, key) => {
-			return ids.concat(diffValueMap[key]);
+			return ids.concat(valueToDiffPaths.value[key]);
 		}, [] as string[])
 		.filter((v, i, a) => a.indexOf(v) === i);
 }
 
-function createDiffValueMap() {
-	function rKeys(o: any, path=""): any {
-		if (!o || typeof o !== "object") return path;
-		return Object.keys(o).map(key => rKeys(o[key], path ? [path, key].join(".") : key))
-	}
+function updateValuePathsToDiffIds(diff: DiffEntry) {
+	const paths = getObjectPaths(diff.diff);
 
-	const objectPaths = (o: any) => { return rKeys(o).toString().split(",") }
-
-	return diffs.value.reduce((m, diff) => {
-		const paths = objectPaths(diff.diff) as string[];
-		paths.forEach(p => {
-			if (diff.isGeneratedByDiffx) {
-				p = p.replace(/^(.+?)\.0(.*)/, '$1$2');
-			}
-			const ids = m[p] || [] as string[];
-			m[p] = ids.concat(diff.id);
-		})
-		return m;
-	}, {} as { [valuePath: string]: string[] })
+	paths.forEach(p => {
+		if (diff.isGeneratedByDiffx) {
+			p = p.replace(/^(.+?)\.0(.*)/, '$1$2');
+		}
+		const ids = valueToDiffPaths.value[p] || [] as string[];
+		valueToDiffPaths.value[p] = ids.concat(diff.id);
+	})
 }
 
 /**

@@ -29,7 +29,7 @@ window.addEventListener('message', evt => {
 });
 
 const clickCounter = createState('click counter', { count: 0 });
-const users = createState('users', { names: [] as string[] });
+const users = createState('users', { names: ['hihi'] as string[] });
 
 setState('Change the counter and add a user', () => {
 	clickCounter.count++;

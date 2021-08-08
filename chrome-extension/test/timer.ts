@@ -30,12 +30,29 @@ window.addEventListener('message', evt => {
 
 // spam
 const s1 = createState('test', {
-	counter: 0
+	counter: 0,
+	loremParts: [] as string[]
 });
 
-setInterval(() => {
-	setState(`set counter to ${s1.counter + 1}`, () => {
-		s1.counter++;
-		setState(`set counter to ${s1.counter + 1}`, () => s1.counter++);
-	});
-}, 1000)
+const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum'
+	.split(' ');
+
+for (let i = 0; i < 20; i++) {
+	const indx = i > 9 ? Math.round(i/2) : i;
+	setState(`Adding ${lorem[i]} to the list`, () => {
+		console.log('changing', indx);
+		s1.loremParts[indx] = lorem[i];
+	})
+}
+
+// setInterval(() => {
+// 	setState(`set counter to ${s1.counter + 1}`, () => {
+// 		s1.counter++;
+// 		if (s1.counter % 3 == 0) {
+// 			setState('miip', () => {
+// 				s1.hah++;
+// 			})
+// 		}
+// 		setState(`set counter to ${s1.counter + 1}`, () => s1.counter++);
+// 	});
+// }, 1000)
