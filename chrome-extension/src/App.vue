@@ -7,7 +7,14 @@ import { DiffEntry } from '@diffx/core/dist/internals';
 import diffxBridge from './utils/diffx-bridge';
 import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
-import { currentState, diffIdToPathMap, diffs, latestState } from './utils/diff-indexer';
+import {
+	currentState,
+	diffIdToPathMap,
+	diffs,
+	getDiffById,
+	getDiffsByValuePath,
+	latestState
+} from './utils/diff-indexer';
 import IFuseOptions = Fuse.IFuseOptions;
 
 const {
@@ -68,6 +75,12 @@ export default {
 		const filteredDiffs = computed(() => {
 			if (!filterText?.value?.trim()) {
 				return diffs.value;
+			}
+
+			if (filterText.value.startsWith('@trace:')) {
+				return getDiffsByValuePath(filterText.value.substr('@trace:'.length))
+					.map(id => getDiffById(id))
+					.sort((a, b) => a.timestamp - b.timestamp)
 			}
 
 			const decoratedDiffs = diffs.value.map((diff, i) => ({
@@ -172,6 +185,10 @@ export default {
 			resizeMouseDown.value = false;
 		}
 
+		function onTrace(tracePath: string) {
+			filterText.value = '@trace:' + tracePath;
+		}
+
 		return {
 			diffListRef,
 			diffs,
@@ -184,7 +201,8 @@ export default {
 			pauseState,
 			unpauseState,
 			onDiffSelected,
-			selectedDiffPath
+			selectedDiffPath,
+			onTrace
 		}
 	}
 }
@@ -237,6 +255,7 @@ export default {
 		<DiffViewer
 			:diffList="diffs"
 			:selected-diff-path="selectedDiffPath"
+			@tracePath="onTrace"
 		/>
 	</div>
 </template>

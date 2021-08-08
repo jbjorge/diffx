@@ -17,7 +17,8 @@ export default defineComponent({
 			default: 0
 		}
 	},
-	setup(props) {
+	setup(props, { emit }) {
+		const hoveredEntryId = ref('');
 		const levelColor = computed(() => {
 			return randomColor({
 				seed: (props.level * 2).toString()
@@ -59,7 +60,15 @@ export default defineComponent({
 			return entry.children.length;
 		}
 
-		return { isExpanded, toggleExpand, levelColor, isString, isValue, isExpandable, levelMargin };
+		function onTrace(entry: string, child = '') {
+			let path = entry;
+			if (child) {
+				path += '.' + child;
+			}
+			emit('trace', path);
+		}
+
+		return { hoveredEntryId, onTrace, isExpanded, toggleExpand, levelColor, isString, isValue, isExpandable, levelMargin };
 	}
 });
 </script>
@@ -74,35 +83,48 @@ export default defineComponent({
 		>
 			<div
 				:style="{ marginLeft: levelMargin }"
-				class="flex row gutter-5 obj-info is-hoverable"
+				class="flex row gutter-20 obj-info is-hoverable"
+				@mouseenter="hoveredEntryId = entry.id"
+				@mouseleave="hoveredEntryId = ''"
 			>
-				<div
-					v-if="isExpandable(entry)"
-					class="not-selectable"
-					:class="{ 'is-collapsed': !isExpanded(entry) }"
-				>
-					▼
-				</div>
-				<div :style="{ marginLeft: !isExpandable(entry) ? '20px' : ''}">
+				<div class="flex row gutter-5">
+					<div
+						v-if="isExpandable(entry)"
+						class="not-selectable"
+						:class="{ 'is-collapsed': !isExpanded(entry) }"
+					>
+						▼
+					</div>
+					<div :style="{ marginLeft: !isExpandable(entry) ? '20px' : ''}">
 				<span :style="{color: levelColor}">
 					{{ entry.key }}
 				</span>:
-					<span v-if="isExpanded(entry)">
+						<span v-if="isExpanded(entry)">
 					{{ entry.type === 'array' ? '[' : '{' }}
 				</span>
-					<span
-						v-else
-						:class="{ 'is-string': isString(entry), 'is-value': isValue(entry) }"
-					>
-					{{ isString(entry) ? `"${entry.value}"` : entry.value }}
-				</span>
+						<span
+							v-else
+							:class="{ 'is-string': isString(entry), 'is-value': isValue(entry) }"
+						>
+							{{ isString(entry) ? `"${entry.value}"` : entry.value }}
+						</span>
+					</div>
 				</div>
+				<button
+					v-show="hoveredEntryId === entry.id"
+					@click.stop="onTrace(entry.key)"
+					class="trace-button not-selectable"
+					title="Filter the diffs that made changes to this value in the left sidebar"
+				>
+					trace
+				</button>
 			</div>
 			<object-explorer
 				v-if="isExpanded(entry)"
 				style="margin-left: 10px"
 				:object-map="entry.children"
 				:level="level + 1"
+				@trace="onTrace(entry.key, $event)"
 			/>
 			<span
 				v-if="isExpanded(entry)"
@@ -115,6 +137,18 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
+.trace-button {
+	color: whitesmoke;
+	background-color: transparent;
+	border: none;
+	box-shadow: 0 0 1px 1px rgba(255,255,255,0.3);
+	cursor: pointer;
+
+	&:hover {
+		background-color: rgba(0,0,0,0.2);
+	}
+}
+
 .not-selectable {
 	user-select: none;
 }

@@ -11,12 +11,6 @@ export function getStateAtPath(path: string) {
 		const startValue = {};
 		const diffsUpUntilIndex = diffsCopy.slice(0, rootIndex + 1);
 		diffsUpUntilIndex.forEach(diffEntry => patch(startValue, diffEntry.diff));
-
-		// patch subDiff if applicable
-		if (fragments.length > 1) {
-			const subDiff = getDiffByPath(path);
-			patch(startValue, subDiff.diff);
-		}
 		return startValue;
 	}
 	const startValue = jsonClone(latestState.value);
@@ -28,6 +22,7 @@ export function getStateAtPath(path: string) {
 
 	// subDiffs if applicable
 	if (fragments.length > 1) {
+		unpatch(startValue, diffsCopy[rootIndex].diff);
 		// patch the subdiff
 		patch(startValue, getDiffByPath(path).diff);
 	}

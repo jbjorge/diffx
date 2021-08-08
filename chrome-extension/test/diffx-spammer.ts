@@ -28,45 +28,40 @@ window.addEventListener('message', evt => {
 });
 
 // spam
-const s1 = createState('dinnerGuests', { names: [] as string[] });
-const s2 = createState('servings', { count: 0 });
-const orderState = createState('upload info', {
-	isOrdering: false,
-	successfulOrders: 0,
-	errorMessage: ''
-})
+// const s1 = createState('dinnerGuests', { names: [] as string[] });
+// const s2 = createState('servings', { count: 0 });
+// const orderState = createState('upload info', {
+// 	isOrdering: false,
+// 	successfulOrders: 0,
+// 	errorMessage: ''
+// })
 
 const s3 = createState('lol', {
 	level1: {
 		level2: {
-			level3: [
-				{
-					level4: {
-						level5: [
-							'hello'
-						]
-					}
-				},{
-					level4: {
-						level5: [
-							'there'
-						]
-					}
-				},
-				{
-					level4: {
-						level5: [
-							'good'
-						]
-					}
-				}
-			]
-		}
+			a: ''
+		},
+		level22: [{
+			name: 'hello'
+		}]
 	}
 })
 
 setState('jejeje', () => {
-	s3.level1.level2.level3.push({level4: {level5: ['hoho']}})
+	s3.level1.level2.a = 'hei';
+	setState('ioasdj', () => {
+		s3.level1.level22.push({name: 'hihi'})
+	})
+})
+
+setState('afsdadsf', () => {
+	s3.level1.level2.a = 'hei';
+	s3.level1.level22 = [{name: 'hah'}]
+})
+
+setState('afsdadsf', () => {
+	s3.level1.level2.a = 'halloen';
+	s3.level1.level22 = [{name: 'hoho'}, {name: 'hah'}]
 })
 
 // setState('Add "Hanna" to dinnerGuests', () => {

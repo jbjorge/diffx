@@ -17,7 +17,7 @@ export default defineComponent({
 			default: ''
 		}
 	},
-	setup(props) {
+	setup(props, { emit }) {
 		const selectedTab = ref('diff');
 
 		const diffToShow: ComputedRef<DiffEntry | undefined> = computed(() => {
@@ -54,7 +54,11 @@ export default defineComponent({
 			return jsondiffpatch.formatters.html.format(diffToShow?.value?.diff || {}, prevCopy);
 		});
 
-		return { diffs, diffToShow, formatDate, formattedOutput, selectedTab, currentStateMap };
+		function onTrace(tracePath: string) {
+			emit('tracePath', tracePath);
+		}
+
+		return { onTrace, diffs, diffToShow, formatDate, formattedOutput, selectedTab, currentStateMap };
 	}
 });
 </script>
@@ -95,7 +99,10 @@ export default defineComponent({
 					class="diff-viewer"
 				></div>
 				<div v-if="selectedTab === 'state'">
-					<object-explorer :object-map="currentStateMap" />
+					<object-explorer
+						:object-map="currentStateMap"
+						@trace="onTrace"
+					/>
 				</div>
 				<div
 					v-if="selectedTab === 'stackTrace'"

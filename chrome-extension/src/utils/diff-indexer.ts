@@ -14,7 +14,7 @@ function onNewDiff({ data }: { data: any }) {
 	if (!data || data.type !== 'diffx_diff') {
 		return;
 	}
-	const { diff, commit } = data;
+	const { diff, commit }: { diff: DiffEntry, commit?: boolean } = data;
 	if (commit) {
 		_diffs.value = [diff];
 		Object.keys(diffIdToPathMap).map(key => {
@@ -29,6 +29,7 @@ function onNewDiff({ data }: { data: any }) {
 }
 
 let snapshotCounter = 0;
+
 function updateCurrentState() {
 	const counter = ++snapshotCounter;
 	getStateSnapshot().then(snapshot => {
@@ -57,6 +58,37 @@ export function getDiffByPath(path: string) {
 	}
 	const fragments = path.split('.');
 	return getDiff(_diffs.value, fragments);
+}
+
+export function getDiffsByValuePath(path: string): string[] {
+	const diffValueMap = createDiffValueMap();
+	return Object.keys(diffValueMap)
+		.filter(key => key.startsWith(path))
+		.reduce((ids, key) => {
+			return ids.concat(diffValueMap[key]);
+		}, [] as string[])
+		.filter((v, i, a) => a.indexOf(v) === i);
+}
+
+function createDiffValueMap() {
+	function rKeys(o: any, path=""): any {
+		if (!o || typeof o !== "object") return path;
+		return Object.keys(o).map(key => rKeys(o[key], path ? [path, key].join(".") : key))
+	}
+
+	const objectPaths = (o: any) => { return rKeys(o).toString().split(",") }
+
+	return diffs.value.reduce((m, diff) => {
+		const paths = objectPaths(diff.diff) as string[];
+		paths.forEach(p => {
+			if (diff.isGeneratedByDiffx) {
+				p = p.replace(/^(.+?)\.0(.*)/, '$1$2');
+			}
+			const ids = m[p] || [] as string[];
+			m[p] = ids.concat(diff.id);
+		})
+		return m;
+	}, {} as { [valuePath: string]: string[] })
 }
 
 /**
