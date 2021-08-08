@@ -201,7 +201,7 @@ export default defineComponent({
 								:style="{backgroundColor: entry.color}"
 								class="state-name-circle"
 								@mouseover="onColorHover"
-								@click.stop="$emit('setFilter', entry.stateName)"
+								@click.stop="$emit('setFilter', '@namespace:' + entry.stateName)"
 							>
 								<div :style="hoverPosition">
 									{{ entry.stateName }}

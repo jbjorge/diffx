@@ -121,7 +121,7 @@ export default defineComponent({
 						</span>
 					</div>
 				</div>
-				<div class="flex row gutter-10">
+				<div class="flex row wrap gutter-10">
 					<button
 						v-show="hoveredEntryId === entry.id"
 						@click.stop="onHighlight(entry.key)"
@@ -165,6 +165,7 @@ export default defineComponent({
 	border: none;
 	box-shadow: 0 0 1px 1px rgba(255,255,255,0.3);
 	cursor: pointer;
+	padding: 0 5px;
 
 	&:hover {
 		background-color: rgba(0,0,0,0.2);

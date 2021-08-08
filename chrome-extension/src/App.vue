@@ -77,7 +77,12 @@ export default {
 
 			if (filterText.value.startsWith('@trace:')) {
 				const tracedDiffIds = getDiffsByValuePath(filterText.value.substr('@trace:'.length))
-					return diffs.value.filter(diff => tracedDiffIds.includes(diff.id));
+				return diffs.value.filter(diff => tracedDiffIds.includes(diff.id));
+			}
+
+			if (filterText.value.startsWith('@namespace:')) {
+				const diffNamespaces = getDiffsByValuePath(filterText.value.substr('@namespace:'.length));
+				return diffs.value.filter(diff => diffNamespaces.includes(diff.id));
 			}
 
 			const decoratedDiffs = diffs.value.map((diff, i) => ({
@@ -239,7 +244,7 @@ export default {
 						<span>Merge</span>
 					</button>
 				</div>
-				<FilterInput v-model="filterText"/>
+				<FilterInput v-model="filterText" />
 			</div>
 			<Sidebar
 				ref="diffListRef"
@@ -282,7 +287,7 @@ export default {
 		font-size: 1rem;
 
 		&.paused {
-			background-color: #4f5465;
+			background-color: #6d5d17;
 		}
 	}
 }
