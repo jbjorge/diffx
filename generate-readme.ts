@@ -35,8 +35,6 @@ function mergeReadmes(baseLines: string[], overrides: OverrideMap[]) {
 		return baseLines.join('\n');
 	}
 	const baseMap = getReadmeMap(baseLines);
-	console.log(baseMap);
-	console.log('-----------');
 	const change = overrides[0];
 
 	if (change?.action === 'replaceLine') {
@@ -47,7 +45,7 @@ function mergeReadmes(baseLines: string[], overrides: OverrideMap[]) {
 		baseLines = baseLines
 			.slice(0, baseEntry.start)
 			.concat(change.lines)
-			.concat(baseLines.slice(baseEntry.start))
+			.concat(baseLines.slice(baseEntry.start + 1))
 	}
 	if (change?.action === 'removeSection') {
 		const baseEntry = baseMap.find(x => x.match === change.target);

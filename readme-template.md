@@ -215,7 +215,7 @@ setState('Change the counter and add a user', () => {
 Diffx enforces the use of `setState(reason, mutatorFunc)` for making any changes to the state.  
 By having the freedom to change state from *anywhere* in the codebase, state can quickly get out of control and be
 difficult to debug if there is no human-readable reasoning behind why a change was made. That's why you're forced to
-write a `reason`.
+use setState and provide a `reason`.
 
 _Any changes made to the state outside of `setState()` will throw an error._
 
