@@ -233,7 +233,7 @@ export default defineComponent({
 	padding: 10px 20px;
 	background-color: #1c2634;
 	color: rgba(255, 255, 255, 0.9);
-	cursor: pointer;
+	cursor: default;
 
 	&.isHighlightedByTrace {
 		box-shadow: inset 0 0 3px 0px rgb(249 255 0 / 48%);

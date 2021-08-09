@@ -181,6 +181,8 @@ export default defineComponent({
 }
 
 .key-list {
+	font-size: 1rem;
+
 	& > .obj-info {
 		padding-bottom: 5px;
 		padding-top: 5px;

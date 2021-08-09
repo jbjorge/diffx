@@ -203,6 +203,7 @@ pre.code {
 	flex-direction: row;
 	padding-left: 10px;
 	cursor: pointer;
+	font-size: 0.8rem;
 
 	& > div {
 		padding: 10px;

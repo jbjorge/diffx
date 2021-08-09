@@ -296,7 +296,7 @@ export default {
 .sidebar-wrapper {
 	.action-button {
 		width: 50%;
-		height: 50px;
+		height: 40px;
 		background-color: #2d3d53;
 		color: whitesmoke;
 		font-size: 1rem;
