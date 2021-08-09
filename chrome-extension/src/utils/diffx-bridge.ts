@@ -22,7 +22,10 @@ export function removeDiffListener(listenerId: number) {
 	return runFunc('removeDiffListener', listenerId);
 }
 
-export function commit() {
+export function commit(count?: number) {
+	if (count != null) {
+		return runFunc('commit', count);
+	}
 	return runFunc('commit');
 }
 

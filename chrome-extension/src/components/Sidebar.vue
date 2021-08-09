@@ -6,47 +6,25 @@ import { DiffEntry } from '@diffx/core/dist/internals';
 export default defineComponent({
 	components: { SidebarEntry },
 	props: {
-		diffList: {
+		filteredDiffs: {
 			type: Array as PropType<DiffEntry[]>,
 			default: () => []
 		},
-		selectedDiffIndex: {
-			type: Number,
-			default: null
-		}
+		selectedDiffPath: String
 	},
 	setup(props, { emit }) {
-		function onClickedDiff(diff: DiffEntry, index: number) {
-			if (!diff.isInitialState) {
-				emit("selectDiff", (diff as any).realIndex || index);
+		function onClickedDiff(diff: DiffEntry) {
+			if (diff.isGeneratedByDiffx) {
+				return;
 			}
+			emit('onDiffSelected', diff);
 		}
 
 		function setFilter(stateName: string) {
 			emit('setFilter', stateName);
 		}
 
-		function isSelected(diff: DiffEntry, index: number) {
-			const i = (diff as any).realIndex || index;
-			if (i === props.selectedDiffIndex) {
-				return true;
-			}
-			if (!props.selectedDiffIndex && i === props.diffList.length - 1) {
-				return true;
-			}
-			return false;
-		}
-
-		function isInactive(diff: DiffEntry, index: number) {
-			const i = (diff as any).realIndex || index;
-			return props.selectedDiffIndex != null && props.selectedDiffIndex !== -1 && (i > props.selectedDiffIndex);
-		}
-
-		function isDisabled(diff: DiffEntry) {
-			return diff.isInitialState;
-		}
-
-		return { onClickedDiff, setFilter, isSelected, isInactive, isDisabled };
+		return { onClickedDiff, setFilter };
 	}
 });
 </script>
@@ -54,14 +32,13 @@ export default defineComponent({
 <template>
 	<div class="diff-list">
 		<SidebarEntry
-			v-for="(diff, index) in diffList"
+			v-for="diff in filteredDiffs"
+			:key="diff.id"
 			class="diff-entry-list-item"
-			:selected="isSelected(diff, index)"
-			:inactive="isInactive(diff, index)"
-			:disabled="isDisabled(diff)"
 			:diffEntry="diff"
-			@stateSelected="onClickedDiff($event, index)"
+			:selected-diff-path="selectedDiffPath"
 			@setFilter="setFilter"
+			@stateClicked="onClickedDiff($event)"
 		/>
 	</div>
 </template>

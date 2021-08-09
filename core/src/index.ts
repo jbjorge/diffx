@@ -1,16 +1,16 @@
 import initializeValue from './initializeValue';
-import { createHistoryEntry, saveHistoryEntry } from './createHistoryEntry';
+import { createHistoryEntry } from './createHistoryEntry';
 import internalState, { CreateStateOptions, DiffxOptions } from './internal-state';
-import { WatchOptions } from './watch-options';
+import { WatcherCallback, WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
 import * as internals from './internals';
-import { DiffEntry, getStateSnapshot, replaceState } from './internals';
-import runDelayedEmitters from './runDelayedEmitters';
-import { effect } from '@vue/reactivity';
-import { diff } from 'jsondiffpatch';
-import { createId } from './createId';
+import { getStateSnapshot, replaceState } from './internals';
+import { effect, stop } from '@vue/reactivity';
 import { getInitialState } from './initial-state';
+import { _setState, _setStateAsync } from './setState';
+import { duplicateNamespace, missingWatchCallbacks, replacingStateForNamespace } from './console-messages';
+import getPersistenceKey from './get-persistence-key';
 
 export * as diffxInternals from './internals';
 
@@ -19,8 +19,8 @@ export * as diffxInternals from './internals';
  * @param options
  */
 export function setDiffxOptions(options: DiffxOptions) {
-	internalState.instanceOptions = options;
-	if (options?.devtools) {
+	internalState.instanceOptions = { ...internalState.instanceOptions, ...options };
+	if (internalState.instanceOptions?.devtools) {
 		const glob = (typeof process !== 'undefined' && process?.versions?.node) ? global : window;
 		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...internals };
 	}
@@ -35,14 +35,9 @@ export function setDiffxOptions(options: DiffxOptions) {
 export function createState<StateType extends object>(namespace: string, initialState: StateType, options: CreateStateOptions = {}): StateType {
 	if (rootState[namespace]) {
 		if (!internalState.instanceOptions?.devtools) {
-			throw new Error(
-				`[diffx] The state "${namespace}" already exists.` +
-				"\ncreateState() should only be called once per namespace." +
-				"\nIf you meant to replace the state, use replaceState() instead." +
-				"\nIf you are running in a development environment, use setDiffxOptions({ devtools: true })."
-			)
+			throw new Error(duplicateNamespace(namespace))
 		}
-		console.warn(`[diffx] Replacing the state for "${namespace}".`);
+		console.warn(replacingStateForNamespace(namespace));
 		const currentState = getStateSnapshot();
 		currentState[namespace] = initialState;
 
@@ -57,24 +52,16 @@ export function createState<StateType extends object>(namespace: string, initial
 	internalState.isCreatingState = false;
 	createHistoryEntry(`@init ${namespace}`, true);
 
-	if (isPersistent) {
+	if (isPersistent && persistenceLocation) {
 		// setup watcher to keep state up to date
-		watchState(() => rootState[namespace], {
-			lazy: true,
-			onChanged: value => persistenceLocation.setItem('__diffx__' + namespace, JSON.stringify(value))
+		const unwatchFunc = watchState(() => rootState[namespace], {
+			emitInitialValue: true,
+			onSetStateDone: value => persistenceLocation.setItem(getPersistenceKey(namespace), JSON.stringify(value))
 		});
+		internalState.watchers.push({ namespace, unwatchFunc });
 	}
 
 	return rootState[namespace];
-}
-
-/**
- * Set state in diffx synchronously
- * @param reason The reason why the state changed
- * @param mutatorFunc A function that changes the state
- */
-export function setState(reason: string, mutatorFunc: () => void) {
-	_setState({ reason, mutatorFunc });
 }
 
 /**
@@ -84,201 +71,126 @@ export function setState(reason: string, mutatorFunc: () => void) {
  * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
  * @param onError A mutatorFunc for when the asyncMutatorFunc has encountered an error.
  */
-export function setStateAsync<ResolvedType, ErrorType = unknown>(
+export function setState<ResolvedType, ErrorType = unknown>(
 	reason: string,
 	asyncMutatorFunc: () => Promise<ResolvedType>,
 	onDone: (result: ResolvedType) => void,
 	onError?: (error: ErrorType) => void
-) {
-	_setState({
-		reason,
-		mutatorFunc: () => {
-			return asyncMutatorFunc()
-				.then(
-					value => () => onDone(value),
-					err => () => {
-						const errorFunc = onError || (() => {
-							console.warn('[diffx] setStateAsync() threw an error, but no error handler was provided. The error was:');
-							console.error(err);
-						})
-						return errorFunc(err);
-					}
-				)
-		}
-	})
-}
-
-interface InternalSetStateArgs {
-	reason: string;
-	mutatorFunc: () => (void | Promise<any> | Promise<() => void>);
-	extraProps?: {
-		asyncDiffOrigin: string;
-	}
-}
-
-// --- recursive setState helpers
-let setStateNestingLevel = -1;
-let previousLevel = 0;
-let hist: DiffEntry[] = [];
-let paren = [hist];
-let current = hist;
-let children;
-
-function addParentLevelElement(el: DiffEntry) {
-	const parentEl = paren[paren.length - 1];
-	const parentChildren = parentEl[parentEl.length - 1].subDiffEntries;
-	parentChildren.push(el);
-	current = parentChildren;
-	children = current[current.length - 1].subDiffEntries;
-}
-
-function addSameLevelElement(el: DiffEntry) {
-	current.push(el);
-	children = current[current.length - 1].subDiffEntries;
-}
-
-function addChildElement(el: DiffEntry) {
-	children.push(el);
-	current = children;
-	paren.push(children);
-	children = current[current.length - 1].subDiffEntries;
-}
-
-// ------------------------------
-
-function _setState({ reason, mutatorFunc, extraProps }: InternalSetStateArgs) {
-	if (typeof reason !== 'string') {
-		throw new Error('[diffx] setState(reason, mutatorFunc) - reason must be a string.');
-	}
-	if (typeof mutatorFunc !== 'function') {
-		throw new Error('[diffx] setState(reason, mutatorFunc) - mutatorFunc must be a function.')
-	}
-	if (internalState.stateModificationsLocked) {
-		console.log(`[diffx] State is paused, skipped processing of "${reason}".`);
-		return;
-	}
-	internalState.isUsingSetFunction = true;
-
-	// ---- handle recursive setState
-
-	const currentState = getStateSnapshot();
-	const level = ++setStateNestingLevel;
-	let didMoveDown = false;
-	const diffEntry: DiffEntry = {
-		id: createId(),
-		reason,
-		timestamp: Date.now(),
-		diff: {},
-		subDiffEntries: []
-	};
-	if (internalState.instanceOptions?.includeStackTrace) {
-		diffEntry.stackTrace = new Error().stack;
-	}
-	if (extraProps?.asyncDiffOrigin) {
-		diffEntry.asyncOrigin = extraProps.asyncDiffOrigin;
-	}
-	if (level < previousLevel) {
-		// moved up a level
-		addParentLevelElement(diffEntry)
-	} else if (level === previousLevel) {
-		// back to same level
-		addSameLevelElement(diffEntry);
+): void;
+/**
+ * Set state in diffx synchronously
+ * @param reason The reason why the state changed
+ * @param mutatorFunc A function that changes the state
+ */
+export function setState(reason: string, mutatorFunc: () => void): void;
+export function setState(reason: string, mutatorFunc, onDone = undefined, onError = undefined) {
+	if (onDone) {
+		_setStateAsync(reason, mutatorFunc, onDone, onError);
 	} else {
-		// moved down a level
-		addChildElement(diffEntry);
-		didMoveDown = true;
-	}
-	let thisLevelObject = current[current.length - 1];
-	previousLevel = level;
-
-	const assignmentResult = mutatorFunc();
-	if (assignmentResult instanceof Promise) {
-		thisLevelObject.async = true;
-		assignmentResult.then(
-			innerMutatorFunc => {
-				if (typeof innerMutatorFunc !== 'function') {
-					console.warn('[diffx] Asynchronous usage of setState(reason, mutatorFunc): The mutatorFunc did not return a mutatorFunc. No state was changed after the asynchronous code ran.');
-					return;
-				}
-				_setState({
-					reason,
-					mutatorFunc: innerMutatorFunc,
-					extraProps: { asyncDiffOrigin: thisLevelObject.id }
-				});
-			}
-		)
-			.catch(err => console.error(err))
-	}
-
-	const newState = getStateSnapshot();
-	thisLevelObject.diff = diff(currentState, newState);
-	setStateNestingLevel--;
-	if (didMoveDown) {
-		paren.pop();
-	}
-
-	// ------------------------------
-
-	if (level === 0) {
-		saveHistoryEntry(hist[0]);
-		runDelayedEmitters();
-		internalState.isUsingSetFunction = false;
-
-		// reset recursive counters
-		setStateNestingLevel = -1;
-		previousLevel = 0;
-		hist = [];
-		paren = [hist];
-		current = hist;
-		children = undefined;
+		_setState({ reason, mutatorFunc });
 	}
 }
 
 /**
  * Watch state for changes
  * @param stateGetter A callback which should return the state to watch or an array of states to watch.
- * @param options Options for how to watch the state
+ * @param options Callback for changes or options for how to watch the state
  * @return Function for stopping the watcher
  */
-export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): () => void {
-	if (!options.onChanged && !options.onEachChange) {
-		throw new Error('[diffx] No callback specified for watchState(_, Options). Options.onChanged and/or Options.onEachChange needs to be assigned a callback function.')
+export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): () => void;
+export function watchState<T>(stateGetter: () => T, callback: WatcherCallback<T>): () => void;
+export function watchState<T>(stateGetter: () => T, options: WatchOptions<T> | WatcherCallback<T>): () => void {
+	// guard for allowing use of callback
+	let _options = options as WatchOptions<T>;
+	if (typeof options === 'function') {
+		_options = {
+			emitInitialValue: false,
+			onSetStateDone: options
+		} as WatchOptions<T>;
 	}
-	const watchId = ++internalState.delayedEmittersId;
+	if (!_options.onSetStateDone && !_options.onEachValueUpdate && !_options.onEachSetState) {
+		throw new Error(missingWatchCallbacks)
+	}
+	const setStateDoneWatcherId = ++internalState.setStateDoneEmittersId;
+	const eachSetStateWatcherId = ++internalState.eachSetStateEmittersId;
 	let oldValue;
 	const getter = stateGetter;
 	stateGetter = () => initializeValue(getter());
 	oldValue = clone(getter());
-	if (!options.lazy) {
-		if (options.onEachChange) {
-			options.onEachChange(oldValue);
+
+	let stateBeforeSetState;
+	let initialValue;
+	if (_options.onSetStateDone) {
+		initialValue = clone(oldValue);
+	}
+
+	// If the watcher is not lazy, call the callbacks immediately with the current value
+	if (_options.emitInitialValue) {
+		if (_options.onEachValueUpdate) {
+			_options.onEachValueUpdate(oldValue);
 		}
-		if (options.onChanged) {
-			options.onChanged(oldValue);
+		if (_options.onEachSetState) {
+			_options.onEachSetState(oldValue);
+		}
+		if (_options.onSetStateDone) {
+			_options.onSetStateDone(oldValue);
 		}
 	}
-	return effect<T>(stateGetter, {
+
+	const effectInstance = effect<T>(stateGetter, {
 		lazy: false,
 		onTrigger: () => {
+			if (_options.once) {
+				stop(effectInstance);
+			}
 			const newValue = getter();
 			const newValueString = JSON.stringify(newValue);
 			const newValueClone = newValueString === undefined ? undefined : JSON.parse(newValueString);
-			if (newValueString === JSON.stringify(oldValue)) {
+
+			// Default change comparison
+			if (!_options?.hasChangedComparer && newValueString === JSON.stringify(oldValue)) {
+				// Don't update oldValue to be newValue since they're identical
 				return;
 			}
-			if (options?.hasChangedComparer && !options.hasChangedComparer(newValueClone, oldValue)) {
+
+			// User specified change comparison
+			if (_options?.hasChangedComparer && !_options.hasChangedComparer(clone(newValueClone), clone(oldValue))) {
+				// We don't know how the user decides if anything has changed or not,
+				// so we update the oldValue with whatever the newValue is.
 				oldValue = newValueClone === undefined ? undefined : clone(newValue);
 				return;
 			}
-			if (options?.onEachChange) {
-				options.onEachChange(newValue);
+
+			// notify watchers
+			if (_options?.onEachValueUpdate) {
+				internalState.isTriggeringValueWatchers = true;
+				_options.onEachValueUpdate(clone(newValue), clone(oldValue));
+				internalState.isTriggeringValueWatchers = false;
 			}
-			if (options?.onChanged) {
-				internalState.delayedEmitters[watchId] = () => options.onChanged(newValue);
+			if (_options?.onEachSetState) {
+				const oldValueToEmit = clone(oldValue);
+				internalState.eachSetStateEmitters[eachSetStateWatcherId] = () => {
+					_options.onEachSetState(clone(newValue), oldValueToEmit);
+				}
 			}
+			if (_options?.onSetStateDone) {
+				internalState.setStateDoneEmitters[setStateDoneWatcherId] = () => {
+					_options.onSetStateDone(clone(newValue), clone(initialValue));
+					initialValue = clone(newValue);
+				}
+			}
+
+			// update oldValue to be the newValue
 			oldValue = clone(newValue);
 		}
 	});
+
+	const unwatch = () => stop(effectInstance);
+	Object.keys(effectInstance).forEach(key => {
+		unwatch[key] = effectInstance[key];
+	});
+
+	return unwatch;
 }
 
 /**
@@ -288,5 +200,8 @@ export function watchState<T>(stateGetter: () => T, options: WatchOptions<T>): (
  * @param namespace
  */
 export function destroyState(namespace: string) {
+	internalState.isDestroyingState = true;
 	delete rootState[namespace];
+	createHistoryEntry(`@destroy ${namespace}`, true);
+	internalState.isDestroyingState = false;
 }

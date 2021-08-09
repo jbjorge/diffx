@@ -1,24 +1,71 @@
 <script lang="ts">
-import { computed, defineComponent, PropType, reactive } from 'vue';
+import { computed, ComputedRef, defineComponent, PropType, reactive } from 'vue';
 import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { leftpad } from '../utils/leftpad';
+import { diffIdToPathMap, getDiffById, getDiffByPath } from '../utils/diff-indexer';
+import { DecoratedDiffEntryType } from '../utils/decorated-diff-entry-type';
 
 export default defineComponent({
 	name: 'SidebarEntry',
 	props: {
 		diffEntry: {
-			type: Object as PropType<DiffEntry>
+			type: Object as PropType<DecoratedDiffEntryType>,
+			required: true
 		},
 		nestingLevel: {
 			type: Number,
 			default: 0
 		},
-		selected: Boolean,
-		inactive: Boolean,
-		disabled: Boolean
+		selectedDiffPath: {
+			type: String,
+			default: ''
+		}
 	},
 	setup(props) {
+		const isSelected = computed(() => {
+			if (!props.selectedDiffPath) {
+				return false;
+			}
+			return getDiffByPath(props.selectedDiffPath).id === props.diffEntry.id;
+		})
+		const isInactive = computed(() => {
+			if (!props.selectedDiffPath) {
+				return false;
+			}
+			const dp = diffIdToPathMap[props.diffEntry.id];
+			if (dp === props.selectedDiffPath) {
+				return false;
+			}
+			const diffPath = dp
+				.split('.')
+				.map(fragment => parseInt(fragment));
+			const selectedPathFragments = props.selectedDiffPath
+				.split('.')
+				.map(fragment => parseInt(fragment));
+			for (let i = 0; i < diffPath.length; i++) {
+				const currentDiffIndex = diffPath[i];
+				const selectedPathIndex = selectedPathFragments[i];
+				if (currentDiffIndex === selectedPathIndex) {
+					continue;
+				}
+				if (currentDiffIndex == null && selectedPathIndex != null) {
+					return false;
+				}
+				if (currentDiffIndex != null && selectedPathIndex == null) {
+					return false;
+				}
+				if (currentDiffIndex < selectedPathIndex) {
+					return false;
+				}
+				if (currentDiffIndex > selectedPathIndex) {
+					return true;
+				}
+			}
+		})
+		const isDisabled = computed(() => !!props.diffEntry.isGeneratedByDiffx);
+		const isHighlightedByTrace = computed(() => props.diffEntry.isHighlightedByTrace);
+
 		const formattedDate = computed(() => {
 			const d = new Date(props?.diffEntry?.timestamp || 0);
 			const hours = leftpad(d.getHours().toString(), 2);
@@ -48,6 +95,10 @@ export default defineComponent({
 			})
 		});
 
+		const triggerReason: ComputedRef<string> = computed(() => {
+			return props.diffEntry.triggeredByDiffId ? `A change in "${getDiffById(props.diffEntry.triggeredByDiffId).reason}" triggered a watchState that made this change.` : '';
+		})
+
 		const hoverPosition = reactive({ top: '0', left: '0' });
 
 		function onColorHover(evt: MouseEvent) {
@@ -70,7 +121,12 @@ export default defineComponent({
 			stateNameEntries,
 			onColorHover,
 			hoverPosition,
-			getColorFromString
+			getColorFromString,
+			triggerReason,
+			isDisabled,
+			isInactive,
+			isSelected,
+			isHighlightedByTrace
 		};
 	}
 });
@@ -79,12 +135,12 @@ export default defineComponent({
 <template>
 	<div>
 		<div
-			@click.stop="$emit('stateSelected', diffEntry)"
+			@click.stop="$emit('stateClicked', diffEntry)"
 			class="diff-entry"
-			:class="{ selected, inactive, disabled, nested: nestingLevel > 0 }"
+			:class="{ isHighlightedByTrace, selected: isSelected, inactive: isInactive, disabled: isDisabled, nested: nestingLevel > 0 }"
 			:style="{
-				boxShadow: nestingLevel > 0 && selected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
-				animation: nestingLevel > 0 && selected ? 'none' : ''
+				boxShadow: nestingLevel > 0 && isSelected ? 'inset 0 0 1px 1px rgba(47, 222, 137, 0.05)' : '',
+				animation: nestingLevel > 0 && isSelected ? 'none' : ''
 			}"
 		>
 			<div class="flex row i-align-center">
@@ -96,16 +152,34 @@ export default defineComponent({
 				</div>
 				<div class="grow">
 					<div class="flex row c-justify-space-between i-align-center wrap">
-						<div class="flex row gutter-5">
+						<div class="flex row gutter-10">
 							<div class="diff-list-timestamp">{{ formattedDate }}</div>
 							<div
+								v-if="triggerReason"
+								class="tag watcher"
+								:title="triggerReason"
+								@click.stop="$emit('setFilter', diffEntry.triggeredByDiffId)"
+							>
+								watcher
+							</div>
+							<div
 								v-if="diffEntry?.asyncOrigin"
-								class="tag async-end"
-								:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
-								title="View async origin"
+								title="View async result"
+								class="flex row"
 								@click.stop="$emit('setFilter', diffEntry?.asyncOrigin)"
 							>
-								resolve
+								<div
+									class="async-result tag-start"
+									:style="{ backgroundColor: getColorFromString(diffEntry?.asyncOrigin) }"
+								>
+									async
+								</div>
+								<div
+									class="async-result tag-end"
+									:class="[diffEntry.asyncRejected ? 'async-rejected' : 'async-resolved']"
+								>
+									{{ diffEntry.asyncRejected ? 'reject' : 'resolve' }}
+								</div>
 							</div>
 							<div
 								v-if="diffEntry?.async"
@@ -117,6 +191,7 @@ export default defineComponent({
 								async
 							</div>
 						</div>
+						<!-- State color button -->
 						<div
 							class="flex row i-align-center wrap"
 							:style="{ marginRight: nestingLevel !== 0 ? '5px' : '0px' }"
@@ -127,7 +202,7 @@ export default defineComponent({
 								:style="{backgroundColor: entry.color}"
 								class="state-name-circle"
 								@mouseover="onColorHover"
-								@click.stop="$emit('setFilter', entry.stateName)"
+								@click.stop="$emit('setFilter', '@namespace:' + entry.stateName)"
 							>
 								<div :style="hoverPosition">
 									{{ entry.stateName }}
@@ -145,12 +220,10 @@ export default defineComponent({
 			:key="subEntry.id"
 			:diffEntry="subEntry"
 			:nestingLevel="nestingLevel + 1"
+			:selected-diff-path="selectedDiffPath"
 			:style="{borderLeft: `7px solid ${backgroundColor}`}"
-			:disabled="disabled"
-			:selected="selected"
-			:inactive="inactive"
 			@setFilter="$emit('setFilter', $event)"
-			@stateSelected="$emit('stateSelected', $event)"
+			@stateClicked="$emit('stateClicked', $event)"
 		/>
 	</div>
 </template>
@@ -160,10 +233,16 @@ export default defineComponent({
 	padding: 10px 20px;
 	background-color: #1c2634;
 	color: rgba(255, 255, 255, 0.9);
-	cursor: pointer;
+	cursor: default;
+
+	&.isHighlightedByTrace {
+		box-shadow: inset 0 0 3px 0px rgb(249 255 0 / 48%);
+		background-color: rgb(255 255 0 / 10%);
+	}
 
 	&.nested {
 		padding-left: 10px;
+		padding-right: 15px;
 	}
 
 	&:hover {
@@ -194,7 +273,32 @@ export default defineComponent({
 
 	&.disabled {
 		opacity: 0.5;
-		pointer-events: none;
+	}
+
+	& .async-result {
+		border-radius: 10px;
+		padding: 1px 7px 0 7px;
+		font-size: 0.8rem;
+		border: 1px solid rgba(255,255,255,0.09);
+
+		&.tag-start {
+			border-bottom-right-radius: 0;
+			border-top-right-radius: 0;
+			padding-right: 5px;
+		}
+		&.tag-end {
+			border-bottom-left-radius: 0;
+			border-top-left-radius: 0;
+			padding-left: 5px;
+			border-left: 1px solid rgba(255,255,255,0.55);
+
+			&.async-rejected {
+				background-color: rgba(255, 0, 0, 0.4);
+			}
+			&.async-resolved {
+				background-color: rgba(0, 255, 0, 0.3);
+			}
+		}
 	}
 
 	& .tag {
@@ -205,6 +309,10 @@ export default defineComponent({
 
 		&:hover {
 			opacity: 0.85;
+		}
+
+		&.watcher {
+			border: 1px solid rgb(255 255 255 / 25%);
 		}
 	}
 }

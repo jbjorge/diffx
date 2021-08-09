@@ -7,7 +7,8 @@ export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
  * of emitting intermittent state changes during
  * `.setState()`.
  */
-type DelayedEmitterMap = { [id: string]: () => void };
+export type DelayedEmitter = () => void;
+export type DelayedEmitterMap = { [id: string]: DelayedEmitter };
 
 export type PersistenceLocation = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -20,8 +21,9 @@ export interface CreateStateOptions {
 	persistent?: boolean;
 	/**
 	 * Location for storing persistent state.
+	 * E.g. localStorage or sessionStorage
 	 *
-	 * Default: persistenceLocation defined in setDiffxOptions or `sessionStorage`
+	 * Default: persistenceLocation defined in setDiffxOptions
 	 */
 	persistenceLocation?: PersistenceLocation
 }
@@ -62,13 +64,29 @@ export interface DiffxOptions {
 	persistent?: boolean;
 	/**
 	 * Location for storing persistent state.
+	 * E.g. localStorage or sessionStorage
 	 *
-	 * Default: sessionStorage
+	 * Default: null
 	 */
 	persistenceLocation?: PersistenceLocation
+	/**
+	 * Max nesting depth.
+	 *
+	 * If a loop of setState <--> watchState is accidentally created, it will run off and crash
+	 * (and potentially crash the main thread). To avoid this, a max nesting depth can be set.
+	 *
+	 * Default: 100
+	 */
+	maxNestingDepth?: number
+}
+
+interface InternalWatcher {
+	namespace: string;
+	unwatchFunc: () => void;
 }
 
 export default {
+	isDestroyingState: false,
 	isReplacingState: false,
 	stateModificationsPaused: false,
 	stateModificationsLocked: false,
@@ -76,9 +94,13 @@ export default {
 	isCreatingState: false,
 	stateReplacementKey: 0,
 	stateAccessBuffer: [] as (() => void)[],
-	instanceOptions: {} as DiffxOptions,
+	instanceOptions: { maxNestingDepth: 100 } as DiffxOptions,
 	diffs: [] as DiffEntry[],
 	diffListeners: {} as DiffListeners,
-	delayedEmitters: {} as DelayedEmitterMap,
-	delayedEmittersId: 1
+	setStateDoneEmitters: {} as DelayedEmitterMap,
+	setStateDoneEmittersId: 1,
+	eachSetStateEmitters: {} as DelayedEmitterMap,
+	eachSetStateEmittersId: 1,
+	isTriggeringValueWatchers: false,
+	watchers: [] as InternalWatcher[]
 };

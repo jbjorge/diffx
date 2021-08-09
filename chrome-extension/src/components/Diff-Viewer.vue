@@ -1,81 +1,81 @@
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, PropType, ref, watchEffect } from 'vue';
+import { computed, ComputedRef, defineComponent, ref, watchEffect } from 'vue';
 import * as jsondiffpatch from "jsondiffpatch";
 import { Delta } from "jsondiffpatch";
 import jsonClone from "../utils/jsonClone";
 import { DiffEntry } from '@diffx/core/dist/internals';
-import { getStateSnapshot } from '../utils/diffx-bridge';
+import { getStateAtPath } from '../utils/get-state-at-path';
+import { currentState, diffs, getDiffByPath } from '../utils/diff-indexer';
+import ObjectExplorer from './Object-Explorer.vue';
+import { getObjectMap } from '../utils/get-object-map';
 
 export default defineComponent({
+	components: { ObjectExplorer },
 	props: {
-		diffList: {
-			type: Array as PropType<DiffEntry[]>,
-			default: (): DiffEntry[] => [] as DiffEntry[]
-		},
-		selectedDiffIndex: {
-			type: Number,
-			default: null
+		selectedDiffPath: {
+			type: String,
+			default: ''
 		}
 	},
-	setup(props) {
+	setup(props, { emit }) {
 		const selectedTab = ref('diff');
-		const diffToDisplay: ComputedRef<DiffEntry> = computed(() => {
-			return props.diffList[props.selectedDiffIndex] || props.diffList[props.diffList.length - 1];
+
+		const diffToShow: ComputedRef<DiffEntry | undefined> = computed(() => {
+			const d = !props.selectedDiffPath
+				? diffs.value[diffs.value.length - 1]
+				: getDiffByPath(props.selectedDiffPath);
+			if (d?.stackTrace) {
+				return {
+					...d,
+					stackTrace: d.stackTrace.replace(/^Error/, '')
+				};
+			}
+			return d;
 		});
 
 		function formatDate(timestamp: number) {
 			return new Date(timestamp).toLocaleString();
 		}
 
-		const diffs: ComputedRef<Delta[]> = computed(() => props.diffList.map(diffEntry => diffEntry.diff));
+		const diffEntries: ComputedRef<Delta[]> = computed(() => diffs.value.map(diffEntry => diffEntry.diff));
 
 		const previousObjectState = ref({});
 
 		watchEffect(async () => {
-			const diffIndex = props.selectedDiffIndex ?? diffs.value.length - 1;
-			const reverseDiff = (diffIndex) > (diffs.value.length / 2);
-			const diffsClone = jsonClone(diffs.value);
-			const diffsToReplay: Delta[] = reverseDiff
-				? diffsClone.slice(diffIndex).reverse()
-				: diffsClone.slice(0, diffIndex);
-			if (reverseDiff) {
-				const stateSnapshot = await getStateSnapshot();
-				diffsToReplay.forEach((diff) => {
-					if (diff) {
-						jsondiffpatch.unpatch(stateSnapshot, diff)
-					}
-				});
-				previousObjectState.value = stateSnapshot;
-			} else {
-				const patched = {};
-				diffsToReplay.forEach((diff) => {
-					if (diff) {
-						jsondiffpatch.patch(patched, diff)
-					}
-				});
-				previousObjectState.value = patched;
+			if (!diffEntries.value.length) {
+				return;
 			}
+			const previousDiffIndex = props.selectedDiffPath
+				? parseInt(props.selectedDiffPath.split('.')[0]) - 1
+				: diffEntries.value.length - 1;
+			previousObjectState.value = getStateAtPath(previousDiffIndex.toString());
 		});
+
+		const currentStateMap = computed(() => getObjectMap(currentState.value));
 
 		const formattedOutput = computed(() => {
-			if (!diffToDisplay.value.diff && selectedTab.value === 'diff') {
-				return 'No change in state.'
+			if (!diffToShow?.value?.diff && selectedTab.value === 'diff') {
+				return 'No difference in state.'
 			}
 			const prevCopy = jsonClone(previousObjectState.value);
-			return jsondiffpatch.formatters.html.format(diffToDisplay.value.diff || {}, prevCopy);
+			return jsondiffpatch.formatters.html.format(diffToShow?.value?.diff || {}, prevCopy);
 		});
 
-		return { diffToDisplay, formatDate, formattedOutput, selectedTab };
+		function onTrace(tracePath: string) {
+			emit('traceValue', tracePath);
+		}
+
+		return { onTrace, diffs, diffToShow, formatDate, formattedOutput, selectedTab, currentStateMap };
 	}
 });
 </script>
 
 <template>
 	<div class="diff-viewer-wrapper">
-		<template v-if="diffToDisplay">
+		<template v-if="diffToShow">
 			<div class="diff-header">
-				<div class="diff-timestamp">{{ formatDate(diffToDisplay.timestamp) }}</div>
-				<h2>{{ diffToDisplay.reason }}</h2>
+				<div class="diff-timestamp">{{ formatDate(diffToShow?.timestamp) }}</div>
+				<h2>{{ diffToShow?.reason }}</h2>
 			</div>
 			<div class="diff-tabs">
 				<div
@@ -91,7 +91,7 @@ export default defineComponent({
 					State
 				</div>
 				<div
-					v-if="diffToDisplay.stackTrace"
+					v-if="diffToShow?.stackTrace"
 					:class="{'diff-tab-selected': selectedTab === 'stackTrace'}"
 					@click="selectedTab = 'stackTrace'"
 				>
@@ -100,16 +100,23 @@ export default defineComponent({
 			</div>
 			<div class="diff-body">
 				<div
-					v-if="selectedTab === 'diff' || selectedTab === 'state'"
+					v-if="selectedTab === 'diff'"
 					:class="{'diff-view': selectedTab === 'diff'}"
 					v-html="formattedOutput"
 					class="diff-viewer"
 				></div>
+				<div v-if="selectedTab === 'state'">
+					<object-explorer
+						:object-map="currentStateMap"
+						@traceValue="onTrace"
+						@highlightValue="$emit('highlightValue', $event)"
+					/>
+				</div>
 				<div
 					v-if="selectedTab === 'stackTrace'"
 					style="white-space: pre"
 				>
-					{{ diffToDisplay.stackTrace }}
+					{{ diffToShow?.stackTrace }}
 				</div>
 			</div>
 		</template>
@@ -117,7 +124,14 @@ export default defineComponent({
 			v-else
 			class="no-diff-selected"
 		>
-			<div>No state selected</div>
+			<div v-if="diffs.length">No state selected</div>
+			<div v-else>
+				<div style="text-align: center">
+					<div>No state recorded.</div>
+					<div>To enable state tracking:</div>
+				</div>
+				<pre class="code">setDiffxOptions({ devtools: true });</pre>
+			</div>
 		</div>
 	</div>
 </template>
@@ -156,6 +170,11 @@ export default defineComponent({
 	}
 }
 
+pre.code {
+	padding: 10px;
+	background-color: black;
+}
+
 .diff-header {
 	background-color: #1c2634;
 	display: block;
@@ -177,13 +196,14 @@ export default defineComponent({
 }
 
 .diff-tabs {
-	width: calc(100% - 10px);
+	width: 100%;
 	background-color: #1c2634;
 	color: whitesmoke;
 	display: flex;
 	flex-direction: row;
 	padding-left: 10px;
 	cursor: pointer;
+	font-size: 0.8rem;
 
 	& > div {
 		padding: 10px;

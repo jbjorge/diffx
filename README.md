@@ -1,33 +1,36 @@
 # Diffx
 
-## Introduction
+Diffx is a state management library that focuses on three things:
 
-Diffx is a state management library that focuses on being easy to learn and use, and to offer a great development
-experience at any scale.
+* Make it easy to use
+* Get rid of boilerplate
+* Make great devtools
+
+<details>
+  <summary><strong>Show all features</strong></summary>
 
 ## Features
 
 * Minimal API
-* No forced usage patterns
-    * Minimizing boilerplate
-* Supports asynchronous and nested changes to state
+* Minimal boilerplate
+    * No forced usage patterns
+    * Change any state from anywhere
+    * Proxy/mutation based
+* Detailed tracking
+    * nested changes
+    * asynchronous changes (start, resolve and reject)
+    * changes done by watchers of the state
+* Built in support for persistence
+* Supports all major frameworks
 * Built with typescript
 * Devtools browser extension
 
-## Documentation
+</details>
 
-* React
-    * [Documentation](https://github.com/jbjorge/diffx/tree/master/react)
-    * [Npm package](https://npmjs.org/package/@diffx/react)
-* Vue.js
-    * [Documentation](https://github.com/jbjorge/diffx/tree/master/vue)
-    * [Npm package](https://npmjs.org/package/@diffx/vue)
-* Angular
-    * [Documentation](https://github.com/jbjorge/diffx/tree/master/angular)
-    * [Npm package](https://npmjs.org/package/@diffx/angular)
-* RxJS
-    * [Documentation](https://github.com/jbjorge/diffx/tree/master/rxjs)
-    * [Npm package](https://npmjs.org/package/@diffx/rxjs)
-* No framework
-    * [Documentation](https://github.com/jbjorge/diffx/tree/master/core)
-    * [Npm package](https://npmjs.org/package/@diffx/core)
+## Supported frameworks
+
+* React --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)
+* Vue.js --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)
+* Angular --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)
+* RxJS --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)
+* No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)

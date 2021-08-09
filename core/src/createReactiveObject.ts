@@ -1,5 +1,10 @@
 import { track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
 import internalState from './internal-state';
+import { stateChangedWithoutSetState } from './console-messages';
+
+// workaround because jest is buggy and gets them as undefined from time to time
+const trackOpGetType: TrackOpTypes = 'get' as TrackOpTypes;
+const triggerOpSetType: TriggerOpTypes = 'set' as TriggerOpTypes;
 
 /**
  * Creates a reactive object.
@@ -11,9 +16,9 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// If the state is being replaced, buffer the tracking of object access
 			// so it can be run after the state is done being replaced
 			if (internalState.isReplacingState || internalState.stateModificationsPaused) {
-				internalState.stateAccessBuffer.push(() => track(target, TrackOpTypes.GET, prop));
+				internalState.stateAccessBuffer.push(() => track(target, trackOpGetType, prop));
 			} else {
-				track(target, TrackOpTypes.GET, prop);
+				track(target, trackOpGetType, prop);
 			}
 			const value = Reflect.get(target, prop, receiver);
 			if (typeof value === 'object') {
@@ -37,16 +42,16 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
-			if (!internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
-				throw new Error('[diffx] State was changed without using .setState()');
+			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
+				throw new Error(stateChangedWithoutSetState);
 			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);
 			// If the state is being replaced, buffer the triggering of object setting
 			// so it can be run after the state is done being replaced
 			if (internalState.isReplacingState || internalState.stateModificationsPaused) {
-				internalState.stateAccessBuffer.push(() => trigger(target, TriggerOpTypes.SET, key, newValue));
+				internalState.stateAccessBuffer.push(() => trigger(target, triggerOpSetType, key, newValue));
 			} else {
-				trigger(target, TriggerOpTypes.SET, key, newValue);
+				trigger(target, triggerOpSetType, key, newValue);
 			}
 			return returnValue;
 		}

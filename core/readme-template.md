@@ -1,1 +1,3 @@
-# @diffx/core <!-- replaceLine:Diffx -->
+<!-- replaceLine:# Diffx -->
+# @diffx/core
+<!-- end -->

@@ -2,8 +2,9 @@ import { diff } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
-import runDelayedEmitters from './runDelayedEmitters';
+import { runEachSetStateEmitters, runSetStateDoneEmitters } from './delayedEmitters';
 import { createId } from './createId';
+import { getStateAtIndex } from './get-state-at-index';
 
 export interface Delta {
 	[key: string]: any;
@@ -16,10 +17,12 @@ export interface DiffEntry {
 	reason: string;
 	diff: Delta;
 	stackTrace?: string;
-	isInitialState?: boolean;
+	isGeneratedByDiffx?: boolean;
 	async?: boolean;
 	asyncOrigin?: string;
+	asyncRejected?: boolean;
 	subDiffEntries?: DiffEntry[];
+	triggeredByDiffId?: string;
 }
 
 let diffListenerId = 0;
@@ -29,7 +32,7 @@ let diffListenerId = 0;
  * @param cb		Callback
  * @param lazy	If true, will only call the callback from this point on. Setting it to false/omitted it will call the
  * 							callback with all previous diffs as well.
- * @returns Function that will unsubscribe upon being called
+ * @returns listener id that can be passed to `removeDiffListener` to unsubscribe
  */
 export function addDiffListener(cb: DiffListenerCallback, lazy?: boolean) {
 	const listenerId = diffListenerId++;
@@ -50,18 +53,28 @@ export function removeDiffListener(listenerId: number) {
 
 /**
  * Combines all diffs into one diff before continuing as normal
+ * @param count Number of diffs to combine
  */
-export function commit() {
+export function commit(count?: number) {
+	count = count || internalState.diffs.length;
+	if (!count) {
+		// nothing to commit, no point in collapsing diff #0
+		return;
+	}
+	const combinedState = getStateAtIndex(count - 1);
 	const diffEntry: DiffEntry = {
 		id: createId(),
 		timestamp: Date.now(),
-		reason: 'Commit',
-		diff: diff({}, clone(rootState)) || {} as Delta
+		reason: '@commit',
+		diff: diff({}, combinedState) || {} as Delta,
+		isGeneratedByDiffx: true
 	};
-	internalState.diffs = [diffEntry];
-	for (let cbId in internalState.diffListeners) {
-		internalState.diffListeners[cbId](diffEntry, true);
-	}
+	internalState.diffs = [diffEntry].concat(internalState.diffs.slice(count));
+	internalState.diffs.forEach((diff, index) => {
+		for (let cbId in internalState.diffListeners) {
+			internalState.diffListeners[cbId](diff, index === 0);
+		}
+	})
 }
 
 /**
@@ -88,6 +101,14 @@ export function replaceState(state: any): void {
 		}
 	}
 	for (let namespace in state) {
+		if (!rootState[namespace]) {
+			rootState[namespace] = {
+				__diffx_stateReplacementKey: internalState.stateReplacementKey,
+				__diffx_stateReplacementValue: state[namespace]
+			};
+		}
+	}
+	for (let namespace in state) {
 		for (let propName in state[namespace]) {
 			// @ts-ignore
 			rootState[namespace][propName] = {
@@ -100,7 +121,8 @@ export function replaceState(state: any): void {
 	// @ts-ignore
 	internalState.stateReplacementKey = null;
 	internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
-	runDelayedEmitters();
+	runEachSetStateEmitters();
+	runSetStateDoneEmitters();
 	internalState.stateAccessBuffer = [];
 }
 
@@ -119,19 +141,25 @@ export function unlockState() {
 }
 
 /**
+ * @deprecated
+ * Deprecated and does nothing until implementation is properly tested.
  * Pauses changes to the state and buffers the changes
  */
 export function pauseState() {
-	internalState.stateModificationsPaused = true;
+	console.info('diffxInternals.pauseState() not implemented');
+	// internalState.stateModificationsPaused = true;
 }
 
 /**
- * Unpauses changes to the state and applies all the changes
+ * @deprecated
+ * Deprecated and does nothing until implementation is properly tested.
+ * (Unpauses changes to the state and applies all the changes.)
  */
 export function unpauseState() {
-	internalState.stateModificationsPaused = false;
-	internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
-	internalState.stateAccessBuffer = [];
+	console.info('diffxInternals.unpauseState() not implemented');
+	// internalState.stateModificationsPaused = false;
+	// internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
+	// internalState.stateAccessBuffer = [];
 }
 
 /**
@@ -145,5 +173,14 @@ export function getStateSnapshot() {
  * Gets all diffs that have been recorded this far
  */
 export function getDiffs() {
-	return internalState.diffs;
+	return clone(internalState.diffs);
+}
+
+/**
+ * Delete all diffs (used for testing)
+ *
+ * @access private
+ */
+export function _deleteAllDiffs() {
+	internalState.diffs = [];
 }
