@@ -21,9 +21,16 @@ export default defineComponent({
 		const selectedTab = ref('diff');
 
 		const diffToShow: ComputedRef<DiffEntry | undefined> = computed(() => {
-			return !props.selectedDiffPath
+			const d = !props.selectedDiffPath
 				? diffs.value[diffs.value.length - 1]
 				: getDiffByPath(props.selectedDiffPath);
+			if (d.stackTrace) {
+				return {
+					...d,
+					stackTrace: d.stackTrace.replace(/^Error/, '')
+				};
+			}
+			return d;
 		});
 
 		function formatDate(timestamp: number) {
