@@ -520,19 +520,25 @@ devtools option is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](../assets/devtools-7.png)
 
-The left pane displays a list of changes to the state along with their `reason`.  
+The left pane displays a list of changes (diffs) to the state along with their `reason`.  
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
 in [setDiffxOptions](#setdiffxoptions)).
 
 ### Diff tab
 
+Displays the difference between each change made by `setState()`.
+
 ![Diff tab preview](../assets/devtools-1.png)
 
 ### State tab
 
+Displays the current state at the selected diff.
+
 ![State tab preview](../assets/devtools-6.png)
 
 ### Stacktrace tab
+
+Displays the stack trace for the code that led to this state change.
 
 ![Stacktrace tab preview](../assets/devtools-5.png)
 
@@ -565,12 +571,18 @@ triggered.
 
 ![watchState tracing preview 1](../assets/devtools-8.png)
 
-The `watcher` tag can be hovered to see which state change triggered it.
+The `watcher` tag can be hovered to see which state change triggered it and clicked to find the state change.
 
 ![watchState tracing preview 2](../assets/devtools-9.png)
 
 To see where in the code the watcher was run, enable `includeStackTrace` in [setDiffxOptions](#setdiffxoptions) and open
 the Stacktrace tab for the entry tagged with the `watcher`.
+
+### Highlight/filter changes to a specific value
+
+The Highlight and Filter button can be used to find the state changes that affected a specific value.
+
+![highlight/filter preview](../assets/devtools-10.png)
 
 ## Diffx compared to other state management libraries
 
