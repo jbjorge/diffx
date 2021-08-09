@@ -1,4 +1,4 @@
-import { setStateAsync as coreSetStateAsync, watchState as coreWatchState } from '@diffx/core';
+import { setState as coreSetState, watchState as coreWatchState } from '@diffx/core';
 import { WatchOptions as coreWatchOptions } from '@diffx/core/dist/watch-options';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import clone from './clone';
@@ -20,7 +20,7 @@ export function setStateAsync<ResolvedType, ErrorType = any>(
 	onDone: (result: ResolvedType) => void,
 	onError?: (error: ErrorType) => void
 ) {
-	coreSetStateAsync(
+	coreSetState(
 		reason,
 		() => new Promise((resolve, reject) => {
 			asyncMutatorFunc()
@@ -42,12 +42,14 @@ export function setStateAsync<ResolvedType, ErrorType = any>(
  * @param options Options for how the watcher should behave
  */
 export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>): Observable<T> {
-	const eventStream = options?.lazy ? new Subject<T>() : new BehaviorSubject<T>(clone(stateGetter()));
+	const eventStream = options?.emitInitialValue ? new Subject<T>() : new BehaviorSubject<T>(clone(stateGetter()));
 	const coreConfig = { hasChangedComparer: options?.hasChangedComparer } as coreWatchOptions<T>;
-	if (options?.emitIntermediateChanges) {
-		coreConfig.onEachChange = newValue => eventStream.next(newValue);
+	if (options?.emitOn === 'eachSetState') {
+		coreConfig.onEachSetState = newValue => eventStream.next(newValue);
+	} else if (options?.emitOn === 'eachValueUpdate') {
+		coreConfig.onEachValueUpdate = newValue => eventStream.next(newValue);
 	} else {
-		coreConfig.onChanged = newValue => eventStream.next(newValue);
+		coreConfig.onSetStateDone = newValue => eventStream.next(newValue);
 	}
 	const unwatch = coreWatchState(stateGetter, coreConfig);
 	eventStream.unsubscribe = () => {

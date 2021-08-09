@@ -1,17 +1,18 @@
 export interface WatchOptions<T> {
 	/**
-	 * Whether to emit the current value of the watched item(s).
+	 * Whether to start with emitting the current value of the watched item(s).
 	 *
 	 * Default: `false`
 	 */
-	lazy?: boolean;
+	emitInitialValue?: boolean;
 	/**
-	 * Whether to emit each change to the state during `.setState` or
-	 * to only emit the final state after the `.setState` function has finished running.
+	 * Whether to emit each change to the state during .setState (eachValueUpdate),
+	 * the current state after each .setState and .setState nested within it (eachSetState),
+	 * or to only emit the final state after the outer .setState function has finished running (setStateDone).
 	 *
-	 * Default: `false`
+	 * Default: `setStateDone`
 	 */
-	emitIntermediateChanges?: boolean;
+	emitOn: 'eachSetState' | 'setStateDone' | 'eachValueUpdate';
 	/**
 	 * Custom comparer function to decide if the state has changed.
 	 * Receives newValue and oldValue as arguments and should return `true` for changed
