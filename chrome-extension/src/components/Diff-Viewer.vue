@@ -24,7 +24,7 @@ export default defineComponent({
 			const d = !props.selectedDiffPath
 				? diffs.value[diffs.value.length - 1]
 				: getDiffByPath(props.selectedDiffPath);
-			if (d.stackTrace) {
+			if (d?.stackTrace) {
 				return {
 					...d,
 					stackTrace: d.stackTrace.replace(/^Error/, '')

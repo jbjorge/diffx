@@ -1,35 +1,14 @@
-import { createState, diffxInternals, setDiffxOptions, setState, watchState } from '@diffx/core';
+import './setup';
+import { createState, setState, watchState } from '@diffx/core';
 
-setDiffxOptions({
-	devtools: true,
-	includeStackTrace: true,
-	maxNestingDepth: 100
+export const clickCounter = createState('click counter', { count: 0 });
+export const users = createState('users', {
+	isFetching: false,
+	names: [] as string[],
+	fetchErrorMessage: ''
 });
 
-// setup communication bridge
-diffxInternals.addDiffListener((diff, commit) => {
-	window.postMessage({ type: 'diffx_diff', diff: JSON.parse(JSON.stringify(diff)), commit }, window.location.origin);
-});
-
-window.addEventListener('message', evt => {
-	if (evt.data.isSpammerResponse) {
-		return;
-	}
-	if (evt.data.func) {
-		// @ts-ignore
-		let result = diffxInternals[evt.data.func](evt.data.payload);
-		if (evt.data.id) {
-			window.postMessage({
-				id: evt.data.id,
-				payload: result,
-				isSpammerResponse: true
-			}, window.location.origin);
-		}
-	}
-});
-
-const clickCounter = createState('click counter', { count: 0 });
-const users = createState('users', { names: [] as string[] });
+setState('increment the counter', () => clickCounter.count++);
 
 setState('Change the counter and add a user', () => {
 	clickCounter.count++;
@@ -39,31 +18,57 @@ setState('Change the counter and add a user', () => {
 	users.names.push('John');
 })
 
-export const usersStatus = createState('users-status', {
-	isFetching: false,
-	names: [] as string[],
-	fetchErrorMessage: ''
-});
+const addUser = (name: string) => setState('add user', () => users.names.push('John'));
+const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
+
+setState('Change the counter and add a user', () => {
+	incrementCounter();
+	if (clickCounter.count > 2) {
+		clickCounter.count = 200;
+	}
+	addUser('John');
+})
 
 setState(
-	'fetch and update usersStatus',
+	'fetch and update users',
 	() => {
 		// set state before the async work begins
-		usersStatus.fetchErrorMessage = '';
-		usersStatus.names = [];
-		usersStatus.isFetching = true;
+		users.fetchErrorMessage = '';
+		users.names = [];
+		users.isFetching = true;
 		// return the async work
-		return Promise.resolve(['John', 'Jenny']);
+		return Promise.resolve('Jeremy');
 	},
 	result => {
 		// the async work succeeded
-		usersStatus.names = result;
-		usersStatus.isFetching = false;
+		users.names.push(result);
+		users.isFetching = false;
 	},
 	(error: Error) => {
 		// the async work failed
-		usersStatus.fetchErrorMessage = error.message;
-		usersStatus.isFetching = false;
+		users.fetchErrorMessage = error.message;
+		users.isFetching = false;
+	}
+);
+setState(
+	'fetch and update users, but fail the request',
+	() => {
+		// set state before the async work begins
+		users.fetchErrorMessage = '';
+		users.names = [];
+		users.isFetching = true;
+		// return the async work
+		return Promise.reject(new Error('Failed to get users'));
+	},
+	result => {
+		// the async work succeeded
+		users.names.push(result);
+		users.isFetching = false;
+	},
+	(error: Error) => {
+		// the async work failed
+		users.fetchErrorMessage = error.message;
+		users.isFetching = false;
 	}
 );
 
@@ -76,6 +81,9 @@ watchState(
 		});
 	}
 );
-for (let i = 0; i < 4; i++) {
-	setState(`Increment the counter to ${clickCounter.count + 1}`, () => clickCounter.count++);
+
+for (let i = 0; i < 8; i++) {
+	setState(`increment counter to ${i + 1}`, () => {
+		clickCounter.count = i + 1;
+	})
 }

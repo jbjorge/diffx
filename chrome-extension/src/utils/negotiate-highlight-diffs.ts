@@ -1,7 +1,8 @@
 import { DiffEntry } from "@diffx/core/dist/internals";
 import jsonClone from './jsonClone';
+import { DecoratedDiffEntryType } from './decorated-diff-entry-type';
 
-export function negotiateHighlightDiffs(diffs: DiffEntry[], ids: string[]) {
+export function negotiateHighlightDiffs(diffs: DiffEntry[], ids: string[]): DecoratedDiffEntryType[] {
 	return diffs
 		.map(diff => {
 			let diffCopy = jsonClone(diff);

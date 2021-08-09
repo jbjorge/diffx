@@ -4,12 +4,13 @@ import randomColor from 'randomcolor';
 import { DiffEntry } from '@diffx/core/dist/internals';
 import { leftpad } from '../utils/leftpad';
 import { diffIdToPathMap, getDiffById, getDiffByPath } from '../utils/diff-indexer';
+import { DecoratedDiffEntryType } from '../utils/decorated-diff-entry-type';
 
 export default defineComponent({
 	name: 'SidebarEntry',
 	props: {
 		diffEntry: {
-			type: Object as PropType<DiffEntry>,
+			type: Object as PropType<DecoratedDiffEntryType>,
 			required: true
 		},
 		nestingLevel: {

@@ -9,6 +9,7 @@ import FilterInput from './components/Filter-Input.vue';
 import { getStateAtPath } from './utils/get-state-at-path';
 import { currentState, diffIdToPathMap, diffs, getDiffsByValuePath, latestState } from './utils/diff-indexer';
 import { negotiateHighlightDiffs } from './utils/negotiate-highlight-diffs';
+import { DecoratedDiffEntryType } from './utils/decorated-diff-entry-type';
 import IFuseOptions = Fuse.IFuseOptions;
 
 const {
@@ -99,13 +100,12 @@ export default {
 				return diffs.value.filter(diff => diffNamespaces.includes(diff.id));
 			}
 
-			const decoratedDiffs = diffs.value.map((diff, i) => ({
+			const decoratedDiffs: DecoratedDiffEntryType[] = diffs.value.map(diff => ({
 				...diff,
 				diffReasons: flattenReasons(diff),
 				diffKeys: flattenDiffKeys(diff),
 				asyncIds: flattenAsyncIds(diff),
-				watcherIds: flattenWatcherIds(diff),
-				realIndex: i
+				watcherIds: flattenWatcherIds(diff)
 			}));
 			const options: IFuseOptions<any> = {
 				findAllMatches: true,
