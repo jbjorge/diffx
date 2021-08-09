@@ -1,101 +1,152 @@
-# @diffx/rxjs <!-- replaceLine:Diffx -->
+<!-- replaceLine:# Diffx -->
+# @diffx/rxjs
+<!-- end -->
 
-### Watch state for changes <!-- replaceSection:Watch state for changes -->
+<!-- replaceSection:### watchState() -->
+
+### watchState()
+
+`watchState(stateGetter)` is used for watching the state and being notified/reacting when it changes.
+
+* `stateGetter` - a function which returns the state(s) to be watched
+
+`watchState` is useful when creating "background services" that watches the state and reacts when it changes.
+
 ```javascript
-const observable = watchState(() => state.meat);
+import { watchState } from '@diffx/rxjs';
+import { clickCounter } from './createState-example-above';
+
+watchState(() => clickCounter.count); // --> observable
 ```
 
-### `setStateAsync` <!-- replaceSection:`setStateAsync` -->
-`setStateAsync(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes
-to the state (and enhances tracking of async state in Diffx devtools).
+<details>
+    <summary><strong>watchState in-depth documentation</strong></summary>
+
+```javascript
+import { watchState } from '@diffx/rxjs';
+import { clickCounter } from './createState-example-above';
+
+const observable = watchState(() => clickCounter.count, {
+    /**
+     * Whether to start with emitting the current value of the watched item(s).
+     *
+     * Default: `false`
+     */
+    emitInitialValue: true / false,
+    /**
+     * Whether to emit each change to the state during .setState (eachValueUpdate),
+     * the current state after each .setState and .setState nested within it (eachSetState),
+     * or to only emit the final state after the outer .setState function has finished running (setStateDone).
+     *
+     * Default: `setStateDone`
+     */
+    emitOn: 'eachSetState' | 'setStateDone' | 'eachValueUpdate',
+    /**
+     * Custom comparer function to decide if the state has changed.
+     * Receives newValue and oldValue as arguments and should return `true` for changed
+     * and `false` for no change.
+     *
+     * Default: Diffx built in comparer
+     */
+    hasChangedComparer: (newValue, oldValue) => true / false
+});
+```
+
+The `watchState()` function can also watch projections of state or multiple states
+
+Projection of state:
+
+```javascript
+import { watchState } from '@diffx/core';
+import { clickCounter } from './createState-example-above';
+
+watchState(() => clickCounter.count > 5)
+  .subscribe(isGreaterThanFive => {
+  	console.log(isGreaterThanFive); // --> true/false
+  });
+```
+
+Multiple states (which is actually just a projection of state):
+
+```javascript
+import { watchState } from '@diffx/core';
+import { clickCounter, users } from './createState-in-depth-docs';
+
+watchState(() => [clickCounter.count, users.names])
+  .subscribe(([count, names]) => {
+  	console.log(count) // --> number
+  });
+```
+
+If a watcher changes state, this will also be tracked in the devtools:
+
+```javascript
+import { watchState, setState } from '@diffx/core';
+import { clickCounter, users } from './createState-in-depth-docs';
+
+watchState(() => clickCounter.count)
+    .pipe(
+    	filter(count => count === 5),
+        take(1)
+    )
+    .subscribe(countIsFive => {
+        if (!countIsFive) return;
+        setState('counter has the value 5, so I added another user', () => {
+            users.names.push('Jenny');
+        });
+    });
+```
+
+</details>
+
+<!-- end -->
+
+<!-- replaceSection:### Async setState() -->
+### Async setState()
+
+`setState(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and enhances
+tracking of async state in Diffx devtools).
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
-
-* `asyncMutatorFunc` - a function that does async work (and returns an `Observable`).
-
+* `asyncMutatorFunc` - a function that is free to change the state, and returns a rxjs `Observable`.
 * `onDone` - a function that receives the result of `asyncMutatorFunc` as an argument, and is free to change the state.
-
 * `onError` - a function that receives the error from `asyncMutatorFunc` as an argument, and is free to change the
   state.
 
 ```javascript
-import { createState, setState } from '@diffx/rxjs';
-import { servings } from './the-above-example';
-import { orderFoodAsync } from './some-file';
+import { createState, setState } from '@diffx/core';
+import { fetchUsersFromServer } from './some-file';
 
-export const orderState = createState('upload info', {
-    isOrdering: false,
-    successfulOrders: 0,
-    errorMessage: ''
-})
-
-export function uploadGuests() {
-    setStateAsync(
-        'order food',
-        () => {
-            // set state before the async work begins
-            orderState.errorMessage = '';
-            orderState.successfulOrders = 0;
-            orderState.isOrdering = true;
-            // return the async work
-            return orderFood(servings.count);
-        },
-        result => {
-            // the async work succeeded
-            orderState.isOrdering = false;
-            orderState.successfulOrders = result;
-        },
-        error => {
-            // the async work failed
-            orderState.isOrdering = false;
-            orderState.successfulOrders = 0;
-            orderState.errorMessage = error.message;
-        }
-    )
-}
-```
-
-### `watchState` <!-- replaceSection:`watchState` -->
-
-`watchState(stateGetter, options)` is used for creating an observable of the state or an observable projection of the state.
-
-* `stateGetter` - a function which returns the state to be watched
-* `options` - options object which describes how to watch the state
-
-```javascript
-import { watchState } from '@diffx/angular';
-import { coolnessFactor, people } from './the-above-example';
-
-const observable = watchState(() => people, {
-	/**
-	 * [Optional]
-	 * Whether to emit the current value of the watched item(s).
-	 *
-	 * Default: false
-	 */
-	lazy: false,
-
-	/**
-	 * [Optional]
-	 * Whether to emit each change to the state during `.setState` or
-	 * to only emit the final state after the `.setState` function has finished running.
-	 *
-	 * Default: false
-	 */
-	emitIntermediateChanges: false,
-
-	/**
-	 * [Optional]
-	 * Custom comparer function to decide if the state has changed.
-	 * Receives newValue and oldValue as arguments and should return `true` for changed
-	 * and `false` for no change.
-	 *
-	 * Default: Diffx does automatic change comparison
-	 */
-	hasChangedComparer: (newValue, oldValue) => 'true or false'
+export const users = createState('users-status', {
+    isFetching: false,
+    names: [],
+    fetchErrorMessage: ''
 });
 
-// stop watching
-observable.unsubscribe();
+setState(
+    'fetch and update users',
+    () => {
+        // set state before the async work begins
+        users.fetchErrorMessage = '';
+        users.names = [];
+        users.isFetching = true;
+        // return the async work
+        return fetchUsersFromServer();
+    },
+    result => {
+        // the async work succeeded
+        users.names = result;
+        users.isFetching = false;
+    },
+    error => {
+        // the async work failed
+        users.fetchErrorMessage = error.message;
+        users.isFetching = false;
+    }
+);
 ```
+
+</details>
+
+<!-- end -->
