@@ -1,39 +1,52 @@
-import { setState as coreSetState, watchState as coreWatchState } from '@diffx/core';
 import { WatchOptions as coreWatchOptions } from '@diffx/core/dist/watch-options';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import clone from './clone';
 import { WatchOptions } from './watch-options';
 import { take } from 'rxjs/operators';
+import {
+	setState as coreSetState,
+	watchState as coreWatchState
+} from '@diffx/core';
 
-export { createState, setDiffxOptions, destroyState, diffxInternals, setState } from '@diffx/core';
+export { createState, setDiffxOptions, destroyState, diffxInternals } from '@diffx/core';
 
 /**
- * Set state in diffx asynchronously.
+ * Set state in diffx synchronously
  * @param reason The reason why the state changed
- * @param asyncMutatorFunc A function (that can change the state and) returns an `Observable`
- * @param onDone A mutatorFunc for when the asyncMutatorFunc has finished successfully.
- * @param onError A mutatorFunc for when the asyncMutatorFunc has encountered an error.
+ * @param mutatorFunc A function that changes the state
  */
-export function setStateAsync<ResolvedType, ErrorType = any>(
+export function setState<ResolvedType>(reason: string, mutatorFunc: () => ResolvedType);
+/**
+ * Set state in diffx
+ * @param reason The reason why the state changed
+ * @param mutatorFunc A function (that can change the state and) returns an `Observable`
+ * @param onDone Callback for when the observable returned from the mutatorFunc completes
+ * @param onError Callback for when the observable returned from the mutatorFunc throws an error
+ */
+export function setState<ResolvedType, ErrorType = any>(
 	reason: string,
-	asyncMutatorFunc: () => Observable<ResolvedType>,
-	onDone: (result: ResolvedType) => void,
+	mutatorFunc: () => Observable<ResolvedType>,
+	onDone?: (result: ResolvedType) => void,
 	onError?: (error: ErrorType) => void
 ) {
-	coreSetState(
-		reason,
-		() => new Promise((resolve, reject) => {
-			asyncMutatorFunc()
-				.pipe(take(1))
-				.subscribe({
-					next(value) { resolve(value) },
-					error(err) { reject(err as ErrorType) },
-					complete() {}
-				});
-		}),
-		onDone,
-		onError
-	);
+	if (onDone) {
+		coreSetState(
+			reason,
+			() => new Promise((resolve, reject) => {
+				(mutatorFunc() as Observable<ResolvedType>)
+					.pipe(take(1))
+					.subscribe({
+						next(value) { resolve(value) },
+						error(err) { reject(err as ErrorType) },
+						complete() {}
+					});
+			}),
+			onDone,
+			onError
+		);
+	} else {
+		coreSetState(reason, mutatorFunc);
+	}
 }
 
 /**

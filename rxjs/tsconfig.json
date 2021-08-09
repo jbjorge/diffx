@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-
-    "target": "ES5",
+    "esModuleInterop": true,
+    "target": "ES6",
     "sourceMap": true,
     "downlevelIteration": true,
     "moduleResolution": "node",
-    "module": "ES2020",
+    "module": "ESNext",
     "declaration": true,
     "declarationDir": "dist",
     "rootDir": "src",
@@ -13,8 +13,7 @@
       "dom",
       "esnext",
       "scripthost"
-    ],
-    "outDir": "dist"
+    ]
   },
   "exclude": [
     "node_modules",
