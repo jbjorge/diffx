@@ -33,6 +33,7 @@ Diffx is a state management library that focuses on three things:
 
 * [React](https://reactjs.org/) --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)
 * [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)
+* [Svelte](https://svelte.dev/) --> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)
 * [Angular](https://angular.io/) --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)
 * [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)
 * No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
