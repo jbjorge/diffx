@@ -29,9 +29,11 @@ Diffx is a state management library that focuses on three things:
 
 ## Supported frameworks
 
-* React --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)
-* Vue.js --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)
-* Svelte --> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)
-* Angular --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)
-* RxJS --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)
-* No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
+| Documentation | npm |
+| ------------- |:-------------:|
+| [React](https://github.com/jbjorge/diffx/tree/master/react) | [@diffx/react](https://npmjs.org/package/@diffx/react) |
+| [Vue.js](https://github.com/jbjorge/diffx/tree/master/vue) | [@diffx/vue](https://npmjs.org/package/@diffx/vue) |
+| [Svelte](https://github.com/jbjorge/diffx/tree/master/svelte) | [@diffx/svelte](https://npmjs.org/package/@diffx/svelte) |
+| [Angular](https://github.com/jbjorge/diffx/tree/master/angular) | [@diffx/angular](https://npmjs.org/package/@diffx/angular) |
+| [RxJS](https://github.com/jbjorge/diffx/tree/master/rxjs) | [@diffx/rxjs](https://npmjs.org/package/@diffx/rxjs) |
+| [No framework](https://github.com/jbjorge/diffx/tree/master/core) | [@diffx/core](https://npmjs.org/package/@diffx/core) |
