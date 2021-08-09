@@ -1,0 +1,34 @@
+{
+  "name": "@diffx/svelte",
+  "version": "2.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "rm -rf ./dist/* && tsc --build tsconfig.json && npm run generate-readme",
+    "generate-readme": "npm run generate-readme ./svelte/readme-template.md --prefix ../",
+    "prepublishOnly": "npm run build",
+    "ci-build": "tsc --build tsconfig.json --watch"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbjorge/diffx.git"
+  },
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jbjorge/diffx/issues"
+  },
+  "homepage": "https://github.com/jbjorge/diffx#readme",
+  "dependencies": {
+    "@diffx/core": "^2.0.0",
+    "@vue/reactivity": "^3.0.2"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}

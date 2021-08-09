@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "module": "ES2020",
+    "declaration": true,
+    "declarationDir": "dist",
+    "rootDir": "src",
+    "lib": [
+      "dom",
+      "esnext",
+      "scripthost"
+    ],
+    "outDir": "dist"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}
