@@ -5,7 +5,6 @@ export {
 	setDiffxOptions,
 	createState,
 	setState,
-	setStateAsync,
 	watchState,
 	destroyState,
 	diffxInternals
