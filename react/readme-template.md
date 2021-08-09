@@ -1,27 +1,94 @@
-# @diffx/react <!-- replaceLine:Diffx -->
+<!-- replaceLine:# Diffx -->
 
-### Watch state for changes <!-- replaceSection:Watch state for changes -->
-```javascript
-const fishCount = useDiffx(() => dinnerOptions.fish);
-```
+# @diffx/react
 
-### `useDiffx` <!-- append:`createState` -->
+<!-- end -->
 
-`useDiffx(getterFunc)` is a React hook that enables reading the state in Diffx.
+<!-- prependSection:### watchState() -->
+
+### useDiffx() react hook
+
+`useDiffx(getterFunc)` is a React hook that enables reading the state in Diffx and re-rendering when it changes.
 
 * `getterFunc` - a function that returns state or a projection of state.
 
-```javascript
-import { servings } from './the-above-example';
-import { useDiffx } from '@diffx/react';
+```jsx
+import { setState, useDiffx } from '@diffx/react';
+import { clickCounter } from './createState-example-above';
 
 export default function App() {
-    const dinnerServingsCount = useDiffx(() => servings.count);
+    const count = useDiffx(() => counterState.count);
+
+    function incrementCounter() {
+        setState('Increment counter', () => counterState.count++);
+    }
 
     return (
         <div>
-            <div>Current servings count: {dinnerServingsCount}</div>
+            <div>Current click count: {count}</div>
+            <button onClick={incrementCounter}>Increment to {count + 1}</button>
         </div>
     );
 }
+
 ```
+
+<details>
+  <summary><strong>useDiffx in-depth documentation</strong></summary>
+
+`useDiffx(getterFunc, options)` is a React hook that enables reading the state in Diffx and re-rendering when it
+changes.
+
+* `getterFunc` - a function that returns state or a projection of state.
+* `options` - an options object describing how the state should be watched
+
+```jsx
+import { setState, useDiffx } from '@diffx/react';
+import { clickCounter } from './createState-example-above';
+
+export default function App() {
+    const count = useDiffx(
+        () => counterState.count,
+        {
+            /**
+             * Whether to start with emitting the current value of the getter.
+             *
+             * Default: `true`
+             */
+            emitInitialValue: true,
+            /**
+             * Whether to emit each change to the state during .setState (eachValueUpdate),
+             * the current state after each .setState and .setState nested within it (eachSetState),
+             * or to only emit the final state after the outer .setState function has finished running (setStateDone).
+             *
+             * This can be used to optimize rendering if there e.g. is a need to render every value as it updates in Diffx.
+             *
+             * Default: `setStateDone`
+             */
+            emitOn: 'eachSetState' | 'setStateDone' | 'eachValueUpdate',
+            /**
+             * Custom comparer function to decide if the state has changed.
+             * Receives newValue and oldValue as arguments and should return `true` for changed
+             * and `false` for no change.
+             */
+            hasChangedComparer: (newValue, oldValue) => true / false
+        }
+    );
+
+    function incrementCounter() {
+        setState('Increment counter', () => counterState.count++);
+    }
+
+    return (
+        <div>
+            <div>Current click count: {count}</div>
+            <button onClick={incrementCounter}>Increment to {count + 1}</button>
+        </div>
+    );
+}
+
+```
+
+</details>
+
+<!-- end -->
