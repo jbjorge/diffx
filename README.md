@@ -29,11 +29,32 @@ Diffx is a state management library that focuses on three things:
 
 ## Supported frameworks
 
-| Documentation | npm |
-| ------------- |:-------------:|
-| [React](https://github.com/jbjorge/diffx/tree/master/react) | [@diffx/react](https://npmjs.org/package/@diffx/react) |
-| [Vue.js](https://github.com/jbjorge/diffx/tree/master/vue) | [@diffx/vue](https://npmjs.org/package/@diffx/vue) |
-| [Svelte](https://github.com/jbjorge/diffx/tree/master/svelte) | [@diffx/svelte](https://npmjs.org/package/@diffx/svelte) |
-| [Angular](https://github.com/jbjorge/diffx/tree/master/angular) | [@diffx/angular](https://npmjs.org/package/@diffx/angular) |
-| [RxJS](https://github.com/jbjorge/diffx/tree/master/rxjs) | [@diffx/rxjs](https://npmjs.org/package/@diffx/rxjs) |
-| [No framework](https://github.com/jbjorge/diffx/tree/master/core) | [@diffx/core](https://npmjs.org/package/@diffx/core) |
+### ![React logo](assets/framework-logos/react.png) React
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/react)
+* [npm package](https://npmjs.org/package/@diffx/react)
+
+### ![Vue logo](assets/framework-logos/vue.png) Vue.js
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/vue)
+* [npm package](https://npmjs.org/package/@diffx/vue)
+
+### ![Svelte logo](assets/framework-logos/svelte.png) Svelte
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/svelte)
+* [npm package](https://npmjs.org/package/@diffx/svelte)
+
+### ![Angular logo](assets/framework-logos/angular.png) Angular
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/angular)
+* [npm package](https://npmjs.org/package/@diffx/angular)
+
+### ![RxJS logo](assets/framework-logos/rxjs.png) RxJS
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/rxjs)
+* [npm package](https://npmjs.org/package/@diffx/rxjs)
+
+### No framework
+
+* [documentation](https://github.com/jbjorge/diffx/tree/master/core)
+* [npm package](https://npmjs.org/package/@diffx/core)
