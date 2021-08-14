@@ -1,3 +1,3 @@
-<!-- replaceLine:# Diffx -->
+<!-- #header -->
 # @diffx/core
 <!-- end -->

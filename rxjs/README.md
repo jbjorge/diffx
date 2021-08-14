@@ -27,14 +27,22 @@ Diffx is a state management library that focuses on three things:
 
 </details>
 
+
+
 ## Supported frameworks
 
-* [React](https://reactjs.org/) --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)
-* [Vue.js](https://vuejs.org/) --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)
-* [Svelte](https://svelte.dev/) --> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)
-* [Angular](https://angular.io/) --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)
-* [RxJS](https://rxjs.dev/) --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)
-* No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
+![react logo](../assets/framework-logos/react.png) React
+--> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)  
+![vue logo](../assets/framework-logos/vue.png) Vue.js
+--> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)  
+![svelte logo](../assets/framework-logos/svelte.png) Svelte
+--> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)  
+![angular logo](../assets/framework-logos/angular.png) Angular
+--> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)  
+![rxjs logo](../assets/framework-logos/rxjs.png) RxJS
+--> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)  
+No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
+
 
 ## Installation
 
@@ -46,12 +54,16 @@ And install
 the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 for a better development experience ([view documentation](#devtools-browser-extension)).
 
+
+
 ## Usage
+
+
 
 ### setDiffxOptions()
 
-`setDiffxOptions(options)` is used to configure which global features to enable for Diffx, and should ideally be run
-before any code interacts with Diffx.
+`setDiffxOptions(options)` is optionally used to configure which global features to enable for Diffx, and should ideally
+be run before any code interacts with Diffx.
 
 * `options` - an options object that configures how Diffx works internally
 
@@ -61,19 +73,14 @@ import { setDiffxOptions } from '@diffx/rxjs';
 setDiffxOptions({ devtools: true });
 ```
 
+
+
+
 <details>
-    <summary><strong>setDiffxOptions in-depth documentation</strong></summary>
+    <summary><strong>See all available options</strong></summary>
 
 ```javascript
-import { setDiffxOptions } from '@diffx/rxjs';
-
-setDiffxOptions({
-    /**
-     * Whether to record all diffs of the state in-memory.
-     *
-     * Default: false
-     **/
-    createDiffs: boolean,
+const opts = {
     /**
      * Enable viewing the state history in devtools.
      * Not recommended for use in a production environment.
@@ -81,7 +88,7 @@ setDiffxOptions({
      *
      * Default: false
      */
-    devtools: boolean,
+    devtools: false,
     /**
      * Store a stack-trace with every diff if `createDiffs` is enabled.
      * Will be displayed in devtools to help with tracking down
@@ -91,20 +98,26 @@ setDiffxOptions({
      *
      * Default: false
      */
-    includeStackTrace: boolean,
+    includeStackTrace: false,
     /**
      * Persist the latest snapshot of all states and automatically use that as the initial state
      *
      * Default: false
      */
-    persistent: boolean,
+    persistent: false,
     /**
      * Location for storing persistent state.
      * E.g. localStorage or sessionStorage
      *
      * Default: null
      */
-    persistenceLocation: PersistenceLocation,
+    persistenceLocation: null,
+    /**
+     * Whether to record all diffs of the state in-memory.
+     *
+     * Default: false
+     **/
+    createDiffs: false,
     /**
      * Max nesting depth.
      *
@@ -113,11 +126,14 @@ setDiffxOptions({
      *
      * Default: 100
      */
-    maxNestingDepth: number
-})
+    maxNestingDepth: 100
+}
 ```
 
 </details>
+
+
+
 
 ### createState()
 
@@ -134,8 +150,12 @@ const clickCounter = createState('click counter', { count: 0 });
 console.log(clickCounter.count); // --> 0
 ```
 
+You can create as many states as you like and access them as regular objects to read their values.
+
+
+
 <details>
-    <summary><strong>createState in-depth documentation</strong></summary>
+    <summary><strong>Configure persistence</strong></summary>
 
 `createState(namespace, state, options)`
 
@@ -152,23 +172,28 @@ console.log(clickCounter.count); // --> 0
       Default: `false`
 
 ```javascript
-import { createState } from '@diffx/rxjs';
+import { setDiffxOptions, createState } from '@diffx/rxjs';
 
+// globally enabling persistence
+setDiffxOptions({
+    persistent: true,
+    persistenceLocation: sessionStorage
+})
+
+// this state is not persisted
+export const loadingState = createState('loading state', { isLoading: false }, { persistent: false });
+
+// this state is persisted in accordance with settings in `setDiffxOptions`
 export const clickCounter = createState('click counter', { count: 0 });
-export const users = createState('users', { names: [] });
-```
 
-You can create as many states as you like and access them as regular objects to read their values.
-
-*If their value is changed without using [setState()](#setstate), Diffx will throw an error.*
-
-```javascript
-import { clickCounter } from './example-above';
-
-clickCounter.count = 5; // this will throw an error
+// this state is persisted in localStorage instead of the globally defined persistenceLocation
+export const users = createState('users', { names: [] }, { persistenceLocation: localStorage });
 ```
 
 </details>
+
+
+
 
 ### setState()
 
@@ -185,18 +210,14 @@ import { clickCounter } from './createState-example-above';
 setState('increment the counter', () => clickCounter.count++);
 ```
 
+
+
+
 <details>
-    <summary><strong>setState in-depth documentation</strong></summary>
+    <summary><strong>Synchronous usage</strong></summary>
 
-### Synchronous setState()
-
-`setState(reason, mutatorFunc)` is used to make changes to the state.
-
-* `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
-  debugging.
-* `mutatorFunc` - a function that wraps all changes to the state.
-
-Since Diffx is proxy-based, it will keep track of both mutations and reassignment of values:
+Since Diffx is proxy-based, it will keep track of anything happening within `setState()`.  
+Multiple states can be changed within one `setState()`:
 
 ```javascript
 import { setState } from '@diffx/rxjs';
@@ -211,43 +232,11 @@ setState('Change the counter and add a user', () => {
 })
 ```
 
-##### Can I change the state directly instead of using `setState()`?
+</details>
 
-Diffx enforces the use of `setState(reason, mutatorFunc)` for making any changes to the state.  
-By having the freedom to change state from *anywhere* in the codebase, state can quickly get out of control and be
-difficult to debug if there is no human-readable reasoning behind why a change was made. That's why you're forced to
-use setState and provide a `reason`.
 
-_Any changes made to the state outside of `setState()` will throw an error._
-
-```javascript
-import { clickCounter } from './createState-example-above';
-
-clickCounter.count++; // this will throw an error
-```
-
-### Using setState() inside setState()
-
-Diffx supports and encourages nesting/wrapping which enables reuse of `setState`.
-
-```javascript
-import { setState } from '@diffx/rxjs';
-
-import { clickCounter, users } from './createState-in-depth-docs';
-
-const addUser = (name) => setState('add user', () => users.names.push('John'));
-const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
-
-setState('Change the counter and add a user', () => {
-    incrementCounter();
-    if (clickCounter.count > 2) {
-        clickCounter.count = 200;
-    }
-    addUser('John');
-})
-```
-
-### Async setState()
+<details>
+    <summary><strong>Asynchronous usage</strong></summary>
 
 `setState(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and enhances
 tracking of async state in Diffx devtools).
@@ -294,6 +283,84 @@ setState(
 
 </details>
 
+
+
+<details>
+    <summary><strong>Nesting setState() inside setState()</strong></summary>
+
+Diffx supports and encourages nesting/wrapping which enables reuse of `setState` and enhances tracking in devtools.
+
+```javascript
+import { setState } from '@diffx/rxjs';
+
+import { clickCounter, users } from './createState-in-depth-docs';
+
+const addUser = (name) => setState('add user', () => users.names.push('John'));
+const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
+
+setState('Change the counter and add a user', () => {
+    incrementCounter();
+    if (clickCounter.count > 2) {
+        clickCounter.count = 200;
+    }
+    addUser('John');
+})
+```
+
+This also opens up the possibility to give more context as to why changes happened:
+
+```javascript
+// in file 1
+export const addUser = (name) => setState('add user', () => users.names.push('John'));
+export const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
+
+// in file 2
+export const addUserClicked = () => {
+    setState('Change the counter and add a user', () => {
+        incrementCounter();
+        if (clickCounter.count > 2) {
+            clickCounter.count = 200;
+        }
+        addUser('John');
+    });
+};
+
+// in userComponent we wrap the change with some helpful context
+setState('userComponent is adding a user', addUserClicked);
+```
+
+This will also enable the devtools to [visualise the hierarchy of changes](#nested-setstate) and make the flow of
+changes more understandable.
+
+</details>
+
+
+
+<details>
+    <summary><strong>Why not directly modify the state?</strong></summary>
+
+By having the freedom to change state from *anywhere* in the codebase, state can quickly get out of control and be
+difficult to debug if there is no human-readable reasoning behind why a change was made.  
+To ensure that the usage experience stays developer friendly, easy to debug, and help with identifying which code needs
+refactoring, Diffx enforces the use of `setState` since it groups changes and allows the developer to specify a `reason`
+for the changes.
+
+_Any changes made to the state outside of `setState()` will throw an error._
+
+```javascript
+import { clickCounter } from './createState-example-above';
+
+clickCounter.count++; // this will throw an error
+```
+
+</details>
+
+
+
+
+
+
+
 ### watchState()
 
 `watchState(stateGetter)` is used for watching the state and being notified/reacting when it changes.
@@ -309,8 +376,14 @@ import { clickCounter } from './createState-example-above';
 watchState(() => clickCounter.count); // --> observable
 ```
 
+
+
+
+
 <details>
-    <summary><strong>watchState in-depth documentation</strong></summary>
+    <summary><strong>Controlling how state is watched</strong></summary>
+
+To have fine-grained control over how the state is watched, an options object can be provided as the second argument.
 
 ```javascript
 import { watchState } from '@diffx/rxjs';
@@ -342,7 +415,10 @@ const observable = watchState(() => clickCounter.count, {
 });
 ```
 
-The `watchState()` function can also watch projections of state or multiple states
+</details>
+
+<details>
+    <summary><strong>Watching projections</strong></summary>
 
 Projection of state:
 
@@ -355,8 +431,11 @@ watchState(() => clickCounter.count > 5)
   	console.log(isGreaterThanFive); // --> true/false
   });
 ```
+</details>
 
-Multiple states (which is actually just a projection of state):
+
+<details>
+    <summary><strong>Watching multiple states</strong></summary>
 
 ```javascript
 import { watchState } from '@diffx/rxjs';
@@ -367,8 +446,10 @@ watchState(() => [clickCounter.count, users.names])
   	console.log(count) // --> number
   });
 ```
+</details>
 
-If a watcher changes state, this will also be tracked in the devtools:
+<details>
+    <summary><strong>Using setState() inside watchState()</strong></summary>
 
 ```javascript
 import { watchState, setState } from '@diffx/rxjs';
@@ -386,8 +467,9 @@ watchState(() => clickCounter.count)
         });
     });
 ```
-
 </details>
+
+
 
 ### destroyState()
 
@@ -403,9 +485,13 @@ import { destroyState } from '@diffx/rxjs';
 destroyState('click counter');
 ```
 
+
+
+
 ## Devtools browser extension
 
 [Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+and enable it with [setDiffxOptions](#setdiffxoptions).
 
 Diffx devtools is made to give insights into
 
@@ -448,7 +534,7 @@ clicked to filter the list by that state.
 
 ![State type hints](../assets/devtools-4.png)
 
-### Nested setState/setState
+### Nested setState
 
 For places where `setState()` has been used inside `setState()`, the left pane will display a nested view with colors
 used for displaying nesting depth.
@@ -457,9 +543,10 @@ used for displaying nesting depth.
 
 ### Tracing async setState
 
-For operations done with `setState()`, the left pane will display an `async` tag where the operation starts, and
+For async operations done with `setState()`, the left pane will display an `async` tag where the operation starts, and
 a `resolve`/`reject`  tag where the async operation finished.  
-These tags are highlighted with a color to make it easier to spot and are also clickable to filter by.
+These tags are highlighted with a color to make it easier to spot which operations belong together and are also
+clickable to filter by.
 
 ![setState preview](../assets/devtools-3.png)
 

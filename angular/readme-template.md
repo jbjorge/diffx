@@ -1,9 +1,8 @@
-<!-- replaceLine:# Diffx -->
+<!-- #header -->
 # @diffx/angular
 <!-- end -->
 
-<!-- prependSection:## Usage -->
-
+<!-- #before-usage -->
 ## Setup
 
 ### Fix angular change detection and the `async` pipe
@@ -20,8 +19,7 @@ import 'zone.js/dist/zone-patch-rxjs'; // <--- This thing right here
 
 <!-- end -->
 
-<!-- replaceSection:### watchState() -->
-
+<!-- #watchState() -->
 ### watchState()
 
 `watchState(stateGetter)` is used for watching the state and being notified/reacting when it changes.
@@ -36,9 +34,13 @@ import { clickCounter } from './createState-example-above';
 
 watchState(() => clickCounter.count); // --> observable
 ```
+<!-- end -->
 
+<!-- #controlling watchState -->
 <details>
-    <summary><strong>watchState in-depth documentation</strong></summary>
+    <summary><strong>Controlling how state is watched</strong></summary>
+
+To have fine-grained control over how the state is watched, an options object can be provided as the second argument.
 
 ```javascript
 import { watchState } from '@diffx/rxjs';
@@ -70,7 +72,12 @@ const observable = watchState(() => clickCounter.count, {
 });
 ```
 
-The `watchState()` function can also watch projections of state or multiple states
+</details>
+<!-- end -->
+
+<!-- #watching projections -->
+<details>
+    <summary><strong>Watching projections</strong></summary>
 
 Projection of state:
 
@@ -83,8 +90,13 @@ watchState(() => clickCounter.count > 5)
   	console.log(isGreaterThanFive); // --> true/false
   });
 ```
+</details>
 
-Multiple states (which is actually just a projection of state):
+<!-- end -->
+
+<!-- #watching multiple states -->
+<details>
+    <summary><strong>Watching multiple states</strong></summary>
 
 ```javascript
 import { watchState } from '@diffx/core';
@@ -95,8 +107,12 @@ watchState(() => [clickCounter.count, users.names])
   	console.log(count) // --> number
   });
 ```
+</details>
+<!-- end -->
 
-If a watcher changes state, this will also be tracked in the devtools:
+<!-- #Using setState() inside watchState() -->
+<details>
+    <summary><strong>Using setState() inside watchState()</strong></summary>
 
 ```javascript
 import { watchState, setState } from '@diffx/core';
@@ -114,13 +130,12 @@ watchState(() => clickCounter.count)
         });
     });
 ```
-
 </details>
-
 <!-- end -->
 
-<!-- replaceSection:### Async setState() -->
-### Async setState()
+<!-- #Asynchronous usage -->
+<details>
+    <summary><strong>Asynchronous usage</strong></summary>
 
 `setState(reason, asyncMutatorFunc, onDone [, onError])` is used to make asynchronous changes to the state (and enhances
 tracking of async state in Diffx devtools).
@@ -169,8 +184,7 @@ setState(
 
 <!-- end -->
 
-<!-- append:## Usage -->
-
+<!-- #after-usage -->
 ### @UseWatchers()
 
 `@UseWatchers(...watcher)` is a decorator that can be used to automatically subscribe to a watcher when a component is instantiated. Accepts one
