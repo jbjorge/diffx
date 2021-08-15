@@ -57,7 +57,7 @@ for a better development experience ([view documentation](#devtools-browser-exte
 Or use it as a browser import
 
 ```html
-<script src="https://unpkg.com/@diffx/core@2.0.1/dist/diffx.umd.min.js"></script>
+<script src="https://unpkg.com/@diffx/core@2.0.2/dist/diffx.umd.min.js"></script>
 ```
 
 The api will be accessible through `window.diffx`.
