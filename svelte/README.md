@@ -58,6 +58,9 @@ for a better development experience ([view documentation](#devtools-browser-exte
 
 
 
+
+
+
 ## Usage
 
 
@@ -607,6 +610,10 @@ import { destroyState } from '@diffx/svelte';
 
 destroyState('click counter');
 ```
+
+
+
+
 
 
 

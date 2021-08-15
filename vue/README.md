@@ -28,11 +28,13 @@ Diffx is a state management library that focuses on three things:
 </details>
 
 
+
 ## Supported frameworks
 
 ![react logo](../assets/framework-logos/react.png) React
 --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)  
-![vue logo](../assets/framework-logos/vue.png) Vue.js --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)  
+![vue logo](../assets/framework-logos/vue.png) Vue.js
+--> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)  
 ![svelte logo](../assets/framework-logos/svelte.png) Svelte
 --> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)  
 ![angular logo](../assets/framework-logos/angular.png) Angular
@@ -53,7 +55,12 @@ the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx
 for a better development experience ([view documentation](#devtools-browser-extension)).
 
 
+
+
+
+
 ## Usage
+
 
 
 ### setDiffxOptions()
@@ -68,6 +75,7 @@ import { setDiffxOptions } from '@diffx/vue';
 
 setDiffxOptions({ devtools: true });
 ```
+
 
 
 
@@ -126,6 +134,7 @@ const opts = {
 ```
 
 </details>
+
 
 
 
@@ -188,6 +197,7 @@ export const users = createState('users', { names: [] }, { persistenceLocation: 
 
 
 
+
 ### setState()
 
 `setState(reason, mutatorFunc)` is used to make changes to the state.
@@ -202,6 +212,7 @@ import { clickCounter } from './createState-example-above';
 
 setState('increment the counter', () => clickCounter.count++);
 ```
+
 
 
 
@@ -334,10 +345,11 @@ changes more understandable.
 <details>
     <summary><strong>Why not directly modify the state?</strong></summary>
 
-By having the freedom to change state from *anywhere* in the codebase with `setState`, state can quickly get out of
-control and be difficult to debug if there is no human-readable reasoning behind why a change was made.  
+By having the freedom to change state from *anywhere* in the codebase, state can quickly get out of control and be
+difficult to debug if there is no human-readable reasoning behind why a change was made.  
 To ensure that the usage experience stays developer friendly, easy to debug, and help with identifying which code needs
-refactoring, Diffx enforces the use of `setState` since it requires being provided with a `reason` for the changes.
+refactoring, Diffx enforces the use of `setState` since it groups changes and allows the developer to specify a `reason`
+for the changes.
 
 _Any changes made to the state outside of `setState()` will throw an error._
 
@@ -348,6 +360,11 @@ clickCounter.count++; // this will throw an error
 ```
 
 </details>
+
+
+
+
+
 
 
 
@@ -381,6 +398,7 @@ const unwatchFunc = watchState(
 // stop watching
 unwatchFunc();
 ```
+
 
 
 <details id="watchstate-vs-watch-watchEffect">
@@ -508,6 +526,7 @@ watchState(
 
 
 
+
 ### destroyState()
 
 `destroyState(namespace)` is used for removing state from diffx.
@@ -524,9 +543,15 @@ destroyState('click counter');
 
 
 
+
+
+
+
+
 ## Devtools browser extension
 
-[Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec) and enable it with [setDiffxOptions](#setdiffxoptions).
+[Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+and enable it with [setDiffxOptions](#setdiffxoptions).
 
 Diffx devtools is made to give insights into
 
@@ -580,7 +605,8 @@ used for displaying nesting depth.
 
 For async operations done with `setState()`, the left pane will display an `async` tag where the operation starts, and
 a `resolve`/`reject`  tag where the async operation finished.  
-These tags are highlighted with a color to make it easier to spot which operations belong together and are also clickable to filter by.
+These tags are highlighted with a color to make it easier to spot which operations belong together and are also
+clickable to filter by.
 
 ![setState preview](../assets/devtools-3.png)
 

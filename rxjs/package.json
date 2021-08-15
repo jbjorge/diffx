@@ -1,6 +1,6 @@
 {
   "name": "@diffx/rxjs",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
-    "@diffx/core": "^2.0.0",
+    "@diffx/core": "^2.0.1",
     "@vue/reactivity": "^3.0.2"
   },
   "peerDependencies": {
@@ -35,16 +35,16 @@
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
+    "@types/jest": "26.0",
     "@types/uuid": "^8.3.0",
+    "jest": "26.0",
     "jsondiffpatch": "^0.4.1",
     "nodemon": "^2.0.7",
     "rollup": "^2.48.0",
     "rxjs": "^7.0.1",
+    "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
     "tslib": "^2.2.0",
-    "typescript": "^4.2.4",
-    "@types/jest": "26.0",
-    "jest": "26.0",
-    "ts-jest": "^26.5.6"
+    "typescript": "^4.2.4"
   }
 }

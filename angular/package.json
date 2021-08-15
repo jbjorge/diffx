@@ -1,6 +1,6 @@
 {
   "name": "@diffx/angular",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "scripts": {
     "build": "rm -rf ./dist && rollup -c rollup.config.js && npm run generate-readme",
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
-    "@diffx/rxjs": "^2.0.1"
+    "@diffx/rxjs": "^2.0.2"
   },
   "peerDependencies": {
     "@angular/core": ">=9.0.0",
