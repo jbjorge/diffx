@@ -3,28 +3,32 @@ const { RollupOptions } = require('rollup');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const pkg = require('./package.json');
+const { terser } = require('rollup-plugin-terser');
 const replace = require('@rollup/plugin-replace');
 
 /** @type {RollupOptions} */
 export default {
 	input: 'src/index.ts',
-	external: [
-		...Object.keys(pkg.dependencies || {}),
-		...Object.keys(pkg.peerDependencies || {}),
-	],
 	output: [
 		{
-			dir: 'dist',
-			format: 'es',
+			format: 'umd',
 			exports: 'named',
-			sourcemap: true
+			name: 'diffx',
+			file: 'dist/diffx.umd.min.js',
+			plugins: [terser()]
+		},
+		{
+			format: 'umd',
+			exports: 'named',
+			name: 'diffx',
+			file: 'dist/diffx.umd.js',
 		}
 	],
 	plugins: [
 		nodeResolve({
 			browser: true
 		}),
-		rollupTypescript(),
+		rollupTypescript({ tsconfig: 'tsconfig.standalone.json' }),
 		commonjs(),
 		replace({
 			// @vue/reactivity doesn't work when run in production mode.
