@@ -54,9 +54,13 @@ And install
 the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 for a better development experience ([view documentation](#devtools-browser-extension)).
 
+Or use it as a browser import
 
+```html
+<script src="https://unpkg.com/@diffx/core@2.0.1/dist/diffx.umd.min.js"></script>
+```
 
-
+The api will be accessible through `window.diffx`.
 
 
 ## Usage

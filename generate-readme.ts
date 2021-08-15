@@ -19,12 +19,14 @@ const overrideLines = toBeMerged
 let currentPath = toBeMerged[0].split('/').slice(0, -1);
 const currentDir = currentPath.join('/');
 const currentDirName = currentDir.match(/^\.\/(\w+)/)[1];
+const dirPackageJson = JSON.parse(readFileSync(join(currentDir, 'package.json'), {encoding: 'utf-8'}));
 
 const baseTemplateLines = readFileSync('./readme-template.md', { encoding: 'utf-8' }).split('\n');
 const overrideMap = getAnchorMap(overrideLines);
 const generated = mergeReadmes(baseTemplateLines, { ...overrideMap })
 	.join('\n')
 	.replace(/'@diffx\/core'/g, `'@diffx/${currentDirName}'`)
+	.replace(/<:pkg_version:>/g, dirPackageJson.version)
 	.replace('npm install @diffx/core', `npm install @diffx/${currentDirName}`)
 	.replace(/\.\/assets/g, '../assets')
 	.replace(/<!--.*-->/g, '')
