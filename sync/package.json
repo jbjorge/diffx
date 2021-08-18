@@ -1,0 +1,45 @@
+{
+  "name": "@diffx/server-sync",
+  "version": "2.0.2",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "rm -rf ./dist/* && rollup -c rollup.config.js && npm run generate-readme && rollup -c rollup.config.standalone.js",
+    "build-standalone": "rollup -c rollup.config.standalone.js",
+    "generate-readme": "npm run generate-readme ./core/readme-template.md --prefix ../",
+    "prepublishOnly": "npm run test && npm run build",
+    "ci-build": "rollup -c rollup.config.js --watch",
+    "ci-test": "jest --verbose --watch --maxWorkers=1 --bail",
+    "test": "jest --maxWorkers=1 --bail"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbjorge/diffx.git"
+  },
+  "author": "Joachim Bjørge <jb@ground.no> (http://ground.no)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jbjorge/diffx/issues"
+  },
+  "homepage": "https://github.com/jbjorge/diffx#readme",
+  "peerDependencies": {
+    "@diffx/core": "<3.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-replace": "^3.0.0",
+    "@rollup/plugin-typescript": "^6.1.0",
+    "@types/jest": "26.0",
+    "jest": "26.0",
+    "rollup": "^2.48.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}

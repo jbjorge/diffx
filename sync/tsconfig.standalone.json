@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "ES5",
+    "sourceMap": false,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "module": "ES2015",
+    "rootDir": "src",
+    "lib": [
+      "dom",
+      "esnext",
+      "scripthost"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}
