@@ -1,4 +1,4 @@
-import { diff } from 'jsondiffpatch';
+import { diff, patch } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
@@ -174,6 +174,23 @@ export function getStateSnapshot() {
  */
 export function getDiffs() {
 	return clone(internalState.diffs);
+}
+
+/**
+ * Applies a diff to the current state
+ */
+export function applyDiff(diff: DiffEntry) {
+	internalState.isPatchingState = true;
+	try {
+		internalState.diffs.push(diff);
+		patch(rootState, diff.diff);
+		internalState.stateAccessBuffer.forEach(x => x());
+	} catch (error) {
+		internalState.isPatchingState = false;
+		internalState.diffs.pop();
+		throw error;
+	}
+	internalState.isPatchingState = false;
 }
 
 /**

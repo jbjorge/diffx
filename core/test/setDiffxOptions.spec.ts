@@ -195,6 +195,7 @@ describe('devtools', () => {
 			'unpauseState',
 			'getStateSnapshot',
 			'getDiffs',
+			'applyDiff',
 			'_deleteAllDiffs',
 		])
 	})

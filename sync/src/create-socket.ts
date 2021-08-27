@@ -1,30 +1,24 @@
+import { DtoBase } from './Dto';
+
 interface SocketsMap { [url: string]: WebSocket }
 const socketsMap: SocketsMap = {};
 
-interface ImprovedWebSocket extends WebSocket {
+export interface ImprovedWebSocket extends WebSocket {
 	send: (data: any) => void;
 }
 
-export function createSocket(url: string, onMessage: (msg: MessageEvent) => void, onConnected?: () => void): ImprovedWebSocket {
+export function createSocket(url: string, onMessage: (msg: MessageEvent) => void): ImprovedWebSocket {
 	const socket = socketsMap[url] || (socketsMap[url] = new WebSocket(url));
 
-	// improve the close function
 	const originalClose = socket.close;
 	socket.close = (code?: number, reason?: string) => {
 		socket.removeEventListener('message', onMessage);
-		if (onConnected) {
-			socket.removeEventListener('open', onConnected);
-		}
 		originalClose(code, reason);
 	}
 
 	// improve send function
 	const originalSend = socket.send;
-	socket.send = (data: any) => originalSend(negotiateSerialize(data))
-
-	if (onConnected) {
-		socket.addEventListener('open', onConnected);
-	}
+	socket.send = (data: any) => originalSend(negotiateSerialize(data));
 	socket.addEventListener('message', onMessage);
 	return socket;
 }

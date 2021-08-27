@@ -15,7 +15,7 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 		get(target, prop, receiver) {
 			// If the state is being replaced, buffer the tracking of object access
 			// so it can be run after the state is done being replaced
-			if (internalState.isReplacingState || internalState.stateModificationsPaused) {
+			if (internalState.isPatchingState || internalState.isReplacingState || internalState.stateModificationsPaused) {
 				internalState.stateAccessBuffer.push(() => track(target, trackOpGetType, prop));
 			} else {
 				track(target, trackOpGetType, prop);
@@ -42,13 +42,20 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
-			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
+			if (
+				!internalState.isDestroyingState
+				&& !internalState.isUsingSetFunction
+				&& !internalState.isCreatingState
+				&& !internalState.isReplacingState
+				&& !internalState.isPatchingState
+				&& !isMutatingArray
+			) {
 				throw new Error(stateChangedWithoutSetState);
 			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);
 			// If the state is being replaced, buffer the triggering of object setting
 			// so it can be run after the state is done being replaced
-			if (internalState.isReplacingState || internalState.stateModificationsPaused) {
+			if (internalState.isPatchingState || internalState.isReplacingState || internalState.stateModificationsPaused) {
 				internalState.stateAccessBuffer.push(() => trigger(target, triggerOpSetType, key, newValue));
 			} else {
 				trigger(target, triggerOpSetType, key, newValue);

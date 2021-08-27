@@ -1,29 +1,29 @@
 import { createState, diffxInternals } from '@diffx/core';
-import { createSocket } from './create-socket';
+import { createSocket, ImprovedWebSocket } from './create-socket';
+import { DtoBase, GetState } from './Dto';
 
 const syncedNamespaces = new Set<string>();
 
-export function createServerState<StateType extends object>(namespace: string, initialState: StateType) {
-	syncedNamespaces.add(namespace);
+interface SyncOptions {
+	url: string;
+}
+
+export function createSyncedState<StateType extends object>(namespace: string, initialState: StateType, syncOptions?: SyncOptions) {
+	startSync(namespace, syncOptions);
 	return createState(namespace, initialState);
 }
 
 export function init(url: string) {
-	if (!url.startsWith('ws://')) {
-		throw new Error('Malformed url. Needs to conform to ws://your.server.com');
-	}
 	const socket = createSocket(
 		url,
-		msg => {	},
-		() => {
-			socket.send({
-				command: 'GET',
-
-			})
-		}
+		msg => {	}
 	)
 
 	diffxInternals.addDiffListener((diff, commit) => {
 
 	}, true);
+}
+
+function startSync(namespace: string, syncOptions: SyncOptions) {
+
 }

@@ -91,6 +91,7 @@ export default {
 	stateModificationsPaused: false,
 	stateModificationsLocked: false,
 	isUsingSetFunction: false,
+	isPatchingState: false,
 	isCreatingState: false,
 	stateReplacementKey: 0,
 	stateAccessBuffer: [] as (() => void)[],

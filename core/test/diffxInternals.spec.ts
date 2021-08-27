@@ -1,12 +1,23 @@
 import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../src';
-import { addDiffListener, DiffEntry, getDiffs, removeDiffListener, replaceState, unlockState } from '../src/internals';
+import {
+	addDiffListener,
+	applyDiff,
+	DiffEntry,
+	getDiffs,
+	removeDiffListener,
+	replaceState,
+	unlockState
+} from '../src/internals';
 import { pausedStateMessage } from '../src/console-messages';
+import clone from '../src/clone';
 
 const _namespace = 'diffxInternals-test-namespace';
 let _state: { a: number, b: string };
 let _watchers: any[] = [];
 
-beforeEach(() => {
+beforeEach(reset);
+
+function reset() {
 	setDiffxOptions({
 		createDiffs: true,
 		maxNestingDepth: 100,
@@ -21,7 +32,7 @@ beforeEach(() => {
 	diffxInternals._deleteAllDiffs();
 	delete global['__DIFFX__'];
 	_state = createState(_namespace, { a: 0, b: 'hi' });
-})
+}
 
 describe('diffListener', () => {
 	test('a lazy addDiffListener should only be notified about new diffs', () => {
@@ -195,6 +206,28 @@ test('.getDiffs() should return all diffs', () => {
 
 	// check that the diffs doesn't get mutated
 	expect(diffs1.map(d => d.reason)).toStrictEqual(['@init diffxInternals-test-namespace', '@init state2 for getDiffs']);
+})
+
+describe('.applyDiff()', () => {
+	test('it should apply diffs and add it to the history', () => {
+		setState('diff 1', () => _state.b = 'diff 1');
+		const diffs = getDiffs();
+		reset();
+		applyDiff(diffs[diffs.length - 1]);
+		expect(_state.b).toEqual('diff 1');
+		const diff = clone(diffs[diffs.length - 1]);
+		delete diff.timestamp;
+		delete diff.id;
+		expect(diff).toStrictEqual({
+			diff: {
+				'diffxInternals-test-namespace': {
+					b: ['hi', 'diff 1']
+				}
+			},
+			reason: 'diff 1',
+			subDiffEntries: []
+		} as Partial<DiffEntry>);
+	})
 })
 
 test.todo('pauseState');
