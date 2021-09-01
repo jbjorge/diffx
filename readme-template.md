@@ -61,8 +61,6 @@ for a better development experience ([view documentation](#devtools-browser-exte
 
 ### Configure Diffx
 
-<blockquote>
-
 `setDiffxOptions(options)` is used to configure which global features to enable for Diffx. Should be run before any code
 interacts with Diffx.
 
@@ -134,15 +132,11 @@ setDiffxOptions({
 
 <!-- end -->
 
-</blockquote>
-
 <!-- end -->
 
 <!-- #createState() -->
 
 ### Create state
-
-<blockquote>
 
 `createState(namespace, state)` is used to create state in Diffx.
 
@@ -196,15 +190,11 @@ export const users = createState('users', { names: [] }, { persistenceLocation: 
 
 </details>
 
-</blockquote>
-
 <!-- end -->
 
 <!-- #setState() -->
 
 ### Update state
-
-<blockquote>
 
 `setState(reason, mutatorFunc)` is used to wrap changes to the state.
 
@@ -367,8 +357,6 @@ clickCounter.count++; // this will throw an error
 
 </details>
 
-</blockquote>
-
 <!-- end -->
 
 <!-- #setState().append -->
@@ -378,8 +366,6 @@ clickCounter.count++; // this will throw an error
 <!-- #watchState() -->
 
 ### Watch state
-
-<blockquote>
 
 <!-- #watchState().prepend -->
 
@@ -526,15 +512,11 @@ watchState(
 
 </details>
 
-</blockquote>
-
 <!-- end -->
 
 <!-- #destroyState -->
 
 ### Destroy state
-
-<blockquote>
 
 `destroyState(namespace)` is used for removing state from diffx.
 
@@ -547,8 +529,6 @@ import { destroyState } from '@diffx/core';
 
 destroyState('click counter');
 ```
-
-</blockquote>
 
 <!-- end -->
 <!-- end#usage -->
