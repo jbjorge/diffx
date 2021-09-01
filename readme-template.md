@@ -12,15 +12,15 @@ Diffx is a state management library that focuses on three things:
 
 ### Key features
 
-* 🤏 Small API and a very compact syntax
-* 🏷 Track _intent_ behind changes to the state
-* 🔧 Devtools that track
-    * what, when, where and **why** state changed
-    * async start/resolution
-    * nested changes
-    * changes triggered by watchers
-* 📝 Built in persistence
-* ⌨ Written in Typescript, inferring your types
+🤏 Small API and a very compact syntax  
+🏷 Track _intent_ behind changes to the state  
+🔧 Devtools that track:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- what, when, where and **why** state changed  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- async start/resolution  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- nested changes  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- changes triggered by watchers  
+📝 Built in persistence  
+⌨ Written in Typescript, inferring your types
 
 <!-- #supported-frameworks -->
 
@@ -158,7 +158,9 @@ You can create as many states as you like and access them as regular objects to 
 <details>
     <summary><strong>Configure persistence</strong></summary>
 
-`createState(namespace, state, options)`
+`createState()` accepts a third `options` argument for configuring persistence for this particular state.
+
+`createState(..., ..., options)`
 
 * `options`- optional settings for this particular state
     * `persistent` - Persist the latest snapshot of this state and automatically use that as the initial state. Setting
@@ -204,8 +206,8 @@ export const users = createState('users', { names: [] }, { persistenceLocation: 
 
 ```javascript
 import { setState } from '@diffx/core';
-import { clickCounter } from './createState-example-above';
 
+const clickCounter = createState('click counter', { count: 0 });
 setState('increment the counter', () => clickCounter.count++);
 ```
 
@@ -220,7 +222,9 @@ Multiple states can be changed within one `setState()`:
 
 ```javascript
 import { setState } from '@diffx/core';
-import { clickCounter, users } from './createState-in-depth-docs';
+
+const clickCounter = createState('click counter', { count: 0 });
+const users = createState('users state', { names: [] });
 
 setState('Change the counter and add a user', () => {
     clickCounter.count++;
@@ -230,6 +234,9 @@ setState('Change the counter and add a user', () => {
     users.names.push('John');
 })
 ```
+
+This will also create an entry in the devtools  
+![devtools entry screenshot](assets/devtools/img_9.png)
 
 </details>
 <!-- end -->
@@ -281,58 +288,64 @@ setState(
 ```
 
 The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will
-be [tracked in devtools](#tracing-async-setstate).
+be tracked in the devtools:  
+<table>
+<tr>
+<td>onDone</td>
+<td>
+
+![async onDone in devtools](assets/devtools/img_10.png)
+
+</td>
+</tr>
+<tr>
+<td>onError</td>
+<td>
+
+![async onError in devtools](assets/devtools/img_11.png)
+
+</td>
+</tr>
+</table>
 
 </details>
 <!-- end -->
 
 <!-- #Nesting setState() inside setState() -->
 <details>
-    <summary><strong>Nesting setState() inside setState()</strong></summary>
+    <summary><strong>Nesting <code>setState()</code> inside <code>setState()</code></strong></summary>
 
-Diffx supports and encourages nesting/wrapping which enables reuse of `setState` and enhances tracking in devtools.
+To avoid repeating yourself, it can be beneficial to wrap `setState` in a function that can be reused.
 
 ```javascript
+import { createState, setState } from '@diffx/core';
+
+const usersState = createState('users state', { names: [] });
+
+export function addUser(name) {
+    setState('Add user', () => usersState.names.push(name));
+}
+```
+
+To make the state history more readable, the usage of the wrapped `setState` above can be used inside a `setState`
+providing a reason for the changes and grouping them.
+
+```javascript
+// in some other file
 import { setState } from '@diffx/core';
+import { addUser } from './example-above';
 
-import { clickCounter, users } from './createState-in-depth-docs';
-
-const addUser = (name) => setState('add user', () => users.names.push('John'));
-const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
-
-setState('Change the counter and add a user', () => {
-    incrementCounter();
-    if (clickCounter.count > 2) {
-        clickCounter.count = 200;
-    }
+setState('PeopleComponent: User clicked "Save users"', () => {
     addUser('John');
-})
+    addUser('Jenny');
+});
 ```
 
-This also opens up the possibility to give more context as to why changes happened:
+This nesting will be displayed in the devtools as an indented hierarchical list, clarifying why "Add user" happened:  
+![nesting in devtools](assets/devtools/img_7.png)
 
-```javascript
-// in file 1
-export const addUser = (name) => setState('add user', () => users.names.push('John'));
-export const incrementCounter = () => setState('increment counter', () => clickCounter.count++);
-
-// in file 2
-export const addUserClicked = () => {
-    setState('Change the counter and add a user', () => {
-        incrementCounter();
-        if (clickCounter.count > 2) {
-            clickCounter.count = 200;
-        }
-        addUser('John');
-    });
-};
-
-// in userComponent we wrap the change with some helpful context
-setState('userComponent is adding a user', addUserClicked);
-```
-
-This will also enable the devtools to [visualise the hierarchy of changes](#nested-setstate) and make the flow of
-changes more understandable.
+Nesting can go as many levels deep as desired, making it easy to see who did what and why, and at the same time making
+it easy to discover reusable compositions of `setState`.
 
 </details>
 <!-- end -->
@@ -380,7 +393,7 @@ clickCounter.count++; // this will throw an error
 
 ```javascript
 import { watchState } from '@diffx/core';
-import { clickCounter } from './createState-example-above';
+const clickCounter = createState('click counter', { count: 0 });
 
 const unwatchFunc = watchState(
     () => clickCounter,
@@ -409,7 +422,7 @@ callback.
 
 ```javascript
 import { watchState } from '@diffx/core';
-import { clickCounter } from './createState-example-above';
+const clickCounter = createState('click counter', { count: 0 });
 
 const unwatchFunc = watchState(() => clickCounter, {
     /**
@@ -461,7 +474,7 @@ unwatchFunc();
 
 ```javascript
 import { watchState } from '@diffx/core';
-import { clickCounter } from './createState-example-above';
+const clickCounter = createState('click counter', { count: 0 });
 
 watchState(
     () => clickCounter.count > 5,
@@ -478,7 +491,8 @@ watchState(
 
 ```javascript
 import { watchState } from '@diffx/core';
-import { clickCounter, users } from './createState-in-depth-docs';
+const clickCounter = createState('click counter', { count: 0 });
+const users = createState('users state', { names: [] });
 
 watchState(
     () => [clickCounter.count, users.names],
@@ -493,22 +507,29 @@ watchState(
 <details>
     <summary><strong>Using setState() inside watchState()</strong></summary>
 
-If a watcher changes state, this will also be [tracked in devtools](#tracing-state-changed-in-watchstate):
+A watcher is allowed to change the state when triggered.
 
 ```javascript
 import { watchState, setState } from '@diffx/core';
-import { clickCounter, users } from './createState-in-depth-docs';
+const clickCounter = createState('click counter', { count: 0 });
+const users = createState('users state', { names: [] });
 
 watchState(
     () => clickCounter.count === 5,
     countIsFive => {
         if (!countIsFive) return;
-        setState('counter has the value 5, so I added another user', () => {
+        setState('Counter has the value 5, so I added another user', () => {
             users.names.push('Jenny');
         });
     }
 );
 ```
+
+This will also be tracked in the devtools and tagged with "watcher".  
+![devtools watcher example](assets/devtools/img_13.png)
+
+The tag can be hovered/clicked for more information about its trigger origin.  
+![devtools watcher hover example](assets/devtools/img_14.png)
 
 </details>
 
@@ -548,10 +569,12 @@ Diffx devtools is made to give insights into
 
 ### Installation
 
-The extension can be installed throught [the chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+The extension can be installed
+throught [the chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
+.
 
-It will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
-devtools option is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
+It will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the devtools option
+is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](./assets/devtools-7.png)
 
@@ -646,10 +669,10 @@ use a well documented and inspectable way to manage state.
 
 There are **a lot** of great state management libraries out there.
 
-* Some focus on a rigid structure, suitable for large teams that want predictable code patterns, often at the cost
-  of writing a lot of boilerplate.
-* Some provide the same ease of use as local state, often at the cost of having less context which
-  might make it more difficult to debug.
+* Some focus on a rigid structure, suitable for large teams that want predictable code patterns, often at the cost of
+  writing a lot of boilerplate.
+* Some provide the same ease of use as local state, often at the cost of having less context which might make it more
+  difficult to debug.
 
 Diffx tries to be the best of both worlds with
 
@@ -659,8 +682,8 @@ Diffx tries to be the best of both worlds with
 * offloading the responsibility to stay in control over to the library/devtools
 
 There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
-long time. Diffx is a tool - I recommend you to look into several of the popular ones before you decide which is the best fit for
-your project.
+long time. Diffx is a tool - I recommend you to look into several of the popular ones before you decide which is the
+best fit for your project.
 
 ## Credits and thanks
 
