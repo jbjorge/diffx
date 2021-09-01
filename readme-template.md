@@ -10,60 +10,17 @@ Diffx is a state management library that focuses on three things:
 🪓 Get rid of boilerplate  
 🔧 Make great devtools
 
-## Key features
+### Key features
 
 * 🤏 Small API and a very compact syntax
-* 🏷 Track _intent_ behind changes to the state  
-* 🔧 Devtools that track  
-  * what, when, where and **why** state changed
-  * async start/resolution
-  * nested changes
-  * changes triggered by watchers
+* 🏷 Track _intent_ behind changes to the state
+* 🔧 Devtools that track
+    * what, when, where and **why** state changed
+    * async start/resolution
+    * nested changes
+    * changes triggered by watchers
 * 📝 Built in persistence
-* ⌨ Written in Typescript, inferring your types 
-
-## Key features
-
-### Minimal API
-
-You'll usually just work with two or three function.
-
-### Granular state tracking
-
-* Makes it easy to wrap changes in state with an _intent_, and visualize nested changes.  
-  ![img_1.png](img_1.png)
-* Visualize and track asynchronous operations  
-  ![img_2.png](img_2.png)
-* Track side effects that lead to changes in state  
-  ![img_3.png](img_3.png)
-* See what changed a specific value
-  ![img_5.png](img_5.png)
-
-* Built in support for persistence
-* Supports all major frameworks
-* Built with typescript
-* Devtools browser extension
-
-### Why Diffx?
-
-A lot of projects start out with keeping state localized. When the project grows and requirements change, some of that
-state usually gets refactored to become shared state. When the project grows even further, it can become a mental burden
-to keep track of the current state and how it came to be.  
-This is usually when developers will reach for a library to aid with state management.
-
-* Some provide structure and predictability, sometimes at the cost of being verbose.
-* Some provide the same ease of use as local state, sometimes at the cost of providing less debug info.
-
-Some patterns also usually emerge:
-
-* a change in state can lead to other changes in the state
-* a change in state can lead to side effects
-* asynchronous operations consist of three states: start->success/failure
-
-Diffx recognizes the above and tries to keep the good parts:
-
-*
-*
+* ⌨ Written in Typescript, inferring your types
 
 <!-- #supported-frameworks -->
 
@@ -602,9 +559,6 @@ destroyState('click counter');
 
 ## Devtools browser extension
 
-[Install Diffx devtools for Chrome](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
-and enable it with [setDiffxOptions](#setdiffxoptions).
-
 Diffx devtools is made to give insights into
 
 * Why state was changed
@@ -612,7 +566,11 @@ Diffx devtools is made to give insights into
 * When did it change
 * What caused the change
 
-The extension will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
+### Installation
+
+The extension can be installed throught [the chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+
+It will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the
 devtools option is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
 
 ![Devtools location](./assets/devtools-7.png)
@@ -621,39 +579,46 @@ The left pane displays a list of changes (diffs) to the state along with their `
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
 in [setDiffxOptions](#setdiffxoptions)).
 
-### Diff tab
+### Features
+
+<details><summary>Diff tab</summary>
 
 Displays the difference between each change made by `setState()`.
 
 ![Diff tab preview](./assets/devtools-1.png)
 
-### State tab
+</details>
+<details><summary>State tab</summary>
 
 Displays the current state at the selected diff.
 
 ![State tab preview](./assets/devtools-6.png)
 
-### Stacktrace tab
+</details>
+<details><summary>Stacktrace tab</summary>
 
 Displays the stack trace for the code that led to this state change.
 
 ![Stacktrace tab preview](./assets/devtools-5.png)
 
-### State namespace indicators
+</details>
+<details><summary>State namespace indicators</summary>
 
 The dots in the left tab indicate which state was changed with their color, can be hovered to view the namespace and
 clicked to filter the list by that state.
 
 ![State type hints](./assets/devtools-4.png)
 
-### Nested setState
+</details>
+<details><summary>Visualizing nested setState</summary>
 
 For places where `setState()` has been used inside `setState()`, the left pane will display a nested view with colors
 used for displaying nesting depth.
 
 ![Nested setState preview](./assets/devtools-2.png)
 
-### Tracing async setState
+</details>
+<details><summary>Tracing async setState</summary>
 
 For async operations done with `setState()`, the left pane will display an `async` tag where the operation starts, and
 a `resolve`/`reject`  tag where the async operation finished.  
@@ -662,7 +627,8 @@ clickable to filter by.
 
 ![setState preview](./assets/devtools-3.png)
 
-### Tracing state changed in watchState
+</details>
+<details><summary>Tracing state changed in watchState</summary>
 
 If a `watchState()` runs `setState()`, the left pane will display a `watcher` tag to indicate that the change was
 triggered.
@@ -676,26 +642,44 @@ The `watcher` tag can be hovered to see which state change triggered it and clic
 To see where in the code the watcher was run, enable `includeStackTrace` in [setDiffxOptions](#setdiffxoptions) and open
 the Stacktrace tab for the entry tagged with the `watcher`.
 
-### Highlight/filter changes to a specific value
+</details>
+<details><summary>Highlight/filter changes to a specific value</summary>
 
 The Highlight and Filter button can be used to find the state changes that affected a specific value.
 
 ![highlight/filter preview](./assets/devtools-10.png)
 
-## Is it better than Redux/Zustand/Mobx/Valtio/Vuex/Recoil/jotai/...?
+</details>
 
-There are **a lot** of great state management libraries out there.  
-Some focus on a rigid structure, suitable for large teams that want predictable code patterns, sometimes at the cost of
-writing a lot of boilerplate.  
-Others give freedom to the developers to use it how they see fit potentially at the cost of losing control due to lack
-of structure/patterns.
+## Do I need a state management library?
 
-Diffx aims to be the best of both worlds by removing the demand of structure and rigidity, but at the same time
-empowering the developer with devtools that keep track of every little detail.
+A lot of projects start out with keeping state localized. When the project grows and requirements change, some of that
+state usually gets refactored to become shared state. That might work well for a while, but as the project grows even
+further, it can become a real mental burden to keep track of the current state and how it came to be. The author of the
+code might not feel this way, but the next developer to join the project is almost guaranteed to have a hard time
+keeping up with it. This is usually when developers will reach for a library to aid with state management.
 
-**There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
-long time.**  
-Diffx is a tool - I recommend you to look into several of the popular ones before you decide which is the best fit for
+If you foresee a project that will grow in size over time, and/or other developers will join, it might be a good idea to
+use a well documented and inspectable way to manage state.
+
+### Why Diffx?
+
+There are **a lot** of great state management libraries out there.
+
+* Some focus on a rigid structure, suitable for large teams that want predictable code patterns, often at the cost
+  of writing a lot of boilerplate.
+* Some provide the same ease of use as local state, often at the cost of having less context which
+  might make it more difficult to debug.
+
+Diffx tries to be the best of both worlds with
+
+* making it easy to provide context/intent behind any changes, which in turn makes it easy to reason about how a
+  specific state came to be. **It makes the state self-documenting.**
+* compactness comparable to local state
+* offloading the responsibility to stay in control over to the library/devtools
+
+There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
+long time. Diffx is a tool - I recommend you to look into several of the popular ones before you decide which is the best fit for
 your project.
 
 ## Credits and thanks
