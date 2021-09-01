@@ -6,34 +6,68 @@
 
 Diffx is a state management library that focuses on three things:
 
-* Make it easy to use
-* Get rid of boilerplate
-* Make great devtools
+🎓 Make it easy to learn and use  
+🪓 Get rid of boilerplate  
+🔧 Make great devtools
 
-<details>
-  <summary><strong>Show all features</strong></summary>
+## Key features
 
-## Features
+* 🤏 Small API and a very compact syntax
+* 🏷 Track _intent_ behind changes to the state  
+* 🔧 Devtools that track  
+  * what, when, where and **why** state changed
+  * async start/resolution
+  * nested changes
+  * changes triggered by watchers
+* 📝 Built in persistence
+* ⌨ Written in Typescript, inferring your types 
 
-* Minimal API
-* Minimal boilerplate
-    * No forced usage patterns
-    * Change any state from anywhere
-    * Proxy/mutation based
-* Detailed tracking
-    * nested changes
-    * asynchronous changes (start, resolve and reject)
-    * changes done by watchers of the state
+## Key features
+
+### Minimal API
+
+You'll usually just work with two or three function.
+
+### Granular state tracking
+
+* Makes it easy to wrap changes in state with an _intent_, and visualize nested changes.  
+  ![img_1.png](img_1.png)
+* Visualize and track asynchronous operations  
+  ![img_2.png](img_2.png)
+* Track side effects that lead to changes in state  
+  ![img_3.png](img_3.png)
+* See what changed a specific value
+  ![img_5.png](img_5.png)
+
 * Built in support for persistence
 * Supports all major frameworks
 * Built with typescript
 * Devtools browser extension
 
-</details>
+### Why Diffx?
+
+A lot of projects start out with keeping state localized. When the project grows and requirements change, some of that
+state usually gets refactored to become shared state. When the project grows even further, it can become a mental burden
+to keep track of the current state and how it came to be.  
+This is usually when developers will reach for a library to aid with state management.
+
+* Some provide structure and predictability, sometimes at the cost of being verbose.
+* Some provide the same ease of use as local state, sometimes at the cost of providing less debug info.
+
+Some patterns also usually emerge:
+
+* a change in state can lead to other changes in the state
+* a change in state can lead to side effects
+* asynchronous operations consist of three states: start->success/failure
+
+Diffx recognizes the above and tries to keep the good parts:
+
+*
+*
 
 <!-- #supported-frameworks -->
 
-## Supported frameworks
+### Supported frameworks
 
 ![react logo](./assets/framework-logos/react.png) React
 --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)  
@@ -63,14 +97,17 @@ for a better development experience ([view documentation](#devtools-browser-exte
 <!-- end -->
 
 <!-- #usage -->
+
 ## Usage
 
 <!-- #setDiffxOptions() -->
 
-### setDiffxOptions()
+### Configure Diffx
 
-`setDiffxOptions(options)` is optionally used to configure which global features to enable for Diffx, and should ideally
-be run before any code interacts with Diffx.
+<blockquote>
+
+`setDiffxOptions(options)` is used to configure which global features to enable for Diffx. Should be run before any code
+interacts with Diffx.
 
 * `options` - an options object that configures how Diffx works internally
 
@@ -80,14 +117,13 @@ import { setDiffxOptions } from '@diffx/core';
 setDiffxOptions({ devtools: true });
 ```
 
-<!-- end -->
-
-<!-- #see all available options -->
 <details>
-    <summary><strong>See all available options</strong></summary>
+    <summary><strong>Show all options</strong></summary>
 
 ```javascript
-const opts = {
+import { setDiffxOptions } from '@diffx/core';
+
+setDiffxOptions({
     /**
      * Enable viewing the state history in devtools.
      * Not recommended for use in a production environment.
@@ -134,15 +170,22 @@ const opts = {
      * Default: 100
      */
     maxNestingDepth: 100
-}
+});
 ```
 
 </details>
+
+<!-- end -->
+
+</blockquote>
+
 <!-- end -->
 
 <!-- #createState() -->
 
-### createState()
+### Create state
+
+<blockquote>
 
 `createState(namespace, state)` is used to create state in Diffx.
 
@@ -166,9 +209,6 @@ You can create as many states as you like and access them as regular objects to 
 
 `createState(namespace, state, options)`
 
-* `namespace` - a string which is used as the key when storing the state in the state tree. _The namespace must be
-  unique_.
-* `state` - an object which contains the initial state
 * `options`- optional settings for this particular state
     * `persistent` - Persist the latest snapshot of this state and automatically use that as the initial state. Setting
       it to `false` will exclude the state from persistence, even though it is globally set to `true`
@@ -181,16 +221,16 @@ You can create as many states as you like and access them as regular objects to 
 ```javascript
 import { setDiffxOptions, createState } from '@diffx/core';
 
-// globally enabling persistence
+// this enables persistence for all states globally
 setDiffxOptions({
     persistent: true,
     persistenceLocation: sessionStorage
 })
 
-// this state is not persisted
+// this disables persistence for a specific state
 export const loadingState = createState('loading state', { isLoading: false }, { persistent: false });
 
-// this state is persisted in accordance with settings in `setDiffxOptions`
+// this state is persisted in accordance with the global settings in `setDiffxOptions`
 export const clickCounter = createState('click counter', { count: 0 });
 
 // this state is persisted in localStorage instead of the globally defined persistenceLocation
@@ -198,13 +238,18 @@ export const users = createState('users', { names: [] }, { persistenceLocation: 
 ```
 
 </details>
+
+</blockquote>
+
 <!-- end -->
 
 <!-- #setState() -->
 
-### setState()
+### Update state
 
-`setState(reason, mutatorFunc)` is used to make changes to the state.
+<blockquote>
+
+`setState(reason, mutatorFunc)` is used to wrap changes to the state.
 
 * `reason` - a string which explains why the state was changed. Will be displayed in the devtools extension for easier
   debugging.
@@ -347,7 +392,7 @@ changes more understandable.
 
 <!-- #why-no-direct-modification -->
 <details>
-    <summary><strong>Why not directly modify the state?</strong></summary>
+    <summary><strong>Why can't I directly modify the state?</strong></summary>
 
 By having the freedom to change state from *anywhere* in the codebase, state can quickly get out of control and be
 difficult to debug if there is no human-readable reasoning behind why a change was made.  
@@ -365,6 +410,8 @@ clickCounter.count++; // this will throw an error
 
 </details>
 
+</blockquote>
+
 <!-- end -->
 
 <!-- #setState().append -->
@@ -373,7 +420,9 @@ clickCounter.count++; // this will throw an error
 
 <!-- #watchState() -->
 
-### watchState()
+### Watch state
+
+<blockquote>
 
 <!-- #watchState().prepend -->
 
@@ -519,11 +568,16 @@ watchState(
 ```
 
 </details>
+
+</blockquote>
+
 <!-- end -->
 
 <!-- #destroyState -->
 
-### destroyState()
+### Destroy state
+
+<blockquote>
 
 `destroyState(namespace)` is used for removing state from diffx.
 
@@ -536,6 +590,8 @@ import { destroyState } from '@diffx/core';
 
 destroyState('click counter');
 ```
+
+</blockquote>
 
 <!-- end -->
 <!-- end#usage -->
@@ -626,23 +682,21 @@ The Highlight and Filter button can be used to find the state changes that affec
 
 ![highlight/filter preview](./assets/devtools-10.png)
 
-## Diffx compared to other state management libraries
+## Is it better than Redux/Zustand/Mobx/Valtio/Vuex/Recoil/jotai/...?
 
 There are **a lot** of great state management libraries out there.  
 Some focus on a rigid structure, suitable for large teams that want predictable code patterns, sometimes at the cost of
-writing a lot of boilerplate code.  
-Others give freedom to the developers to use it how they see fit at the cost of potentially losing control due to lack
+writing a lot of boilerplate.  
+Others give freedom to the developers to use it how they see fit potentially at the cost of losing control due to lack
 of structure/patterns.
 
-Diffx aims to get rid of the need for patterns by making it the library's responsibility to stay in control, and let the
-developer stay on top of any shenanigans with the devtools extension.
+Diffx aims to be the best of both worlds by removing the demand of structure and rigidity, but at the same time
+empowering the developer with devtools that keep track of every little detail.
 
-#### Is it better than Redux/Zustand/Mobx/Valtio/Vuex/Recoil/jotai/...?
-
-I don't know. I haven't spent time trying all of them (yet).  
-There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
-long time.  
-I recommend you to look into several of the popular ones and see if you like them better than Diffx.
+**There are a heap of great choices out there, and the library you end up using will probably stay in your project for a
+long time.**  
+Diffx is a tool - I recommend you to look into several of the popular ones before you decide which is the best fit for
+your project.
 
 ## Credits and thanks
 
