@@ -6,9 +6,9 @@
 
 Diffx is a state management library that focuses on three things:
 
-🎓 Make it easy to learn and use  
-🪓 Get rid of boilerplate  
-🔧 Make great devtools
+* Make it easy to learn and use
+* Get rid of boilerplate
+* Make great devtools
 
 ### Key features
 
@@ -147,8 +147,10 @@ setDiffxOptions({
 ```javascript
 import { createState } from '@diffx/core';
 
-const clickCounter = createState('click counter', { count: 0 });
+export const clickCounter = createState('click counter', { count: 0 });
 console.log(clickCounter.count); // --> 0
+
+export const usersState = createState('users state', { names: [] });
 ```
 
 You can create as many states as you like and access them as regular objects to read their values.
@@ -187,7 +189,7 @@ export const loadingState = createState('loading state', { isLoading: false }, {
 export const clickCounter = createState('click counter', { count: 0 });
 
 // this state is persisted in localStorage instead of the globally defined persistenceLocation
-export const users = createState('users', { names: [] }, { persistenceLocation: localStorage });
+export const usersState = createState('users state', { names: [] }, { persistenceLocation: localStorage });
 ```
 
 </details>
@@ -206,8 +208,8 @@ export const users = createState('users', { names: [] }, { persistenceLocation: 
 
 ```javascript
 import { setState } from '@diffx/core';
+import { clickCounter } from './createState-example';
 
-const clickCounter = createState('click counter', { count: 0 });
 setState('increment the counter', () => clickCounter.count++);
 ```
 
@@ -222,16 +224,14 @@ Multiple states can be changed within one `setState()`:
 
 ```javascript
 import { setState } from '@diffx/core';
-
-const clickCounter = createState('click counter', { count: 0 });
-const users = createState('users state', { names: [] });
+import { clickCounter, usersState } from './createState-example';
 
 setState('Change the counter and add a user', () => {
     clickCounter.count++;
     if (clickCounter.count > 2) {
         clickCounter.count = 200;
     }
-    users.names.push('John');
+    usersState.names.push('John');
 })
 ```
 
@@ -256,39 +256,38 @@ This will also create an entry in the devtools
 
 ```javascript
 import { createState, setState } from '@diffx/core';
-import { fetchUsersFromServer } from './some-file';
+import { fetchUsersStateFromServer } from './some-file';
 
-export const users = createState('users-status', {
+export const usersState = createState('usersState-status', {
     isFetching: false,
     names: [],
     fetchErrorMessage: ''
 });
 
 setState(
-    'fetch and update users',
+    'fetch and update usersState',
     () => {
         // set state before the async work begins
-        users.fetchErrorMessage = '';
-        users.names = [];
-        users.isFetching = true;
+        usersState.fetchErrorMessage = '';
+        usersState.names = [];
+        usersState.isFetching = true;
         // return the async work
-        return fetchUsersFromServer();
+        return fetchUsersStateFromServer();
     },
     result => {
         // the async work succeeded
-        users.names = result;
-        users.isFetching = false;
+        usersState.names = result;
+        usersState.isFetching = false;
     },
     error => {
         // the async work failed
-        users.fetchErrorMessage = error.message;
-        users.isFetching = false;
+        usersState.fetchErrorMessage = error.message;
+        usersState.isFetching = false;
     }
 );
 ```
 
-The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will
-be tracked in the devtools:  
+The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tracked in the devtools:
 <table>
 <tr>
 <td>onDone</td>
@@ -319,8 +318,7 @@ To avoid repeating yourself, it can be beneficial to wrap `setState` in a functi
 
 ```javascript
 import { createState, setState } from '@diffx/core';
-
-const usersState = createState('users state', { names: [] });
+import { usersState } from './createState-example';
 
 export function addUser(name) {
     setState('Add user', () => usersState.names.push(name));
@@ -335,7 +333,7 @@ providing a reason for the changes and grouping them.
 import { setState } from '@diffx/core';
 import { addUser } from './example-above';
 
-setState('PeopleComponent: User clicked "Save users"', () => {
+setState('PeopleComponent: User clicked "Save usersState"', () => {
     addUser('John');
     addUser('Jenny');
 });
@@ -363,7 +361,7 @@ for the changes.
 _Any changes made to the state outside of `setState()` will throw an error._
 
 ```javascript
-import { clickCounter } from './createState-example-above';
+import { clickCounter } from './createState-example';
 
 clickCounter.count++; // this will throw an error
 ```
@@ -393,7 +391,7 @@ clickCounter.count++; // this will throw an error
 
 ```javascript
 import { watchState } from '@diffx/core';
-const clickCounter = createState('click counter', { count: 0 });
+import { clickCounter } from './createState-example';
 
 const unwatchFunc = watchState(
     () => clickCounter,
@@ -412,6 +410,71 @@ unwatchFunc();
 
 <!-- end -->
 
+<!-- #Using setState() inside watchState() -->
+<details>
+    <summary><strong>Using setState() inside watchState()</strong></summary>
+
+A watcher is allowed to change the state when triggered.
+
+```javascript
+import { watchState, setState } from '@diffx/core';
+import { clickCounter } from './createState-example';
+
+watchState(
+    () => clickCounter.count === 5,
+    countIsFive => {
+        if (!countIsFive) return;
+        setState('Counter has the value 5, so I added another user', () => {
+            usersState.names.push('Jenny');
+        });
+    }
+);
+```
+
+This will also be tracked in the devtools and tagged with "watcher".  
+![devtools watcher example](assets/devtools/img_13.png)
+
+The tag can be hovered/clicked for more information about its trigger origin.  
+![devtools watcher hover example](assets/devtools/img_14.png)
+
+</details>
+
+<!-- end -->
+
+<!-- #watching projections -->
+<details>
+    <summary><strong>Watching projections</strong></summary>
+
+```javascript
+import { watchState } from '@diffx/core';
+import { clickCounter } from './createState-example';
+
+watchState(
+    () => clickCounter.count > 5,
+    isAboveFive => console.log(isAboveFive)
+);
+```
+
+</details>
+<!-- end -->
+
+<!-- #watching multiple states -->
+<details>
+    <summary><strong>Watching multiple states</strong></summary>
+
+```javascript
+import { watchState } from '@diffx/core';
+import { clickCounter, usersState } from './createState-example';
+
+watchState(
+    () => [clickCounter.count, usersState.names],
+    ([clickCount, names]) => console.log(clickCount, names)
+);
+```
+
+</details>
+<!-- end -->
+
 <!-- #controlling watchState -->
 
 <details>
@@ -422,7 +485,7 @@ callback.
 
 ```javascript
 import { watchState } from '@diffx/core';
-const clickCounter = createState('click counter', { count: 0 });
+import { clickCounter } from './createState-example';
 
 const unwatchFunc = watchState(() => clickCounter, {
     /**
@@ -430,9 +493,10 @@ const unwatchFunc = watchState(() => clickCounter, {
      *
      * Default: `false`
      */
-    emitInitialValue: true / false,
+    emitInitialValue: false,
     /**
      * Callback called with the final state after the outermost `.setState` function has finished running.
+     * This is the default behavior when using a callback instad of an options object.
      */
     onSetStateDone: (newValue, oldValue) => '...',
     /**
@@ -451,14 +515,14 @@ const unwatchFunc = watchState(() => clickCounter, {
      *
      * Default: Diffx built in comparer
      */
-    hasChangedComparer: (newValue, oldValue) => true / false,
+    hasChangedComparer: (newValue, oldValue) => 'true or false',
     /**
      * Whether the watcher should automatically stop watching after the first changed value has
      * been emitted.
      *
      * Default: false
      */
-    once: true / false
+    once: false
 });
 
 // stop watching
@@ -466,73 +530,6 @@ unwatchFunc();
 ```
 
 </details>
-<!-- end -->
-
-<!-- #watching projections -->
-<details>
-    <summary><strong>Watching projections</strong></summary>
-
-```javascript
-import { watchState } from '@diffx/core';
-const clickCounter = createState('click counter', { count: 0 });
-
-watchState(
-    () => clickCounter.count > 5,
-    isAboveFive => console.log(isAboveFive)
-);
-```
-
-</details>
-<!-- end -->
-
-<!-- #watching multiple states -->
-<details>
-    <summary><strong>Watching multiple states</strong></summary>
-
-```javascript
-import { watchState } from '@diffx/core';
-const clickCounter = createState('click counter', { count: 0 });
-const users = createState('users state', { names: [] });
-
-watchState(
-    () => [clickCounter.count, users.names],
-    ([clickCount, names]) => console.log(clickCount, names)
-);
-```
-
-</details>
-<!-- end -->
-
-<!-- #Using setState() inside watchState() -->
-<details>
-    <summary><strong>Using setState() inside watchState()</strong></summary>
-
-A watcher is allowed to change the state when triggered.
-
-```javascript
-import { watchState, setState } from '@diffx/core';
-const clickCounter = createState('click counter', { count: 0 });
-const users = createState('users state', { names: [] });
-
-watchState(
-    () => clickCounter.count === 5,
-    countIsFive => {
-        if (!countIsFive) return;
-        setState('Counter has the value 5, so I added another user', () => {
-            users.names.push('Jenny');
-        });
-    }
-);
-```
-
-This will also be tracked in the devtools and tagged with "watcher".  
-![devtools watcher example](assets/devtools/img_13.png)
-
-The tag can be hovered/clicked for more information about its trigger origin.  
-![devtools watcher hover example](assets/devtools/img_14.png)
-
-</details>
-
 <!-- end -->
 
 <!-- #destroyState -->
@@ -560,6 +557,13 @@ destroyState('click counter');
 
 ## Devtools browser extension
 
+### Installation
+
+The extension can be installed through
+[the Chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec).
+
+### Features
+
 Diffx devtools is made to give insights into
 
 * Why state was changed
@@ -567,11 +571,8 @@ Diffx devtools is made to give insights into
 * When did it change
 * What caused the change
 
-### Installation
+<details open><summary>Overview</summary>
 
-The extension can be installed
-throught [the chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
-.
 
 It will show up as a tab in the browser devtools when it detects that the page is using Diffx and debugging has been enabled [(see setDiffxOptions)](#configure-diffx).
 
@@ -581,7 +582,7 @@ The left pane displays a list of changes (diffs) to the state along with their `
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
 in [setDiffxOptions](#configure-diffx)).
 
-### Features
+</details>
 
 <details><summary>Diff tab</summary>
 
