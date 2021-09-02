@@ -573,8 +573,7 @@ The extension can be installed
 throught [the chrome web store](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 .
 
-It will show up as a tab in the browser devtools when it detects that the page is using Diffx, and the devtools option
-is set to `true` [(see setDiffxOptions)](#setdiffxoptions).
+It will show up as a tab in the browser devtools when it detects that the page is using Diffx and debugging has been enabled [(see setDiffxOptions)](#configure-diffx).
 
 ![Devtools location](./assets/devtools-7.png)
 
