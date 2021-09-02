@@ -111,10 +111,10 @@ observeState(() => clickCounter.count)
 ```
 
 This will also be tracked in the devtools and tagged with "watcher".  
-![devtools watcher example](../assets/devtools/img_13.png)
+![devtools watcher example](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_13.png)
 
 The tag can be hovered/clicked for more information about its trigger origin.  
-![devtools watcher hover example](../assets/devtools/img_14.png)
+![devtools watcher hover example](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_14.png)
 
 </details>
 <!-- end -->
@@ -172,7 +172,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onDone</td>
 <td>
 
-![async onDone in devtools](../assets/devtools/img_10.png)
+![async onDone in devtools](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_10.png)
 
 </td>
 </tr>
@@ -180,7 +180,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onError</td>
 <td>
 
-![async onError in devtools](../assets/devtools/img_11.png)
+![async onError in devtools](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_11.png)
 
 </td>
 </tr>

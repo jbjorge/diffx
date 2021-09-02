@@ -21,15 +21,15 @@ Diffx is a state management library that focuses on three things:
 
 ### Supported frameworks
 
-![react logo](../assets/framework-logos/react.png) React
+![react logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/react.png) React
 --> [@diffx/react](https://github.com/jbjorge/diffx/tree/master/react)  
-![vue logo](../assets/framework-logos/vue.png) Vue.js
+![vue logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/vue.png) Vue.js
 --> [@diffx/vue](https://github.com/jbjorge/diffx/tree/master/vue)  
-![svelte logo](../assets/framework-logos/svelte.png) Svelte
+![svelte logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/svelte.png) Svelte
 --> [@diffx/svelte](https://github.com/jbjorge/diffx/tree/master/svelte)  
-![angular logo](../assets/framework-logos/angular.png) Angular
+![angular logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/angular.png) Angular
 --> [@diffx/angular](https://github.com/jbjorge/diffx/tree/master/angular)  
-![rxjs logo](../assets/framework-logos/rxjs.png) RxJS
+![rxjs logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/rxjs.png) RxJS
 --> [@diffx/rxjs](https://github.com/jbjorge/diffx/tree/master/rxjs)  
 No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
 
@@ -228,7 +228,7 @@ setState('Change the counter and add a user', () => {
 ```
 
 This will also create an entry in the devtools  
-![devtools entry screenshot](../assets/devtools/img_9.png)
+![devtools entry screenshot](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_9.png)
 
 </details>
 
@@ -285,7 +285,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onDone</td>
 <td>
 
-![async onDone in devtools](../assets/devtools/img_10.png)
+![async onDone in devtools](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_10.png)
 
 </td>
 </tr>
@@ -293,7 +293,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onError</td>
 <td>
 
-![async onError in devtools](../assets/devtools/img_11.png)
+![async onError in devtools](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_11.png)
 
 </td>
 </tr>
@@ -332,7 +332,7 @@ setState('PeopleComponent: User clicked "Save usersState"', () => {
 ```
 
 This nesting will be displayed in the devtools as an indented hierarchical list, clarifying why "Add user" happened:  
-![nesting in devtools](../assets/devtools/img_7.png)
+![nesting in devtools](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_7.png)
 
 Nesting can go as many levels deep as desired, making it easy to see who did what and why, and at the same time making
 it easy to discover reusable compositions of `setState`.
@@ -485,10 +485,10 @@ watchState(
 ```
 
 This will also be tracked in the devtools and tagged with "watcher".  
-![devtools watcher example](../assets/devtools/img_13.png)
+![devtools watcher example](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_13.png)
 
 The tag can be hovered/clicked for more information about its trigger origin.  
-![devtools watcher hover example](../assets/devtools/img_14.png)
+![devtools watcher hover example](https://github.com/jbjorge/diffx/raw/master/assets/devtools/img_14.png)
 
 </details>
 
@@ -630,7 +630,7 @@ Diffx devtools is made to give insights into
 It will show up as a tab in the browser devtools when it detects that the page is using Diffx and debugging has been
 enabled [(see setDiffxOptions)](#configure-diffx).
 
-![Devtools location](../assets/devtools-7.png)
+![Devtools location](https://github.com/jbjorge/diffx/raw/master/assets/devtools-7.png)
 
 The left pane displays a list of changes (diffs) to the state along with their `reason`.  
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
@@ -642,21 +642,21 @@ in [setDiffxOptions](#configure-diffx)).
 
 Displays the difference between each change made by `setState()`.
 
-![Diff tab preview](../assets/devtools-1.png)
+![Diff tab preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-1.png)
 
 </details>
 <details><summary>State tab</summary>
 
 Displays the current state at the selected diff.
 
-![State tab preview](../assets/devtools-6.png)
+![State tab preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-6.png)
 
 </details>
 <details><summary>Stacktrace tab</summary>
 
 Displays the stack trace for the code that led to this state change.
 
-![Stacktrace tab preview](../assets/devtools-5.png)
+![Stacktrace tab preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-5.png)
 
 </details>
 <details><summary>State namespace indicators</summary>
@@ -664,7 +664,7 @@ Displays the stack trace for the code that led to this state change.
 The dots in the left tab indicate which state was changed with their color, can be hovered to view the namespace and
 clicked to filter the list by that state.
 
-![State type hints](../assets/devtools-4.png)
+![State type hints](https://github.com/jbjorge/diffx/raw/master/assets/devtools-4.png)
 
 </details>
 <details><summary>Visualizing nested setState</summary>
@@ -672,7 +672,7 @@ clicked to filter the list by that state.
 For places where `setState()` has been used inside `setState()`, the left pane will display a nested view with colors
 used for displaying nesting depth.
 
-![Nested setState preview](../assets/devtools-2.png)
+![Nested setState preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-2.png)
 
 </details>
 <details><summary>Tracing async setState</summary>
@@ -682,7 +682,7 @@ a `resolve`/`reject`  tag where the async operation finished.
 These tags are highlighted with a color to make it easier to spot which operations belong together and are also
 clickable to filter by.
 
-![setState preview](../assets/devtools-3.png)
+![setState preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-3.png)
 
 </details>
 <details><summary>Tracing state changed in watchState</summary>
@@ -690,11 +690,11 @@ clickable to filter by.
 If a `watchState()` runs `setState()`, the left pane will display a `watcher` tag to indicate that the change was
 triggered.
 
-![watchState tracing preview 1](../assets/devtools-8.png)
+![watchState tracing preview 1](https://github.com/jbjorge/diffx/raw/master/assets/devtools-8.png)
 
 The `watcher` tag can be hovered to see which state change triggered it and clicked to find the state change.
 
-![watchState tracing preview 2](../assets/devtools-9.png)
+![watchState tracing preview 2](https://github.com/jbjorge/diffx/raw/master/assets/devtools-9.png)
 
 To see where in the code the watcher was run, enable `includeStackTrace` in [setDiffxOptions](#setdiffxoptions) and open
 the Stacktrace tab for the entry tagged with the `watcher`.
@@ -704,7 +704,7 @@ the Stacktrace tab for the entry tagged with the `watcher`.
 
 The Highlight and Filter button can be used to find the state changes that affected a specific value.
 
-![highlight/filter preview](../assets/devtools-10.png)
+![highlight/filter preview](https://github.com/jbjorge/diffx/raw/master/assets/devtools-10.png)
 
 </details>
 

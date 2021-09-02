@@ -20,27 +20,27 @@ Diffx is a state management library that focuses on three things:
 
 ## Supported frameworks
 
-### ![React logo](assets/framework-logos/react.png) React
+### ![React logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/react.png) React
 
 * [documentation](https://github.com/jbjorge/diffx/tree/master/react)
 * [npm package](https://npmjs.org/package/@diffx/react)
 
-### ![Vue logo](assets/framework-logos/vue.png) Vue.js
+### ![Vue logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/vue.png) Vue.js
 
 * [documentation](https://github.com/jbjorge/diffx/tree/master/vue)
 * [npm package](https://npmjs.org/package/@diffx/vue)
 
-### ![Svelte logo](assets/framework-logos/svelte.png) Svelte
+### ![Svelte logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/svelte.png) Svelte
 
 * [documentation](https://github.com/jbjorge/diffx/tree/master/svelte)
 * [npm package](https://npmjs.org/package/@diffx/svelte)
 
-### ![Angular logo](assets/framework-logos/angular.png) Angular
+### ![Angular logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/angular.png) Angular
 
 * [documentation](https://github.com/jbjorge/diffx/tree/master/angular)
 * [npm package](https://npmjs.org/package/@diffx/angular)
 
-### ![RxJS logo](assets/framework-logos/rxjs.png) RxJS
+### ![RxJS logo](https://github.com/jbjorge/diffx/raw/master/assets/framework-logos/rxjs.png) RxJS
 
 * [documentation](https://github.com/jbjorge/diffx/tree/master/rxjs)
 * [npm package](https://npmjs.org/package/@diffx/rxjs)
