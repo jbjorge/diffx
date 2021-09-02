@@ -23,7 +23,6 @@ Diffx is a state management library that focuses on three things:
 📝 Written in Typescript, inferring your types
 
 <!-- #supported-frameworks -->
-
 ### Supported frameworks
 
 ![react logo](./assets/framework-logos/react.png) React
@@ -39,6 +38,7 @@ Diffx is a state management library that focuses on three things:
 No framework --> [@diffx/core](https://github.com/jbjorge/diffx/tree/master/core)
 <!-- end -->
 
+<!-- #installation -->
 ## Installation
 
 ```shell
@@ -48,7 +48,7 @@ npm install @diffx/core
 And install
 the [devtools browser extension](https://chrome.google.com/webstore/detail/diffx-devtools/ecijpnkbdaghilfokgbcieakdfbibeec)
 for a better development experience ([view documentation](#devtools-browser-extension)).
-
+<!-- end -->
 <!-- #before-usage -->
 
 <!-- end -->
@@ -132,8 +132,6 @@ setDiffxOptions({
 
 <!-- end -->
 
-<!-- end -->
-
 <!-- #createState() -->
 
 ### Create state
@@ -149,8 +147,8 @@ import { createState } from '@diffx/core';
 
 export const usersState = createState('users state', { names: [] });
 export const clickCounter = createState('click counter', { count: 0 });
-console.log(clickCounter.count); // --> 0
 
+console.log(clickCounter.count); // --> 0
 ```
 
 You can create as many states as you like and access them as regular objects to read their values.
@@ -180,14 +178,14 @@ setDiffxOptions({
     persistenceLocation: sessionStorage
 })
 
-// this disables persistence for a specific state
-export const loadingState = createState('loading state', { isLoading: false }, { persistent: false });
+// this disables persistence for a specific state (if it's enabled globally)
+export const clickCounter = createState('click counter', { count: 0 }, { persistent: false });
 
 // this state is persisted in accordance with the global settings in `setDiffxOptions`
 export const clickCounter = createState('click counter', { count: 0 });
 
 // this state is persisted in localStorage instead of the globally defined persistenceLocation
-export const usersState = createState('users state', { names: [] }, { persistenceLocation: localStorage });
+export const clickCounter = createState('click counter', { count: 0 }, { persistenceLocation: localStorage });
 ```
 
 </details>
@@ -234,7 +232,7 @@ setState('Change the counter and add a user', () => {
 ```
 
 This will also create an entry in the devtools  
-![devtools entry screenshot](assets/devtools/img_9.png)
+![devtools entry screenshot](./assets/devtools/img_9.png)
 
 </details>
 <!-- end -->
@@ -291,7 +289,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onDone</td>
 <td>
 
-![async onDone in devtools](assets/devtools/img_10.png)
+![async onDone in devtools](./assets/devtools/img_10.png)
 
 </td>
 </tr>
@@ -299,7 +297,7 @@ The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tra
 <td>onError</td>
 <td>
 
-![async onError in devtools](assets/devtools/img_11.png)
+![async onError in devtools](./assets/devtools/img_11.png)
 
 </td>
 </tr>
@@ -338,7 +336,7 @@ setState('PeopleComponent: User clicked "Save usersState"', () => {
 ```
 
 This nesting will be displayed in the devtools as an indented hierarchical list, clarifying why "Add user" happened:  
-![nesting in devtools](assets/devtools/img_7.png)
+![nesting in devtools](./assets/devtools/img_7.png)
 
 Nesting can go as many levels deep as desired, making it easy to see who did what and why, and at the same time making
 it easy to discover reusable compositions of `setState`.
@@ -430,10 +428,10 @@ watchState(
 ```
 
 This will also be tracked in the devtools and tagged with "watcher".  
-![devtools watcher example](assets/devtools/img_13.png)
+![devtools watcher example](./assets/devtools/img_13.png)
 
 The tag can be hovered/clicked for more information about its trigger origin.  
-![devtools watcher hover example](assets/devtools/img_14.png)
+![devtools watcher hover example](./assets/devtools/img_14.png)
 
 </details>
 
@@ -572,7 +570,8 @@ Diffx devtools is made to give insights into
 <details open><summary>Overview</summary>
 
 
-It will show up as a tab in the browser devtools when it detects that the page is using Diffx and debugging has been enabled [(see setDiffxOptions)](#configure-diffx).
+It will show up as a tab in the browser devtools when it detects that the page is using Diffx and debugging has been
+enabled [(see setDiffxOptions)](#configure-diffx).
 
 ![Devtools location](./assets/devtools-7.png)
 

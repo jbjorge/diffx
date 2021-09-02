@@ -1,9 +1,8 @@
-export { UseWatchers } from './UseWatchers';
 export {
 	setDiffxOptions,
 	createState,
 	setState,
-	watchState,
+	observeState,
 	destroyState,
 	diffxInternals
 } from '@diffx/rxjs';

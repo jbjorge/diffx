@@ -28,7 +28,7 @@ const generated = mergeReadmes(baseTemplateLines, { ...overrideMap })
 	.replace(/'@diffx\/core'/g, `'@diffx/${currentDirName}'`)
 	.replace(/<:pkg_version:>/g, dirPackageJson.version)
 	.replace('npm install @diffx/core', `npm install @diffx/${currentDirName}`)
-	.replace(/\.\/assets/g, '../assets')
+	.replace(/\(\.\/assets/g, '(../assets')
 	.replace(/<!--.*-->/g, '')
 writeFileSync(join(process.cwd(), currentDir, 'README.md'), generated, {encoding: 'utf-8'});
 

@@ -1,6 +1,6 @@
 export interface WatchOptions<T> {
 	/**
-	 * Whether to start with emitting the current value of the watched item(s).
+	 * Whether to start with emitting the current value of the observed item(s).
 	 *
 	 * Default: `false`
 	 */

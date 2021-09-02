@@ -6,16 +6,16 @@
 
 <!-- #setState().append -->
 
-### useDiffx()
+### Read state
 
-#### Accessing raw state
+#### Directly
 
 When rendering state from the store as is (without any projections), it can be accessed directly:
 
 ```html
 <script>
     import { setState } from '@diffx/core';
-    import { clickCounter } from './createState-example-above';
+    import { clickCounter } from './createState-example';
 
     export function increment() {
         setState('increment', () => clickCounter.count++);
@@ -28,7 +28,7 @@ When rendering state from the store as is (without any projections), it can be a
 </main>
 ```
 
-#### useDiffx() - accessing projected state
+#### Projected
 
 `useDiffx(getterFunc)` returns a readonly value that will be kept updated.
 
@@ -37,7 +37,7 @@ When rendering state from the store as is (without any projections), it can be a
 ```html
 <script>
     import { setState, useDiffx } from '@diffx/svelte';
-    import { clickCounter } from './createState-example-above';
+    import { clickCounter } from './createState-example';
 
     export const isDivisibleByThree = useDiffx(() => clickCounter.count % 3 === 0);
 

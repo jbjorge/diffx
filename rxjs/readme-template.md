@@ -3,39 +3,37 @@
 <!-- end -->
 
 <!-- #watchState() -->
-### watchState()
+### Observe state
 
-`watchState(stateGetter)` is used for watching the state and being notified/reacting when it changes.
+`observeState(stateGetter)` is used for creating an observable of the state.
 
-* `stateGetter` - a function which returns the state(s) to be watched
-
-`watchState` is useful when creating "background services" that watches the state and reacts when it changes.
+* `stateGetter` - a function which returns the state(s) to be observed
 
 ```javascript
-import { watchState } from '@diffx/rxjs';
-import { clickCounter } from './createState-example-above';
+import { observeState } from '@diffx/rxjs';
+import { clickCounter } from './createState-example';
 
-watchState(() => clickCounter.count); // --> observable
+observeState(() => clickCounter.count); // --> observable
 ```
 <!-- end -->
 
 <!-- #controlling watchState -->
 <details>
-    <summary><strong>Controlling how state is watched</strong></summary>
+    <summary><strong>Controlling how state is observed</strong></summary>
 
-To have fine-grained control over how the state is watched, an options object can be provided as the second argument.
+To have fine-grained control over how the state is observed, an options object can be provided as the second argument.
 
 ```javascript
-import { watchState } from '@diffx/rxjs';
+import { observeState } from '@diffx/rxjs';
 import { clickCounter } from './createState-example-above';
 
-const observable = watchState(() => clickCounter.count, {
+const observable = observeState(() => clickCounter.count, {
     /**
-     * Whether to start with emitting the current value of the watched item(s).
+     * Whether to start with emitting the current value of the observed item(s).
      *
      * Default: `false`
      */
-    emitInitialValue: true / false,
+    emitInitialValue: false,
     /**
      * Whether to emit each change to the state during .setState (eachValueUpdate),
      * the current state after each .setState and .setState nested within it (eachSetState),
@@ -51,7 +49,7 @@ const observable = watchState(() => clickCounter.count, {
      *
      * Default: Diffx built in comparer
      */
-    hasChangedComparer: (newValue, oldValue) => true / false
+    hasChangedComparer: (newValue, oldValue) => 'true / false'
 });
 ```
 
@@ -60,15 +58,13 @@ const observable = watchState(() => clickCounter.count, {
 
 <!-- #watching projections -->
 <details>
-    <summary><strong>Watching projections</strong></summary>
-
-Projection of state:
+    <summary><strong>Observing projections</strong></summary>
 
 ```javascript
-import { watchState } from '@diffx/core';
-import { clickCounter } from './createState-example-above';
+import { observeState } from '@diffx/rxjs';
+import { clickCounter } from './createState-example';
 
-watchState(() => clickCounter.count > 5)
+observeState(() => clickCounter.count > 5)
   .subscribe(isGreaterThanFive => {
   	console.log(isGreaterThanFive); // --> true/false
   });
@@ -79,13 +75,13 @@ watchState(() => clickCounter.count > 5)
 
 <!-- #watching multiple states -->
 <details>
-    <summary><strong>Watching multiple states</strong></summary>
+    <summary><strong>Observing multiple states</strong></summary>
 
 ```javascript
-import { watchState } from '@diffx/core';
-import { clickCounter, users } from './createState-in-depth-docs';
+import { observeState } from '@diffx/rxjs';
+import { clickCounter, usersState } from './createState-example';
 
-watchState(() => [clickCounter.count, users.names])
+observeState(() => [clickCounter.count, usersState.names])
   .subscribe(([count, names]) => {
   	console.log(count) // --> number
   });
@@ -95,13 +91,13 @@ watchState(() => [clickCounter.count, users.names])
 
 <!-- #Using setState() inside watchState() -->
 <details>
-    <summary><strong>Using setState() inside watchState()</strong></summary>
+    <summary><strong>Using setState() inside observeState()</strong></summary>
 
 ```javascript
-import { watchState, setState } from '@diffx/core';
-import { clickCounter, users } from './createState-in-depth-docs';
+import { observeState, setState } from '@diffx/rxjs';
+import { clickCounter, usersState } from './createState-example';
 
-watchState(() => clickCounter.count)
+observeState(() => clickCounter.count)
     .pipe(
     	filter(count => count === 5),
         take(1)
@@ -109,10 +105,17 @@ watchState(() => clickCounter.count)
     .subscribe(countIsFive => {
         if (!countIsFive) return;
         setState('counter has the value 5, so I added another user', () => {
-            users.names.push('Jenny');
+            usersState.names.push('Jenny');
         });
     });
 ```
+
+This will also be tracked in the devtools and tagged with "watcher".  
+![devtools watcher example](../assets/devtools/img_13.png)
+
+The tag can be hovered/clicked for more information about its trigger origin.  
+![devtools watcher hover example](../assets/devtools/img_14.png)
+
 </details>
 <!-- end -->
 
@@ -131,37 +134,57 @@ tracking of async state in Diffx devtools).
   state.
 
 ```javascript
-import { createState, setState } from '@diffx/core';
+import { createState, setState } from '@diffx/rxjs';
 import { fetchUsersFromServer } from './some-file';
 
-export const users = createState('users-status', {
+export const usersState = createState('users state', {
     isFetching: false,
     names: [],
     fetchErrorMessage: ''
 });
 
 setState(
-    'fetch and update users',
+    'fetch and update usersState',
     () => {
         // set state before the async work begins
-        users.fetchErrorMessage = '';
-        users.names = [];
-        users.isFetching = true;
+        usersState.fetchErrorMessage = '';
+        usersState.names = [];
+        usersState.isFetching = true;
         // return the async work
         return fetchUsersFromServer();
     },
     result => {
         // the async work succeeded
-        users.names = result;
-        users.isFetching = false;
+        usersState.names = result;
+        usersState.isFetching = false;
     },
     error => {
         // the async work failed
-        users.fetchErrorMessage = error.message;
-        users.isFetching = false;
+        usersState.fetchErrorMessage = error.message;
+        usersState.isFetching = false;
     }
 );
 ```
+
+The `asyncMutatorFunc` and its resolution with `onDone` or `onError` will be tracked in the devtools:
+<table>
+<tr>
+<td>onDone</td>
+<td>
+
+![async onDone in devtools](../assets/devtools/img_10.png)
+
+</td>
+</tr>
+<tr>
+<td>onError</td>
+<td>
+
+![async onError in devtools](../assets/devtools/img_11.png)
+
+</td>
+</tr>
+</table>
 
 </details>
 
