@@ -579,7 +579,7 @@ It will show up as a tab in the browser devtools when it detects that the page i
 
 The left pane displays a list of changes (diffs) to the state along with their `reason`.  
 The right pane displays the `Diff`, `State` and `Stacktrace` (if stacktrace has been enabled
-in [setDiffxOptions](#setdiffxoptions)).
+in [setDiffxOptions](#configure-diffx)).
 
 ### Features
 
