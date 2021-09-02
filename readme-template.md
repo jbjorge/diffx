@@ -160,8 +160,6 @@ You can create as many states as you like and access them as regular objects to 
 <details>
     <summary><strong>Configure persistence</strong></summary>
 
-`createState()` accepts a third `options` argument for configuring persistence for this particular state.
-
 `createState(..., ..., options)`
 
 * `options`- optional settings for this particular state
