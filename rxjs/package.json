@@ -14,6 +14,11 @@
   "files": [
     "dist/**/*"
   ],
+  "keywords": [
+    "state management",
+    "rxjs",
+    "devtools"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jbjorge/diffx.git"

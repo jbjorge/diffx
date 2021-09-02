@@ -10,6 +10,11 @@
   "files": [
     "dist/**/*"
   ],
+  "keywords": [
+    "state management",
+    "angular",
+    "devtools"
+  ],
   "main": "dist/index.js",
   "repository": {
     "type": "git",
