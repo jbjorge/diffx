@@ -673,7 +673,7 @@ There are **a lot** of great state management libraries out there.
 * Some provide the same ease of use as local state, often at the cost of having less context which might make it more
   difficult to debug.
 
-Diffx tries to be the best of both worlds with
+Diffx tries to be the best of both worlds by
 
 * making it easy to provide context/intent behind any changes, which in turn makes it easy to reason about how a
   specific state came to be. **It makes the state self-documenting.**
