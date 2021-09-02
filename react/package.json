@@ -1,6 +1,6 @@
 {
   "name": "@diffx/react",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/jbjorge/diffx#readme",
   "dependencies": {
-    "@diffx/core": "^2.0.1",
+    "@diffx/core": "^2.0.3",
     "@vue/reactivity": "^3.0.2"
   },
   "peerDependencies": {
