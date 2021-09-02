@@ -2,30 +2,21 @@
 
 Diffx is a state management library that focuses on three things:
 
-* Make it easy to use
+* Make it easy to learn and use
 * Get rid of boilerplate
 * Make great devtools
 
-<details>
-  <summary><strong>Show all features</strong></summary>
+### Key features
 
-## Features
-
-* Minimal API
-* Minimal boilerplate
-    * No forced usage patterns
-    * Change any state from anywhere
-    * Proxy/mutation based
-* Detailed tracking
-    * nested changes
-    * asynchronous changes (start, resolve and reject)
-    * changes done by watchers of the state
-* Built in support for persistence
-* Supports all major frameworks
-* Built with typescript
-* Devtools browser extension
-
-</details>
+🤏 Small API and a very compact syntax  
+🔍 Tracks the _reason_ behind changes to the state  
+🔧 Devtools that track:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- what, when, where and **why** state changed  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- async start/resolution  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- nested changes  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- changes triggered by watchers  
+💾 Built in persistence  
+📝 Written in Typescript, inferring your types
 
 ## Supported frameworks
 

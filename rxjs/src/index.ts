@@ -50,11 +50,11 @@ export function setState<ResolvedType, ErrorType = any>(
 }
 
 /**
- * Watch state for changes
- * @param stateGetter A callback which should return the state to watch or an array of states to watch.
- * @param options Options for how the watcher should behave
+ * Create an observable of the state
+ * @param stateGetter A callback which should return the state to observe or an array of states to observe.
+ * @param options Options for how the observer should behave
  */
-export function watchState<T>(stateGetter: () => T, options?: WatchOptions<T>): Observable<T> {
+export function observeState<T>(stateGetter: () => T, options?: WatchOptions<T>): Observable<T> {
 	const eventStream = options?.emitInitialValue ? new Subject<T>() : new BehaviorSubject<T>(clone(stateGetter()));
 	const coreConfig = { hasChangedComparer: options?.hasChangedComparer } as coreWatchOptions<T>;
 	if (options?.emitOn === 'eachSetState') {

@@ -12,7 +12,7 @@
 
 ```jsx
 import { setState, useDiffx } from '@diffx/react';
-import { clickCounter } from './createState-example-above';
+import { clickCounter } from './createState-example';
 
 export default function App() {
     const count = useDiffx(() => counterState.count);
@@ -62,7 +62,7 @@ const count = useDiffx(() => counterState.count, {
      * Receives newValue and oldValue as arguments and should return `true` for changed
      * and `false` for no change.
      */
-    hasChangedComparer: (newValue, oldValue) => true / false
+    hasChangedComparer: (newValue, oldValue) => 'true / false'
 });
 ```
 
