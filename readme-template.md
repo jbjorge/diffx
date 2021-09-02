@@ -147,10 +147,10 @@ setDiffxOptions({
 ```javascript
 import { createState } from '@diffx/core';
 
+export const usersState = createState('users state', { names: [] });
 export const clickCounter = createState('click counter', { count: 0 });
 console.log(clickCounter.count); // --> 0
 
-export const usersState = createState('users state', { names: [] });
 ```
 
 You can create as many states as you like and access them as regular objects to read their values.
