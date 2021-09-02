@@ -13,14 +13,14 @@ Diffx is a state management library that focuses on three things:
 ### Key features
 
 🤏 Small API and a very compact syntax  
-🏷 Tracks the _reason_ behind changes to the state  
+🔍 Tracks the _reason_ behind changes to the state  
 🔧 Devtools that track:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- what, when, where and **why** state changed  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- async start/resolution  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- nested changes  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- changes triggered by watchers  
-📝 Built in persistence  
-⌨ Written in Typescript, inferring your types
+💾 Built in persistence  
+📝 Written in Typescript, inferring your types
 
 <!-- #supported-frameworks -->
 
