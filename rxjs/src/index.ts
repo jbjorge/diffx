@@ -17,7 +17,7 @@ export { createState, setDiffxOptions, destroyState, diffxInternals } from '@dif
  */
 export function setState<ResolvedType>(reason: string, mutatorFunc: () => ResolvedType);
 /**
- * Set state in diffx
+ * Set state in diffx asynchronously
  * @param reason The reason why the state changed
  * @param mutatorFunc A function (that can change the state and) returns an `Observable`
  * @param onDone Callback for when the observable returned from the mutatorFunc completes
@@ -26,9 +26,10 @@ export function setState<ResolvedType>(reason: string, mutatorFunc: () => Resolv
 export function setState<ResolvedType, ErrorType = any>(
 	reason: string,
 	mutatorFunc: () => Observable<ResolvedType>,
-	onDone?: (result: ResolvedType) => void,
+	onDone: (result: ResolvedType) => void,
 	onError?: (error: ErrorType) => void
-) {
+);
+export function setState<ResolvedType, ErrorType = any>(reason: string, mutatorFunc, onDone?, onError?){
 	if (onDone) {
 		coreSetState(
 			reason,

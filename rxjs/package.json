@@ -1,10 +1,11 @@
 {
   "name": "@diffx/rxjs",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && rollup -c rollup.config.js && npm run generate-readme",
+    "build": "rm -rf ./dist/* && npm run build:code && npm run generate-readme",
+    "build:code": "rollup -c rollup.config.js",
     "generate-readme": "npm run generate-readme ./rxjs/readme-template.md --prefix ../",
     "prepublishOnly": "npm run build",
     "ci-build": "rollup -c rollup.config.js --watch",
