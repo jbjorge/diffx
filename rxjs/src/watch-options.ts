@@ -12,7 +12,7 @@ export interface WatchOptions<T> {
 	 *
 	 * Default: `setStateDone`
 	 */
-	emitOn: 'eachSetState' | 'setStateDone' | 'eachValueUpdate';
+	emitOn?: 'eachSetState' | 'setStateDone' | 'eachValueUpdate';
 	/**
 	 * Custom comparer function to decide if the state has changed.
 	 * Receives newValue and oldValue as arguments and should return `true` for changed
