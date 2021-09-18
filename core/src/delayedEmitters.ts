@@ -1,4 +1,4 @@
-import internalState, { DelayedEmitterMap } from './internal-state';
+import { DelayedEmitterMap, internalState } from './internal-state';
 
 export function runSetStateDoneEmitters() {
 	const emittersCopy = { ...internalState.setStateDoneEmitters };

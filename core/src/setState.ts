@@ -1,5 +1,3 @@
-import { DiffEntry, getStateSnapshot } from './internals';
-import internalState from './internal-state';
 import { createId } from './createId';
 import { diff } from 'jsondiffpatch';
 import { saveHistoryEntry } from './createHistoryEntry';
@@ -14,8 +12,9 @@ import {
 	stateChangedInPromise,
 	stateChangedWithoutSetState
 } from './console-messages';
-import { trigger } from '@vue/reactivity';
 import { lastArrayItem } from './array-utils';
+import { DiffEntry, internalState } from './internal-state';
+import { getStateSnapshot } from './internals/getStateSnapshot';
 
 interface InternalSetStateArgs {
 	reason: string;

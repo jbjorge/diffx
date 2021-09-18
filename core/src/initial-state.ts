@@ -1,4 +1,4 @@
-import internalState, { CreateStateOptions, PersistenceLocation } from './internal-state';
+import { CreateStateOptions, internalState, PersistenceLocation } from './internal-state';
 import { missingPersistenceLocation } from './console-messages';
 import getPersistenceKey from './get-persistence-key';
 

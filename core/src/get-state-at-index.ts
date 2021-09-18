@@ -1,7 +1,7 @@
-import internalState from './internal-state';
 import rootState from './root-state';
 import { patch, unpatch } from 'jsondiffpatch';
 import clone from './clone';
+import { internalState } from './internal-state';
 
 export function getStateAtIndex(index: number) {
 	const lastDiffIndex = internalState.diffs.length - 1;

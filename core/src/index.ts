@@ -1,18 +1,21 @@
 import initializeValue from './initializeValue';
 import { createHistoryEntry } from './createHistoryEntry';
-import internalState, { CreateStateOptions, DiffxOptions } from './internal-state';
+import { _resetForDiffxTests, CreateStateOptions, DiffxOptions, internalState } from './internal-state';
 import { WatcherCallback, WatchOptions } from './watch-options';
 import clone from './clone';
 import rootState from './root-state';
-import * as internals from './internals';
-import { getStateSnapshot, replaceState } from './internals';
 import { effect, stop } from '@vue/reactivity';
 import { getInitialState } from './initial-state';
 import { _setState, _setStateAsync } from './setState';
 import { duplicateNamespace, missingWatchCallbacks, replacingStateForNamespace } from './console-messages';
 import getPersistenceKey from './get-persistence-key';
-
-export * as diffxInternals from './internals';
+import { getStateSnapshot } from './internals/getStateSnapshot';
+import { replaceState } from './internals/replaceState';
+import { addDiffListener, removeDiffListener } from './internals/diffListener';
+import { getDiffs } from './internals/getDiffs';
+import { lockState, pauseState, unlockState, unpauseState } from './internals/stateAccess';
+import { commit } from './internals/commit';
+import { redoState, undoState } from './internals/undoRedoState';
 
 /**
  * Set options for diffx
@@ -22,7 +25,26 @@ export function setDiffxOptions(options: DiffxOptions) {
 	internalState.instanceOptions = { ...internalState.instanceOptions, ...options };
 	if (internalState.instanceOptions?.devtools) {
 		const glob = (typeof process !== 'undefined' && process?.versions?.node) ? global : window;
-		glob["__DIFFX__"] = { createState, setState, watchState, destroyState, setDiffxOptions, ...internals };
+		glob["__DIFFX__"] = {
+			createState,
+			setState,
+			watchState,
+			destroyState,
+			setDiffxOptions,
+			addDiffListener,
+			removeDiffListener,
+			commit,
+			replaceState,
+			lockState,
+			unlockState,
+			pauseState,
+			unpauseState,
+			undoState,
+			redoState,
+			getStateSnapshot,
+			getDiffs,
+			_resetForDiffxTests
+		};
 	}
 }
 

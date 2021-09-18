@@ -1,13 +1,15 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
+import { createState, destroyState, setDiffxOptions } from '../src';
 import rootState from '../src/root-state';
-import { firstArrayItem, lastArrayItem } from './array-utils';
+import { lastArrayItem } from './array-utils';
+import { _resetForDiffxTests } from '../src/internal-state';
+import { getDiffs } from '../src/internals/getDiffs';
 
 describe('createDiffs == false', () => {
 	beforeAll(() => {
 		setDiffxOptions({ createDiffs: false });
 	})
 
-	beforeEach(() => diffxInternals._resetForDiffxTests());
+	beforeEach(() => _resetForDiffxTests());
 
 	test('it should remove the state from the state tree', () => {
 		const state = createState('state1', { a: 0 });
@@ -15,7 +17,7 @@ describe('createDiffs == false', () => {
 
 		destroyState('state1');
 
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(diffs.length).toEqual(0);
 		expect(rootState['state1']).toBeUndefined();
 	})
@@ -26,16 +28,16 @@ describe('createDiffs == true', () => {
 		setDiffxOptions({ createDiffs: true });
 	})
 
-	beforeEach(() => diffxInternals._resetForDiffxTests());
+	beforeEach(() => _resetForDiffxTests());
 
 	test('it should remove the state from the state tree and create a reversible history entry', () => {
 		const state = createState('state1', { a: 0 });
 		expect(rootState['state1']).toStrictEqual(state);
-		expect(diffxInternals.getDiffs().length).toEqual(1);
+		expect(getDiffs().length).toEqual(1);
 
 		destroyState('state1');
 
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(diffs.length).toEqual(2);
 		expect(rootState['state1']).toBeUndefined();
 

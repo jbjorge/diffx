@@ -1,9 +1,9 @@
 import { diff } from "jsondiffpatch";
 import clone from "./clone";
-import internalState from "./internal-state";
-import { DiffEntry, getStateSnapshot } from "./internals";
 import rootState from "./root-state";
 import { createId } from './createId';
+import { getStateSnapshot } from './internals/getStateSnapshot';
+import { DiffEntry, internalState } from './internal-state';
 
 let previousState = clone(rootState);
 

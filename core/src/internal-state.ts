@@ -1,5 +1,3 @@
-import { DiffEntry } from './internals';
-
 export type DiffListenerCallback = (diff: DiffEntry, commit?: boolean) => void;
 export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
 /**
@@ -9,6 +7,25 @@ export type DiffListeners = { [listenerId: string]: DiffListenerCallback }
  */
 export type DelayedEmitter = () => void;
 export type DelayedEmitterMap = { [id: string]: DelayedEmitter };
+
+export interface Delta {
+	[key: string]: any;
+	[key: number]: any;
+}
+
+export interface DiffEntry {
+	id: string;
+	timestamp: number;
+	reason: string;
+	diff: Delta;
+	stackTrace?: string;
+	isGeneratedByDiffx?: boolean;
+	async?: boolean;
+	asyncOrigin?: string;
+	asyncRejected?: boolean;
+	subDiffEntries?: DiffEntry[];
+	triggeredByDiffId?: string;
+}
 
 export type PersistenceLocation = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -84,8 +101,7 @@ interface InternalWatcher {
 	namespace: string;
 	unwatchFunc: () => void;
 }
-
-export default {
+export const internalState = {
 	isDestroyingState: false,
 	isReplacingState: false,
 	stateModificationsPaused: false,
@@ -107,3 +123,13 @@ export default {
 	isUndoingRedoing: false,
 	redoEnabled: false
 };
+
+/**
+ * Reset for internal state (used for testing)
+ *
+ * @access private
+ */
+export function _resetForDiffxTests() {
+	internalState.diffs = [];
+	internalState.undoList = [];
+}

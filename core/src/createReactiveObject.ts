@@ -1,7 +1,7 @@
 import { track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
-import internalState from './internal-state';
 import { stateChangedWithoutSetState } from './console-messages';
 import initializeValue from './initializeValue';
+import { internalState } from './internal-state';
 
 // workaround because jest is buggy and gets them as undefined from time to time
 const trackOpGetType: TrackOpTypes = 'get' as TrackOpTypes;

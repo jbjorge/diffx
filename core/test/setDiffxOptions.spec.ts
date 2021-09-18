@@ -1,20 +1,9 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../src';
+import { createState, destroyState, setDiffxOptions, setState, watchState } from '../src';
 import getPersistenceKey from '../src/get-persistence-key';
 import { mockStorage } from './mock-storage';
 import { maxDepthReached } from '../src/console-messages';
-import {
-	_resetForDiffxTests,
-	addDiffListener,
-	commit,
-	getDiffs,
-	getStateSnapshot,
-	lockState,
-	pauseState,
-	removeDiffListener,
-	replaceState,
-	unlockState,
-	unpauseState
-} from '../src/internals';
+import { _resetForDiffxTests } from '../src/internal-state';
+import { getDiffs } from '../src/internals/getDiffs';
 
 const _namespace = 'state1';
 
@@ -28,7 +17,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._resetForDiffxTests();
+	_resetForDiffxTests();
 	mockStorage.clear();
 	delete global['__DIFFX__'];
 })
@@ -36,17 +25,17 @@ beforeEach(() => {
 describe('createDiffs', () => {
 	test('it should create diffs when createDiffs is true', () => {
 		setDiffxOptions({ createDiffs: true });
-		const noDiffs = diffxInternals.getDiffs();
+		const noDiffs = getDiffs();
 		const state = createState(_namespace, { a: 1 });
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(noDiffs.length).toBeFalsy();
 		expect(diffs.length).toBe(1);
 	})
 
 	test('it should not create diffs by default', () => {
-		const noDiffs = diffxInternals.getDiffs();
+		const noDiffs = getDiffs();
 		const state = createState(_namespace, { a: 1 });
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(noDiffs.length).toBe(0);
 		expect(diffs.length).toBe(0);
 	})
@@ -56,7 +45,7 @@ describe('includeStackTrace', () => {
 	test('it should include stack trace in diffs when includeStackTrace is true', () => {
 		setDiffxOptions({ createDiffs: true, includeStackTrace: true });
 		const state = createState(_namespace, { a: 1 });
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(diffs.length).toBe(1);
 		expect(diffs[0].stackTrace.trim()).toMatch(/^at Object\.createState.*/);
 	})
@@ -64,7 +53,7 @@ describe('includeStackTrace', () => {
 	test('it should not include stack trace in diffs by default', () => {
 		setDiffxOptions({ createDiffs: true });
 		const state = createState(_namespace, { a: 1 });
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(diffs.length).toBe(1);
 		expect(diffs[0].stackTrace).not.toBeDefined();
 	})
@@ -160,9 +149,9 @@ describe('maxNestingDepth', () => {
 describe('devtools', () => {
 	test('it should create diffs when devtools is true', () => {
 		setDiffxOptions({ devtools: true });
-		const noDiffs = diffxInternals.getDiffs();
+		const noDiffs = getDiffs();
 		const state = createState(_namespace, { a: 1 });
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(noDiffs.length).toBeFalsy();
 		expect(diffs.length).toBe(1);
 	})

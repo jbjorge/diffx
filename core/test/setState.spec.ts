@@ -1,7 +1,9 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions, setState } from '../src';
+import { createState, destroyState, setDiffxOptions, setState } from '../src';
 import { stateChangedWithoutSetState } from '../src/console-messages';
 // @ts-ignore
 import { firstArrayItem, lastArrayItem, singleArrayItem } from './array-utils';
+import { getDiffs } from '../src/internals/getDiffs';
+import { _resetForDiffxTests } from '../src/internal-state';
 
 const _namespace = 'state1';
 let state: { a: number };
@@ -16,7 +18,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._resetForDiffxTests();
+	_resetForDiffxTests();
 	state = createState('state1', { a: 1 });
 })
 
@@ -28,13 +30,14 @@ describe('general', () => {
 	test('it should throw when state is changed outside of async setState', () => {
 		return new Promise<void>(resolve => {
 			setState('I change state after the scope of setState has finished', () => {
-				return Promise.resolve()
-					.then(() => {
-						expect(() => state.a++).toThrowError(stateChangedWithoutSetState);
-						resolve();
-					});
-			},
-				() => {}
+					return Promise.resolve()
+						.then(() => {
+							expect(() => state.a++).toThrowError(stateChangedWithoutSetState);
+							resolve();
+						});
+				},
+				() => {
+				}
 			)
 		});
 	})
@@ -42,13 +45,14 @@ describe('general', () => {
 
 describe('createDiffs == false', () => {
 	test('it should allow setState without any changes', () => {
-		setState('test', () => {});
-		expect(diffxInternals.getDiffs()).toStrictEqual([]);
+		setState('test', () => {
+		});
+		expect(getDiffs()).toStrictEqual([]);
 	})
 	test('it should change the state', () => {
 		setState('test', () => state.a++);
 		expect(state.a).toEqual(2);
-		expect(diffxInternals.getDiffs()).toStrictEqual([]);
+		expect(getDiffs()).toStrictEqual([]);
 	})
 })
 
@@ -60,7 +64,7 @@ describe('createDiffs == true', () => {
 	test('it should tag the first diff of a state as initial', () => {
 		const state2 = createState('state2', { b: 0 });
 		setState('setting state 2', () => state2.b++);
-		const diffs = diffxInternals.getDiffs();
+		const diffs = getDiffs();
 		expect(diffs.length).toEqual(2);
 		expect(diffs[0].isGeneratedByDiffx).toBeTruthy();
 		expect(diffs[1].isGeneratedByDiffx).toBeUndefined();
@@ -69,8 +73,7 @@ describe('createDiffs == true', () => {
 	test('it should not store a diff if there are no changes', () => {
 		const reason = 'test-super-unique';
 		setState(reason, () => state.a = 1);
-		const diffs = diffxInternals
-			.getDiffs()
+		const diffs = getDiffs()
 			.filter(diff => diff.reason === reason);
 		expect(diffs.length).toEqual(1);
 		expect(diffs[0].diff).toBeUndefined();
@@ -79,8 +82,7 @@ describe('createDiffs == true', () => {
 	test('it should store a diff', () => {
 		const reason = 'test-super-unique';
 		setState(reason, () => state.a = 2);
-		const diffs = diffxInternals
-			.getDiffs()
+		const diffs = getDiffs()
 			.filter(diff => diff.reason === reason);
 		expect(diffs.length).toEqual(1);
 		expect(diffs[0].diff).toStrictEqual({ state1: { a: [1, 2] } });
@@ -93,8 +95,7 @@ describe('createDiffs == true', () => {
 			setState('inner reason', () => state.a = 3);
 			state.a = 4;
 		});
-		const diffs = diffxInternals
-			.getDiffs()
+		const diffs = getDiffs()
 			.filter(diff => diff.reason === reason);
 		expect(diffs.length).toEqual(1);
 		expect(diffs[0].diff).toStrictEqual({ state1: { a: [1, 4] } });
@@ -119,8 +120,7 @@ describe('createDiffs == true', () => {
 			);
 		})
 			.then(() => {
-				const diffs = diffxInternals
-					.getDiffs()
+				const diffs = getDiffs()
 					.filter(diff => diff.reason === reason);
 				expect(diffs.length).toEqual(2);
 				const first = diffs[0];
@@ -156,7 +156,7 @@ describe('createDiffs == true', () => {
 			});
 		})
 			.then(() => {
-				const diffs = diffxInternals.getDiffs();
+				const diffs = getDiffs();
 				expect(diffs.length).toEqual(2);
 				const first = firstArrayItem(diffs);
 				expect(first.asyncRejected).toBeFalsy();
@@ -182,7 +182,8 @@ describe('createDiffs == true', () => {
 				() => reject(),
 				(err: Error) => {
 					state.a++;
-					setState('subDiff', () => {});
+					setState('subDiff', () => {
+					});
 					resolve(err.message);
 				}
 			);
@@ -190,8 +191,7 @@ describe('createDiffs == true', () => {
 			.then(rejectionReason => {
 				expect(rejectionReason).toEqual(rejectionMsg);
 
-				const diffs = diffxInternals
-					.getDiffs()
+				const diffs = getDiffs()
 					.filter(diff => diff.reason === reason);
 
 				expect(diffs.length).toEqual(2);

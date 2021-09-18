@@ -1,6 +1,7 @@
-import { createState, destroyState, diffxInternals, setDiffxOptions, setState, watchState } from '../../src';
-import { diff } from 'jsondiffpatch';
-import { firstArrayItem, lastArrayItem, singleArrayItem } from '../array-utils';
+import { createState, destroyState, setDiffxOptions, setState, watchState } from '../../src';
+import { lastArrayItem, singleArrayItem } from '../array-utils';
+import { _resetForDiffxTests } from '../../src/internal-state';
+import { getDiffs } from '../../src/internals/getDiffs';
 
 const _namespace = 'watchState-test-namespace';
 let _state: { a: number, b: string };
@@ -18,7 +19,7 @@ beforeEach(() => {
 	_watchers.forEach(unwatch => unwatch());
 	_watchers = [];
 	destroyState(_namespace);
-	diffxInternals._resetForDiffxTests();
+	_resetForDiffxTests();
 	delete global['__DIFFX__'];
 	_state = createState(_namespace, { a: 0, b: 'hi' });
 })
@@ -123,7 +124,7 @@ describe('watchState - onEachSetState', () => {
 				setState('trigger time', () => _state.a++);
 			})
 				.then(() => {
-					const diffs = diffxInternals.getDiffs();
+					const diffs = getDiffs();
 					expect(diffs.length).toEqual(2);
 					const last = lastArrayItem(diffs);
 					expect(last.reason).toEqual('trigger time');
@@ -193,7 +194,7 @@ describe('watchState - onEachSetState', () => {
 				setState('trigger time', () => _state.a++);
 			})
 				.then(() => {
-					const diffs = diffxInternals.getDiffs();
+					const diffs = getDiffs();
 					expect(diffs.length).toEqual(3);
 
 					const diffTree = diffs[1];

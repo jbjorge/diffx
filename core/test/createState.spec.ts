@@ -1,7 +1,8 @@
 import { duplicateNamespace, replacingStateForNamespace } from '../src/console-messages';
 // @ts-ignore
-import { createState, destroyState, diffxInternals, setDiffxOptions } from '../src';
+import { createState, destroyState, setDiffxOptions } from '../src';
 import { mockStorage } from './mock-storage';
+import { _resetForDiffxTests } from '../src/internal-state';
 
 const _namespace = 'state1';
 
@@ -15,7 +16,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._resetForDiffxTests();
+	_resetForDiffxTests();
 	mockStorage.clear();
 })
 
