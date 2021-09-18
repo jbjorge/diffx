@@ -156,6 +156,101 @@ test('.unlockState() should enable changes to the state after .lockState()', () 
 	consoleSpy.mockRestore();
 })
 
+describe('.undoState()', () => {
+	test('.undoState() should undo the state', () => {
+		return new Promise<number>(resolve => {
+			const values: number[] = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 5) {
+					unwatch();
+					resolve(values[4]);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState();
+		})
+			.then(value => {
+				expect(value).toEqual(3);
+			});
+	});
+
+	test('.undoState() should undo further back when it is called again', () => {
+		return new Promise<number>(resolve => {
+			let values = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 6) {
+					unwatch();
+					resolve(values[5]);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState();
+			diffxInternals.undoState();
+		})
+			.then(val => {
+				expect(val).toEqual(2);
+			})
+	})
+
+	test('.undoState() should reset its undo point after state is changed', () => {
+		return new Promise<number[]>(resolve => {
+			let values = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 10) {
+					unwatch();
+					resolve(values);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState(); // 3
+			setState('5', () => _state.a = 5);
+			setState('6', () => _state.a = 6);
+			diffxInternals.undoState(); // 5
+			diffxInternals.undoState(); // 3
+			diffxInternals.undoState(); // 2
+		})
+			.then(val => {
+				expect(val).toStrictEqual([1, 2, 3, 4, 3, 5, 6, 5, 3, 2]);
+			})
+	})
+
+	test('.undoState() should allow number of steps back as argument', () => {
+		return new Promise<number[]>(resolve => {
+			let values = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 8) {
+					unwatch();
+					resolve(values);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState(); // 3
+			setState('5', () => _state.a = 5);
+			setState('6', () => _state.a = 6);
+			diffxInternals.undoState({ steps: 3 });
+		})
+			.then(val => {
+				expect(val).toStrictEqual([1, 2, 3, 4, 3, 5, 6, 2]);
+			})
+	})
+})
+
 test('.getStateSnapshot() should return the current state', () => {
 	const snapshot1 = diffxInternals.getStateSnapshot();
 	expect(snapshot1).toStrictEqual({ 'diffxInternals-test-namespace': { a: 0, b: 'hi' } });

@@ -193,6 +193,8 @@ describe('devtools', () => {
 			'unlockState',
 			'pauseState',
 			'unpauseState',
+			'undoState',
+			'redoState',
 			'getStateSnapshot',
 			'getDiffs',
 			'_deleteAllDiffs',

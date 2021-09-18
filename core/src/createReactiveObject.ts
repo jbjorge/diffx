@@ -1,6 +1,7 @@
 import { track, TrackOpTypes, trigger, TriggerOpTypes } from '@vue/reactivity';
 import internalState from './internal-state';
 import { stateChangedWithoutSetState } from './console-messages';
+import initializeValue from './initializeValue';
 
 // workaround because jest is buggy and gets them as undefined from time to time
 const trackOpGetType: TrackOpTypes = 'get' as TrackOpTypes;
@@ -42,7 +43,7 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
-			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray) {
+			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray && !internalState.isUndoing) {
 				throw new Error(stateChangedWithoutSetState);
 			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);

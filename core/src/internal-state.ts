@@ -102,5 +102,7 @@ export default {
 	eachSetStateEmitters: {} as DelayedEmitterMap,
 	eachSetStateEmittersId: 1,
 	isTriggeringValueWatchers: false,
-	watchers: [] as InternalWatcher[]
+	watchers: [] as InternalWatcher[],
+	redoList: [] as string[],
+	isUndoing: false
 };

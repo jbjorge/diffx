@@ -1,10 +1,11 @@
-import { diff } from 'jsondiffpatch';
+import { diff, unpatch } from 'jsondiffpatch';
 import clone from './clone';
 import internalState, { DiffListenerCallback } from './internal-state';
 import rootState from './root-state';
 import { runEachSetStateEmitters, runSetStateDoneEmitters } from './delayedEmitters';
 import { createId } from './createId';
 import { getStateAtIndex } from './get-state-at-index';
+import { createHistoryEntry } from './createHistoryEntry';
 
 export interface Delta {
 	[key: string]: any;
@@ -160,6 +161,39 @@ export function unpauseState() {
 	// internalState.stateModificationsPaused = false;
 	// internalState.stateAccessBuffer.forEach(trackOrTrigger => trackOrTrigger());
 	// internalState.stateAccessBuffer = [];
+}
+
+interface UndoOptions {
+	steps?: number;
+}
+export function undoState(options?: UndoOptions) {
+	const diffs = internalState.diffs.filter(diff => !diff.isGeneratedByDiffx && !internalState.redoList.includes(diff.id));
+	if (diffs.length === 0) {
+		// no more stuff to undo
+		return;
+	}
+	const steps = Math.min(diffs.length, options?.steps ?? 1);
+	const diffsToUndo = diffs.slice(-steps);
+	const newState = getStateSnapshot();
+	diffsToUndo.reverse().forEach(diff => {
+		unpatch(newState, diff.diff);
+		internalState.redoList.push(diff.id);
+	});
+
+	internalState.isUndoing = true;
+	for (let namespace in newState) {
+		for (let propName in newState[namespace]) {
+			rootState[namespace][propName] = newState[namespace][propName];
+		}
+	}
+	createHistoryEntry(`@undo ${diffsToUndo.length} ${diffsToUndo.length === 1 ? 'diff' : 'diffs'}`, true);
+	internalState.isUndoing = false;
+	runEachSetStateEmitters();
+	runSetStateDoneEmitters();
+}
+
+export function redoState() {
+
 }
 
 /**
