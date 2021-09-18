@@ -43,8 +43,11 @@ export function createReactiveObject<T extends object>(rootObj: T = {} as T): T 
 			// Changes to the state can be paused.
 			// This drops all attempts at changing it.
 			const isMutatingArray = (Array.isArray(target) && key === 'length');
-			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray && !internalState.isUndoing) {
+			if (!internalState.isDestroyingState && !internalState.isUsingSetFunction && !internalState.isCreatingState && !internalState.isReplacingState && !isMutatingArray && !internalState.isUndoingRedoing) {
 				throw new Error(stateChangedWithoutSetState);
+			}
+			if (!internalState.isUndoingRedoing) {
+				internalState.redoEnabled = false;
 			}
 			const returnValue = Reflect.set(target, key, newValue, receiver);
 			// If the state is being replaced, buffer the triggering of object setting

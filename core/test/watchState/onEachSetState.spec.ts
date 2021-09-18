@@ -18,7 +18,7 @@ beforeEach(() => {
 	_watchers.forEach(unwatch => unwatch());
 	_watchers = [];
 	destroyState(_namespace);
-	diffxInternals._deleteAllDiffs();
+	diffxInternals._resetForDiffxTests();
 	delete global['__DIFFX__'];
 	_state = createState(_namespace, { a: 0, b: 'hi' });
 })

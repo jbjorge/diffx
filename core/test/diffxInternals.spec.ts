@@ -18,7 +18,7 @@ beforeEach(() => {
 	_watchers.forEach(unwatch => unwatch());
 	_watchers = [];
 	destroyState(_namespace);
-	diffxInternals._deleteAllDiffs();
+	diffxInternals._resetForDiffxTests();
 	delete global['__DIFFX__'];
 	_state = createState(_namespace, { a: 0, b: 'hi' });
 })
@@ -157,7 +157,19 @@ test('.unlockState() should enable changes to the state after .lockState()', () 
 })
 
 describe('.undoState()', () => {
-	test('.undoState() should undo the state', () => {
+	test('it should do nothing if there are no diffs', () => {
+		return new Promise(resolve => {
+			_watchers.push(watchState(() => _state.a, newValue => {
+				throw new Error('Undo misbehaved');
+			}))
+			diffxInternals.undoState();
+			diffxInternals.undoState();
+			diffxInternals.undoState();
+			setTimeout(resolve, 200);
+		})
+	})
+
+	test('it should undo the state', () => {
 		return new Promise<number>(resolve => {
 			const values: number[] = [];
 			const unwatch = watchState(() => _state.a, newValue => {
@@ -178,7 +190,7 @@ describe('.undoState()', () => {
 			});
 	});
 
-	test('.undoState() should undo further back when it is called again', () => {
+	test('it should undo further back when it is called again', () => {
 		return new Promise<number>(resolve => {
 			let values = [];
 			const unwatch = watchState(() => _state.a, newValue => {
@@ -200,7 +212,7 @@ describe('.undoState()', () => {
 			})
 	})
 
-	test('.undoState() should reset its undo point after state is changed', () => {
+	test('it should reset its undo point after state is changed', () => {
 		return new Promise<number[]>(resolve => {
 			let values = [];
 			const unwatch = watchState(() => _state.a, newValue => {
@@ -226,7 +238,7 @@ describe('.undoState()', () => {
 			})
 	})
 
-	test('.undoState() should allow number of steps back as argument', () => {
+	test('it should allow number of steps back as argument', () => {
 		return new Promise<number[]>(resolve => {
 			let values = [];
 			const unwatch = watchState(() => _state.a, newValue => {
@@ -247,6 +259,93 @@ describe('.undoState()', () => {
 		})
 			.then(val => {
 				expect(val).toStrictEqual([1, 2, 3, 4, 3, 5, 6, 2]);
+			})
+	})
+})
+
+describe('.redoState()', () => {
+	test('it should do nothing if no undo\'s have been done', () => {
+		return new Promise(resolve => {
+			_watchers.push(watchState(() => _state.a, newValue => {
+				throw new Error('Redo misbehaved');
+			}));
+			diffxInternals.redoState();
+			diffxInternals.redoState();
+			diffxInternals.redoState();
+			setTimeout(resolve, 200);
+		});
+	})
+
+	test('it should redo the state', () => {
+		return new Promise<number[]>(resolve => {
+			const values: number[] = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 6) {
+					unwatch();
+					resolve(values);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState();
+			diffxInternals.redoState();
+		})
+			.then(value => {
+				expect(value).toStrictEqual([1,2,3,4,3,4]);
+			});
+	});
+
+	test('it should redo further when it is called again', () => {
+		return new Promise<number[]>(resolve => {
+			let values = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 9) {
+					unwatch();
+					resolve(values);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState();
+			diffxInternals.undoState();
+			diffxInternals.redoState();
+			diffxInternals.undoState();
+			diffxInternals.redoState();
+		})
+			.then(val => {
+				expect(val).toStrictEqual([1,2,3,4,3,2,3,2,3]);
+			})
+	})
+
+
+	test('.redoState() should allow number of steps back as argument', () => {
+		return new Promise<number[]>(resolve => {
+			let values = [];
+			const unwatch = watchState(() => _state.a, newValue => {
+				values.push(newValue);
+				if (values.length === 9) {
+					unwatch();
+					resolve(values);
+				}
+			})
+			setState('1', () => _state.a = 1);
+			setState('2', () => _state.a = 2);
+			setState('3', () => _state.a = 3);
+			setState('4', () => _state.a = 4);
+			diffxInternals.undoState();
+			diffxInternals.undoState();
+			diffxInternals.redoState({steps: 10});
+			diffxInternals.undoState({steps: 10});
+			diffxInternals.redoState({steps: 2});
+		})
+			.then(val => {
+				expect(val).toStrictEqual([1,2,3,4,3,2,4,0,2]);
 			})
 	})
 })

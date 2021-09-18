@@ -103,6 +103,7 @@ export default {
 	eachSetStateEmittersId: 1,
 	isTriggeringValueWatchers: false,
 	watchers: [] as InternalWatcher[],
-	redoList: [] as string[],
-	isUndoing: false
+	undoList: [] as string[],
+	isUndoingRedoing: false,
+	redoEnabled: false
 };

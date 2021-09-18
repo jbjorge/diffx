@@ -3,7 +3,7 @@ import getPersistenceKey from '../src/get-persistence-key';
 import { mockStorage } from './mock-storage';
 import { maxDepthReached } from '../src/console-messages';
 import {
-	_deleteAllDiffs,
+	_resetForDiffxTests,
 	addDiffListener,
 	commit,
 	getDiffs,
@@ -28,7 +28,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._deleteAllDiffs();
+	diffxInternals._resetForDiffxTests();
 	mockStorage.clear();
 	delete global['__DIFFX__'];
 })
@@ -197,7 +197,7 @@ describe('devtools', () => {
 			'redoState',
 			'getStateSnapshot',
 			'getDiffs',
-			'_deleteAllDiffs',
+			'_resetForDiffxTests',
 		])
 	})
 })

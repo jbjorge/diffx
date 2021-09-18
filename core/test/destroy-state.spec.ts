@@ -7,7 +7,7 @@ describe('createDiffs == false', () => {
 		setDiffxOptions({ createDiffs: false });
 	})
 
-	beforeEach(() => diffxInternals._deleteAllDiffs());
+	beforeEach(() => diffxInternals._resetForDiffxTests());
 
 	test('it should remove the state from the state tree', () => {
 		const state = createState('state1', { a: 0 });
@@ -26,7 +26,7 @@ describe('createDiffs == true', () => {
 		setDiffxOptions({ createDiffs: true });
 	})
 
-	beforeEach(() => diffxInternals._deleteAllDiffs());
+	beforeEach(() => diffxInternals._resetForDiffxTests());
 
 	test('it should remove the state from the state tree and create a reversible history entry', () => {
 		const state = createState('state1', { a: 0 });

@@ -15,7 +15,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._deleteAllDiffs();
+	diffxInternals._resetForDiffxTests();
 	mockStorage.clear();
 })
 

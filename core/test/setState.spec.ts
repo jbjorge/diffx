@@ -16,7 +16,7 @@ beforeEach(() => {
 		includeStackTrace: false
 	});
 	destroyState(_namespace);
-	diffxInternals._deleteAllDiffs();
+	diffxInternals._resetForDiffxTests();
 	state = createState('state1', { a: 1 });
 })
 
