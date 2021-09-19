@@ -17,6 +17,8 @@ import { lockState, pauseState, unlockState, unpauseState } from './internals/st
 import { commit } from './internals/commit';
 import { redoState, undoState } from './internals/undoRedoState';
 
+export { redoState, undoState } from './internals/undoRedoState';
+
 /**
  * Set options for diffx
  * @param options
