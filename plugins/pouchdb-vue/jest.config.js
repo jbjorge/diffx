@@ -1,11 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
+  testEnvironment: 'node',
   globals: {
     'ts-jest': {
       isolatedModules: true
     }
-  },
-  "globalSetup": "jest-browser/setup",
-  "globalTeardown": "jest-browser/teardown",
-  "testEnvironment": "jest-browser"
+  }
 };
