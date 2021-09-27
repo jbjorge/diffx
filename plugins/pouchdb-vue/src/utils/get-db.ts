@@ -1,15 +1,15 @@
-import PouchDB from 'pouchdb-browser';
+import PouchDB from 'pouchdb';
 import pdbFind from 'pouchdb-find';
 import { Emitter, liveFind, RequestDef } from '../live-find';
 import { internalState } from './internal-state';
 const dbPool: DbPool = {};
 
-type Db = PouchDB.Database & {
-	liveFind: (query: RequestDef) => Emitter;
+export type PouchDbWithLiveFind = PouchDB.Database & {
+	liveFind: (query: Partial<RequestDef>) => Emitter;
 	type: string;
 };
 interface DbPool {
-	[dbName: string]: Db
+	[dbName: string]: PouchDbWithLiveFind
 }
 
 let pdbInitialized = false;
@@ -24,13 +24,13 @@ export default function getDb(dbName: string) {
 		}
 		PDB.plugin(pdbFind);
 		// @ts-ignore
-		PDB.plugin(liveFind);
+		PDB.plugin({ liveFind });
 		pdbInitialized = true;
 	}
 	if (dbPool[dbName]) {
 		return dbPool[dbName];
 	}
-	dbPool[dbName] = new PDB(dbName) as Db;
+	dbPool[dbName] = new PDB(dbName) as PouchDbWithLiveFind;
 
 	// removes console warning
 	dbPool[dbName].type = '';

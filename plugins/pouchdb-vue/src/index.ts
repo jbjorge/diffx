@@ -6,6 +6,7 @@ import PouchDB from 'pouchdb-browser';
 import { onUnmounted, watch } from 'vue';
 import { internalState } from './utils/internal-state';
 import { dbPut } from './utils/db-actions';
+import { diff } from 'jsondiffpatch';
 
 interface PouchOptions {
 	PouchDb?: PouchDB.Static
@@ -16,7 +17,7 @@ export const setDiffxPouchdbOptions = (options: PouchOptions) => {
 	internalState.Pouch.plugin(liveFind);
 }
 
-export function createPouchDbState<DocType extends Doc>(dbName: string, id: string, initialState: Omit<DocType, keyof Doc>): DocType & UndoableDoc;
+export function createPouchDbState<DocType>(dbName: string, id: string, initialState: DocType): DocType & Doc & UndoableDoc;
 export function createPouchDbState<DocType extends Doc>(dbName: string, query: StateQuery<DocType>): ((DocType & UndoableDoc)[]) & UndoableDoc;
 export function createPouchDbState<DocType extends Doc>(dbName: string, idOrQuery?: StateQuery<DocType> | string, initialState?: Omit<DocType, keyof Doc>) {
 	if (typeof idOrQuery === 'string'){
@@ -34,6 +35,8 @@ let idStreams = {} as {
 	}
 };
 
+const idToRevMap: { [id: string]: string } = {};
+
 function createDocState<DocType extends Doc>(dbName: string, id: string, initialState: Omit<DocType, keyof Doc>): DocType {
 	if (idStreams[id]) {
 		const streamId = Symbol('doing the things');
@@ -48,43 +51,58 @@ function createDocState<DocType extends Doc>(dbName: string, id: string, initial
 	const db = getDb(dbName);
 	const state = createState(id, {
 		_id: '',
-		_rev: '',
 		...initialState
 	} as DocType);
-	const stream = db.liveFind({
-		selector: { _id: id },
-		aggregate: false
-	} as RequestDef);
-	stream.onUpdate((event) => {
-		updateIsFromDb = true;
-		setState('@db-update', () => {
-			Object.keys(event.doc)
-				// @ts-ignore
-				.forEach(key => state[key] = event.doc[key]);
-		});
-		updateIsFromDb = false;
-	});
-	const unwatch = watchState(() => state, {
-		onEachSetState: newValue => {
-			if (!updateIsFromDb) {
-				dbPut(dbName, newValue)
-			}
-		}
-	})
-	idStreams[id] = {
-		state,
-		stream,
-		members: [],
-		maybeTeardown: function () {
-			if (!this.members.length) {
-				this.stream.cancel();
-				destroyState(id);
-				delete idStreams[id];
-				unwatch();
-			}
-		}
-	};
-	onUnmounted(() => idStreams[id].maybeTeardown());
+	// create the doc if it doesn't exist
+	db.get(id)
+		.catch(() => {
+			return dbPut(dbName, { ...state, _id: id }).then(result => ({ _id: result.id }))
+		})
+		.then(doc => {
+			idToRevMap[doc._id] = (doc as any)._rev;
+			const stream = db.liveFind({
+				selector: { _id: doc._id },
+				aggregate: false
+			} as RequestDef);
+			stream.onUpdate((event) => {
+				idToRevMap[event.doc._id] = event.doc._rev;
+				const otherThanRevChanged = Object.keys(diff(state, event.doc) || {})
+					.some(key => key !== '_rev');
+				if (!otherThanRevChanged) {
+					return;
+				}
+				updateIsFromDb = true;
+				setState('@db-update', () => {
+					delete event.doc._rev;
+					Object.keys(event.doc)
+						// @ts-ignore
+						.forEach(key => state[key] = event.doc[key]);
+				});
+				updateIsFromDb = false;
+			});
+			const unwatch = watchState(() => state, {
+				onEachSetState: newValue => {
+					if (!updateIsFromDb) {
+						dbPut(dbName, { ...newValue, _rev: idToRevMap[newValue._id] })
+					}
+				}
+			})
+			idStreams[id] = {
+				state,
+				stream,
+				members: [],
+				maybeTeardown: function () {
+					if (!this.members.length) {
+						this.stream.cancel();
+						destroyState(id);
+						delete idStreams[id];
+						unwatch();
+					}
+				}
+			};
+		})
+	onUnmounted(() => idStreams[id]?.maybeTeardown());
+
 	return state;
 }
 
@@ -134,4 +152,10 @@ function createQueryState<DocType extends Doc>(dbName: string, query: StateQuery
 		unwatch();
 	})
 	return state.docs;
+}
+
+export function _test_teardown() {
+	for (let id in idStreams) {
+		idStreams[id].maybeTeardown();
+	}
 }

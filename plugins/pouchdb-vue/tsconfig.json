@@ -4,6 +4,8 @@
     "sourceMap": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "module": "ES2020",
     "declaration": true,

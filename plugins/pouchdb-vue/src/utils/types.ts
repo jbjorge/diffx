@@ -8,7 +8,6 @@ export type Selector<T> = { [P in keyof T]?: T[P] | PouchDB.Find.ConditionOperat
 
 export interface Doc {
 	readonly _id: string;
-	readonly _rev?: string;
 }
 
 export interface StateQuery<T> {
